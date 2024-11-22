@@ -1,2 +1,2 @@
 # PsychOS
-Open Source Keyboard OS
+Open Source Keyboard OS developed by PsychoDuck Tech
