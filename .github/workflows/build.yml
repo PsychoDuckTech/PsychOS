@@ -30,7 +30,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-platformio-
     
-    - name: Run PlatformIO
+    - name: Run PlatformIO Compiler
       run: platformio run
       working-directory: source
 
@@ -59,9 +59,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ github.sha }}
-        release_name: Release ${{ github.sha }}
-        draft: false
-        prerelease: false
+        release_name: Prerelease ${{ github.sha }}
+        draft: true
+        prerelease: true
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
