@@ -7,6 +7,10 @@ typedef struct {
     uint8_t keycode[6];  // Up to 6 simultaneous key slots
 } USB_HID_Keyboard_Report_t;
 
+// Function Declarations ----------------------------------------
+void scanMatrix();
+void setupKeyboardMatrix(void *parameters);
+
 
 //TASKS ---------------------------------------------------------
 void KeystrokeHandler(void *parameters) {
