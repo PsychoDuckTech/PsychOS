@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "boardConfiguration/prototype0.h" // The board specific configuration
+#include "boardConfiguration/test2x2.h" // The board specific configuration
 
 typedef struct {
     uint8_t modifier;  // First byte for modifier keys
@@ -27,11 +27,9 @@ void scanMatrix() {
     for (int row = 0; row < totalRows; row++) {
         digitalWrite(rowPins[row], HIGH);
         for (int col = 0; col < totalCols; col++) {
-            if (digitalRead(colPins[col]) == HIGH) {
+            if (digitalRead(colPins[col]) == LOW) {
                 Serial.printf("Key Pressed: %d Key name: %s\n", keyMap[row][col], keyName[row][col]);
                 Serial.printf("Row: %d Col: %d\n", row, col);
-            } else {
-                Serial.println("No Key Pressed");
             }
         }
         digitalWrite(rowPins[row], LOW);
@@ -46,7 +44,7 @@ void setupKeyboardMatrix() {
 // --------------------------------------------------------------
 
 void setup() {
-    delay(5000);
+    delay(500);
     Serial.begin(115200);
     setupKeyboardMatrix();
 
