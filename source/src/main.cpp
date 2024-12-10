@@ -44,7 +44,6 @@ void setupKeyboardMatrix(void *parameters) {
 
 void setup() {
     Serial.begin(115200);
-
     xTaskCreate(
         setupKeyboardMatrix,
         "Keyboard Matrix Setup",
@@ -63,4 +62,6 @@ void setup() {
     );
 }
 
-// theres no loop function in FreeRTOS
+void loop() {
+    // nothing here
+}
