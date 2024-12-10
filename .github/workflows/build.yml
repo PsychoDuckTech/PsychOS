@@ -25,8 +25,8 @@ jobs:
     - name: Cache PlatformIO
       uses: actions/cache@v3
       with:
-        path: ~/source/.platformio
-        key: ${{ runner.os }}-platformio-${{ hashFiles('source/platformio.ini') }}
+        path: ~/.platformio
+        key: ${{ runner.os }}-platformio-${{ hashFiles('**/platformio.ini') }}
         restore-keys: |
           ${{ runner.os }}-platformio-
     
@@ -42,7 +42,7 @@ jobs:
           echo "No firmware file found!"
           exit 1
         fi
-        echo "firmware_path=$FIRMWARE_PATH" >> $GITHUB_OUTPUT
+        echo "firmware_path=$FIRMWARE_PATH" >> "$GITHUB_OUTPUT"
         echo "Firmware found at: $FIRMWARE_PATH"
       
     - name: Upload firmware
