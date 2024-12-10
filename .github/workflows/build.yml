@@ -35,15 +35,21 @@ jobs:
       working-directory: source
 
     - name: Find Firmware
+      id: find_firmware
       run: |
         echo "Searching for firmware files:"
-        find source/.pio -name "*.bin"
+        FIRMWARE_PATH=$(find source/.pio -name "*.bin" | head -n 1)
+        if [ -z "$FIRMWARE_PATH" ]; then
+          echo "No firmware file found!"
+          exit 1
+        fi
+        echo "Firmware found at: $FIRMWARE_PATH"
+        echo "FIRMWARE_PATH=$FIRMWARE_PATH" >> $GITHUB_ENV
       
     - name: Upload firmware
       uses: actions/upload-artifact@v3
       with:
-        name: firmware
-        path: source/.pio/build/**/firmware.bin
+        path: ${{ steps.find_firmware.outputs.FIRMWARE_PATH }}
 
     - name: Create Release
       id: create_release
@@ -51,8 +57,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ github.ref_name }}
-        release_name: Release v${{ github.ref_name }}
+        tag_name: v${{ github.sha }}
+        release_name: Release ${{ github.sha }}
         draft: false
         prerelease: false
 
@@ -62,6 +68,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: source/.pio/build/**/firmware.bin
+        asset_path: ${{ steps.find_firmware.outputs.FIRMWARE_PATH }}
         asset_name: firmware.bin
         asset_content_type: application/octet-stream
