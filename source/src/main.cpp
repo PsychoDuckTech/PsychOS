@@ -19,7 +19,7 @@ void KeystrokeHandler(void *parameters) {
 
     for (;;) {
         scanMatrix();
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(1 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
