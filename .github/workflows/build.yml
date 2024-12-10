@@ -34,6 +34,11 @@ jobs:
       run: platformio run
       working-directory: source
 
+    - name: Find Firmware
+      run: |
+        echo "Searching for firmware files:"
+        find source/.pio -name "*.bin"
+      
     - name: Upload firmware
       uses: actions/upload-artifact@v3
       with:
@@ -50,7 +55,7 @@ jobs:
         release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
-      
+
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
