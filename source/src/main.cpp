@@ -19,45 +19,43 @@ void KeystrokeHandler(void *parameters) {
 
     for (;;) {
         scanMatrix();
-        vTaskDelay(1 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
 void scanMatrix() {
-    for (int row; row < totalRows; row++) {
+    for (int row = 0; row < totalRows; row++) {
         digitalWrite(rowPins[row], HIGH);
-        for (int col; col < totalCols; col++) {
+        for (int col = 0; col < totalCols; col++) {
             if (digitalRead(colPins[col]) == HIGH) {
-                Serial.print("Key Pressed: " + String(keyMap[row][col]) + " Key name: " + keyName[row][col] + "\n");
-                Serial.print("Row: " + String(row) + " Col: " + String(col) + "\n");
+                Serial.printf("Key Pressed: %d Key name: %s\n", keyMap[row][col], keyName[row][col]);
+                Serial.printf("Row: %d Col: %d\n", row, col);
+            } else {
+                Serial.println("No Key Pressed");
             }
         }
         digitalWrite(rowPins[row], LOW);
     }
 }
 
-void setupKeyboardMatrix(void *parameters) {
+void setupKeyboardMatrix() {
     for (int i = 0; i < totalRows; i++) {pinMode(rowPins[i], OUTPUT);} // Set all row GPIO as OUTPUT
     for (int i = 0; i < totalCols; i++) {pinMode(colPins[i], INPUT_PULLUP);} // Set all column GPIO as INPUT with PULLUP
+    Serial.println("Setting up Keyboard Matrix done.");
 }
 // --------------------------------------------------------------
 
 void setup() {
+    delay(5000);
     Serial.begin(115200);
-    xTaskCreate(
-        setupKeyboardMatrix,
-        "Keyboard Matrix Setup",
-        1000,
-        NULL,
-        7,
-        NULL
-    );
+    setupKeyboardMatrix();
+
     xTaskCreate(
         KeystrokeHandler,
         "Keystroke Handler",
-        1000,
+        4096,
         NULL,
-        6,
+        1,
         NULL
     );
 }
