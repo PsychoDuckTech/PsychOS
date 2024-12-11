@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "translations/ptPT.h"
+#include "esp_task_wdt.h" // Include the watchdog timer header
 #include "boardConfig/test2x2.h" // The board specific configuration
 
 typedef struct {
@@ -20,6 +21,7 @@ void KeystrokeHandler(void *parameters) {
 
     for (;;) {
         scanMatrix();
+        esp_task_wdt_reset(); // Feed the watchdog timer
         vTaskDelay(100 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
@@ -47,6 +49,7 @@ void setupKeyboardMatrix() {
 // --------------------------------------------------------------
 
 void setup() {
+    delay(500);
     Serial.begin(115200);
     setupKeyboardMatrix();
 
