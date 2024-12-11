@@ -10,17 +10,17 @@ void setupKeyboardMatrix(void *parameters);
 //TASKS ---------------------------------------------------------
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
-    Serial.print(*task_keystrokeHandler_start);
+    Serial.print("Started KeystrokeHandler Task\n");
 
-    typedef struct {
+    /*typedef struct {
         uint8_t modifier;  // First byte for modifier keys
         uint8_t reserved;  // Second byte (always 0)
         uint8_t keycode[6];  // Up to 6 simultaneous key slots
-    } USB_HID_Keyboard_Report_t;   -
+    } USB_HID_Keyboard_Report_t;*/
 
     for (;;) {
         scanMatrix();
-        vTaskDelay(0.125 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(0.5 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
