@@ -1,4 +1,6 @@
 #include <Arduino.h>
+//#include "translations/ptPT.h"
+#include "esp_task_wdt.h" // Include the watchdog timer header
 #include "boardConfig/test2x2.h" // The board specific configuration
 
 typedef struct {
@@ -19,7 +21,8 @@ void KeystrokeHandler(void *parameters) {
 
     for (;;) {
         scanMatrix();
-        vTaskDelay(10 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        esp_task_wdt_reset(); // Feed the watchdog timer
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
@@ -28,7 +31,7 @@ void scanMatrix() {
         digitalWrite(rowPins[row], HIGH);
         for (int col = 0; col < totalCols; col++) {
             if (digitalRead(colPins[col]) == LOW) {
-                Serial.printf("Key Pressed: %d Key name: %s\n", keyMap[row][col], keyName[row][col]);
+                Serial.printf("Key Pressed: %s\n", keyName[row][col]);
                 Serial.printf("Row: %d Col: %d\n", row, col);
             }
         }
@@ -41,12 +44,20 @@ void setupKeyboardMatrix() {
     for (int i = 0; i < totalCols; i++) {pinMode(colPins[i], INPUT_PULLUP);} // Set all column GPIO as INPUT with PULLUP
     Serial.println("Setting up Keyboard Matrix done.");
 }
+
+// void submitKey();
 // --------------------------------------------------------------
 
 void setup() {
     delay(500);
     Serial.begin(115200);
     setupKeyboardMatrix();
+
+    // Initialize the task watchdog
+    esp_task_wdt_init(10, true); // Timeout of 10 seconds
+
+    // Add tasks to the watchdog
+    esp_task_wdt_add(NULL);
 
     xTaskCreate(
         KeystrokeHandler,
