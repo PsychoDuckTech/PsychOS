@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "translations/ptPT.h"
+//#include "translations/ptPT.h"
 #include "esp_task_wdt.h" // Include the watchdog timer header
 #include "boardConfig/test2x2.h" // The board specific configuration
 
@@ -17,12 +17,12 @@ void setupKeyboardMatrix(void *parameters);
 //TASKS ---------------------------------------------------------
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
-    Serial.printf("%d\n", task_keystrokeHandler_start);
+    Serial.print("Started KeystrokeHandler Task\n");
 
     for (;;) {
         scanMatrix();
         esp_task_wdt_reset(); // Feed the watchdog timer
-        vTaskDelay(100 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
