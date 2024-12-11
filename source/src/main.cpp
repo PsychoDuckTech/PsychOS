@@ -53,7 +53,7 @@ void setup() {
     xTaskCreate(
         KeystrokeHandler,
         "Keystroke Handler",
-        5120,
+        4096,
         NULL,
         1,
         NULL
