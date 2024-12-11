@@ -1,11 +1,6 @@
 #include <Arduino.h>
+#include "translations/ptPT.h"
 #include "boardConfiguration/test2x2.h" // The board specific configuration
-
-typedef struct {
-    uint8_t modifier;  // First byte for modifier keys
-    uint8_t reserved;  // Second byte (always 0)
-    uint8_t keycode[6];  // Up to 6 simultaneous key slots
-} USB_HID_Keyboard_Report_t;
 
 // Function Declarations ----------------------------------------
 void scanMatrix();
@@ -17,9 +12,15 @@ void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
     Serial.print("Started KeystrokeHandler Task\n");
 
+    typedef struct {
+        uint8_t modifier;  // First byte for modifier keys
+        uint8_t reserved;  // Second byte (always 0)
+        uint8_t keycode[6];  // Up to 6 simultaneous key slots
+    } USB_HID_Keyboard_Report_t;
+
     for (;;) {
         scanMatrix();
-        vTaskDelay(1 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(0.125 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
@@ -41,6 +42,8 @@ void setupKeyboardMatrix() {
     for (int i = 0; i < totalCols; i++) {pinMode(colPins[i], INPUT_PULLUP);} // Set all column GPIO as INPUT with PULLUP
     Serial.println("Setting up Keyboard Matrix done.");
 }
+
+void sendKey
 // --------------------------------------------------------------
 
 void setup() {
@@ -51,7 +54,7 @@ void setup() {
     xTaskCreate(
         KeystrokeHandler,
         "Keystroke Handler",
-        4096,
+        5120,
         NULL,
         1,
         NULL
