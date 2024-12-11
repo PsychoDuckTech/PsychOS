@@ -53,6 +53,12 @@ void setup() {
     Serial.begin(115200);
     setupKeyboardMatrix();
 
+    // Initialize the task watchdog
+    esp_task_wdt_init(10, true); // Timeout of 10 seconds
+
+    // Add tasks to the watchdog
+    esp_task_wdt_add(NULL);
+
     xTaskCreate(
         KeystrokeHandler,
         "Keystroke Handler",
