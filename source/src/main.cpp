@@ -1,7 +1,9 @@
 #include <Arduino.h>
-//#include "translations/ptPT.h"
-#include "esp_task_wdt.h" // Include the watchdog timer header
-#include "boardConfig/test2x2.h" // The board specific configuration
+
+// Configurable Parameters -------------------------------------
+#include "translations/enUS.h"
+#include "boardConfig/prototype0.h" // The board specific configuration
+// -------------------------------------------------------------
 
 typedef struct {
     uint8_t modifier;  // First byte for modifier keys
@@ -17,12 +19,11 @@ void setupKeyboardMatrix(void *parameters);
 //TASKS ---------------------------------------------------------
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
-    Serial.print("Started KeystrokeHandler Task\n");
+    Serial.println(task_keystrokeHandler_started);
 
     for (;;) {
         scanMatrix();
-        esp_task_wdt_reset(); // Feed the watchdog timer
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(1 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
@@ -40,29 +41,35 @@ void scanMatrix() {
 }
 
 void setupKeyboardMatrix() {
-    for (int i = 0; i < totalRows; i++) {pinMode(rowPins[i], OUTPUT);} // Set all row GPIO as OUTPUT
-    for (int i = 0; i < totalCols; i++) {pinMode(colPins[i], INPUT_PULLUP);} // Set all column GPIO as INPUT with PULLUP
-    Serial.println("Setting up Keyboard Matrix done.");
+    Serial.println("Setting up Keyboard Matrix");
+    for (int i = 0; i < totalRows; i++) {
+        pinMode(rowPins[i], OUTPUT);
+    }
+    for (int i = 0; i < totalCols; i++) {
+        if (colPins[i] >= 34 && colPins[i] <= 39) {
+            pinMode(colPins[i], INPUT); // No pull-up resistor
+        } else {
+            pinMode(colPins[i], INPUT_PULLUP);
+        }
+    }
+    Serial.println(setupKeyboardMatrix_done);
 }
+
 
 // void submitKey();
 // --------------------------------------------------------------
 
 void setup() {
-    delay(500);
+    delay(2000);
     Serial.begin(115200);
+    Serial.println("Setup started");
     setupKeyboardMatrix();
 
-    // Initialize the task watchdog
-    esp_task_wdt_init(10, true); // Timeout of 10 seconds
-
-    // Add tasks to the watchdog
-    esp_task_wdt_add(NULL);
 
     xTaskCreate(
         KeystrokeHandler,
         "Keystroke Handler",
-        4096,
+        8192,
         NULL,
         1,
         NULL

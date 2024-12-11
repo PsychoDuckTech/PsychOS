@@ -11,22 +11,22 @@ int const totalCols = 16;
 
 // Matrix Key Map
 const uint8_t keyMap[totalRows][totalCols] = {
-    {KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_SYSRQ, KEY_INSERT, KEY_DELETE},
-    {KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_APOSTROPHE, KEY_EQUAL, KEY_BACKSPACE, KEY_HOME, 0, 0},
-    {KEY_TAB, KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_Y, KEY_U,KEY_I, KEY_O, KEY_P, KEY_LEFTBRACE, KEY_GRAVE, KEY_ENTER, KEY_END, 0},
-    {KEY_CAPSLOCK, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_H, KEY_J,KEY_K, KEY_L, KEY_SEMICOLON, KEY_HASHTILDE, KEY_BACKSLASH, 0, KEY_PAGEUP, 0},
-    {KEY_LEFTSHIFT, KEY_102ND, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B, KEY_N, KEY_M, KEY_COMMA, KEY_DOT, KEY_SLASH, 0, 0, 0, 0},
-    {KEY_LEFTCTRL, KEY_LEFTMETA, KEY_LEFTALT, KEY_SPACE, 0, 0, 0,KEY_RIGHTALT, 0, KEY_RIGHTCTRL, 0, 0, 0, 0, 0, 0}
+    {KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_SYSRQ, KEY_INSERT, KEY_DELETE}, // done
+    {KEY_BACKSLASH, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_APOSTROPHE, 0, KEY_BACKSPACE, 0, KEY_HOME}, // missing one key
+    {KEY_TAB, KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_Y, KEY_U, KEY_I, KEY_O, KEY_P, KEY_PLUS_ASTERISK, KEY_ACUTE_GRAVE, 0, 0, KEY_END}, // done, one empty key
+    {KEY_CAPSLOCK, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_H, KEY_J, KEY_K, KEY_L, KEY_C_CEDILLA, KEY_ORDINAL_MASCULINE, KEY_CIRCUMFLEX_TILDE, KEY_ENTER, 0, KEY_PAGEUP}, // done
+    {KEY_LEFTSHIFT, KEY_LESS_GREATER, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B, KEY_N, KEY_M, KEY_COMMA, KEY_DOT, KEY_MINUS_UNDERSCORE, KEY_RIGHT_SHIFT, 0, KEY_UP, KEY_PAGEDOWN}, // done
+    {KEY_LEFTCTRL, KEY_LEFTMETA, 0, KEY_LEFTALT, 0, 0, KEY_SPACE, 0, 0, 0, KEY_RIGHTALT, 0, KEY_RIGHTCTRL, KEY_LEFT, KEY_DOWN, KEY_RIGHT} // done
 };
 
-// Matrix Key Name
+// Reconstructed Matrix Key Name
 const char* keyName[totalRows][totalCols] = {
     {"ESC", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "SYSRQ", "INSERT", "DELETE"},
-    {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "=", "BACKSPACE", "HOME", "", ""},
-    {"TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "`", "ENTER", "END", ""},
-    {"CAPSLOCK", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "#~", "\\", "", "PAGEUP", ""},
-    {"LSHIFT", "102ND", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "", "", "", ""},
-    {"LCTRL", "LMETA", "LALT", "SPACE", "", "", "", "RALT", "", "RCTRL", "", "", "", "", "", ""}
+    {"BACKSLASH", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "APOSTROPHE", "", "BACKSPACE", "", "HOME"},
+    {"TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "EQUAL", "GRAVE", "", "", "END"},
+    {"CAPSLOCK", "A", "S", "D", "F", "G", "H", "J", "K", "L", "C_CEDILLA", "ORDINAL_MASCULINE", "CIRCUMFLEX_TILDE", "ENTER", "", "PAGEUP"},
+    {"LEFTSHIFT", "LESS_GREATER", "Z", "X", "C", "V", "B", "N", "M", "COMMA", "DOT", "MINUS", "RIGHT_SHIFT", "", "UP", "PAGEDOWN"},
+    {"LEFTCTRL", "LEFTMETA", "", "LEFTALT", "", "", "SPACE", "", "", "", "RIGHTALT", "", "RIGHTCTRL", "LEFT", "DOWN", "RIGHT"}
 };
 
 // GPIO assignment

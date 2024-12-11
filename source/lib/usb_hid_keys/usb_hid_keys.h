@@ -63,6 +63,7 @@
 #define KEY_X 0x1b // Keyboard x and X
 #define KEY_Y 0x1c // Keyboard y and Y
 #define KEY_Z 0x1d // Keyboard z and Z
+#define KEY_C_CEDILLA 0x2e // Keyboard ç and Ç (example code, added by GabiBrawl)
 
 #define KEY_1 0x1e // Keyboard 1 and !
 #define KEY_2 0x1f // Keyboard 2 and @
@@ -93,6 +94,12 @@
 #define KEY_DOT 0x37 // Keyboard . and >
 #define KEY_SLASH 0x38 // Keyboard / and ?
 #define KEY_CAPSLOCK 0x39 // Keyboard Caps Lock
+#define KEY_LESS_GREATER 0x64 // Keyboard < and > (example code, added by GabiBrawl)
+#define KEY_MINUS_UNDERSCORE 0x2d // Keyboard - and _ (example code, added by GabiBrawl)
+#define KEY_RIGHT_SHIFT 0xE5 // Right Shift key (example code, added by GabiBrawl)
+#define KEY_CIRCUMFLEX_TILDE 0x2E // Keyboard ^ and ~ (example code, added by GabiBrawl)
+#define KEY_ORDINAL_MASCULINE 0x2F // Keyboard º (masculine ordinal) (example code, added by GabiBrawl)
+#define KEY_ORDINAL_FEMININE 0x30 // Keyboard ª (feminine ordinal) (example code, added by GabiBrawl)
 
 #define KEY_F1 0x3a // Keyboard F1
 #define KEY_F2 0x3b // Keyboard F2
@@ -120,6 +127,9 @@
 #define KEY_LEFT 0x50 // Keyboard Left Arrow
 #define KEY_DOWN 0x51 // Keyboard Down Arrow
 #define KEY_UP 0x52 // Keyboard Up Arrow
+
+#define KEY_PLUS_ASTERISK 0x2e // Keyboard + and * (example code, added by GabiBrawl)
+#define KEY_ACUTE_GRAVE 0x35 // Keyboard ´ and ` (example code, added by GabiBrawl)
 
 #define KEY_NUMLOCK 0x53 // Keyboard Num Lock and Clear
 #define KEY_KPSLASH 0x54 // Keypad /
