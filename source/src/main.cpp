@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "boardConfiguration/test2x2.h" // The board specific configuration
+#include "boardConfig/test2x2.h" // The board specific configuration
 
 typedef struct {
     uint8_t modifier;  // First byte for modifier keys
