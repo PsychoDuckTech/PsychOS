@@ -43,7 +43,7 @@ void setupKeyboardMatrix() {
     Serial.println("Setting up Keyboard Matrix done.");
 }
 
-void sendKey
+void submitKey();
 // --------------------------------------------------------------
 
 void setup() {
