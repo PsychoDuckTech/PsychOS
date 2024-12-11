@@ -2,7 +2,7 @@
 * Portuguese Portugal Translation
 */
 
-int const OS.version = "PsychOS v0.0.0";
+const char *OS_version = "PsychOS v0.0.0";
 
 
-int const task.keystrokeHandler.start = "";
+const char *task_keystrokeHandler_start = "Started KeystrokeHandler Task";

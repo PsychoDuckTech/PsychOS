@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "translations/ptPT.h"
+#include "translations/enUS.h"
 #include "boardConfiguration/test2x2.h" // The board specific configuration
 
 // Function Declarations ----------------------------------------
@@ -10,7 +10,7 @@ void setupKeyboardMatrix(void *parameters);
 //TASKS ---------------------------------------------------------
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
-    Serial.print("Started KeystrokeHandler Task\n");
+    Serial.print(task_keystrokeHandler_start"\n");
 
     typedef struct {
         uint8_t modifier;  // First byte for modifier keys
