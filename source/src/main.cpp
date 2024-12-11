@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "translations/ptPT.h"
+//#include "translations/ptPT.h"
 #include "boardConfiguration/test2x2.h" // The board specific configuration
 
 typedef struct {
@@ -17,7 +17,7 @@ void setupKeyboardMatrix(void *parameters);
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
     delay(5000);
-    Serial.printf("%d\n", task_keystrokeHandler_start);
+    //Serial.printf("%d\n", task_keystrokeHandler_start);
 
     for (;;) {
         scanMatrix();
