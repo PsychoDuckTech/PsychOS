@@ -17,7 +17,7 @@ void setupKeyboardMatrix(void *parameters);
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
     delay(5000);
-    Serial.print("%d\n", task_keystrokeHandler_start);
+    Serial.printf("%d\n", task_keystrokeHandler_start);
 
     for (;;) {
         scanMatrix();
