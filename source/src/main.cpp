@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "translations/ptPT.h"
 #include "boardConfiguration/test2x2.h" // The board specific configuration
 
 typedef struct {
@@ -15,11 +16,12 @@ void setupKeyboardMatrix(void *parameters);
 //TASKS ---------------------------------------------------------
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
-    Serial.print("Started KeystrokeHandler Task\n");
+    delay(5000);
+    Serial.print("%d\n", task_keystrokeHandler_start);
 
     for (;;) {
         scanMatrix();
-        vTaskDelay(1 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(100 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 

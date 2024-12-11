@@ -1,5 +1,5 @@
 /**
- * Key Array Map for the Prototype 0 Matrix
+ * Key Array Map for the 2x2 Matrix
  */
 
 #include <Arduino.h>
