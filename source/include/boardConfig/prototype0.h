@@ -9,6 +9,16 @@
 int const totalRows = 6;
 int const totalCols = 16;
 
+// Multiplexer control pins
+#define MUX_S0 22
+#define MUX_S1 23
+#define MUX_S2 24
+#define MUX_S3 25
+#define MUX_SIG 27  // Common Input/Output pin
+
+// Create multiplexer instance
+Multiplexer colMux(MUX_S0, MUX_S1, MUX_S2, MUX_S3, MUX_SIG);
+
 // Matrix Key Map
 const uint8_t keyMap[totalRows][totalCols] = {
     {KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_SYSRQ, KEY_INSERT, KEY_DELETE}, // done
@@ -31,4 +41,4 @@ const char* keyName[totalRows][totalCols] = {
 
 // GPIO assignment
 int const rowPins[totalRows] = {4, 5, 7, 18, 8, 3};
-int const colPins[totalCols] = {9, 6, 10, 11, 12, 13, 14, 20, 21, 35, 36, 37, 38, 39, 40, 41};
+int const colPins[totalCols] = {22, 23, 24, 25, 27, 28, 44, 43, 31, 32, 33, 34, 35, 36, 37}; // DONT USE 14, 16, 15, 46, 1, 17, 30
