@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "translations/enUS.h"
 #include "boardConfiguration/test2x2.h" // The board specific configuration
 
 // Function Declarations ----------------------------------------
@@ -20,7 +19,7 @@ void KeystrokeHandler(void *parameters) {
 
     for (;;) {
         scanMatrix();
-        vTaskDelay(0.5 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
+        vTaskDelay(1 / portTICK_PERIOD_MS); // 1ms delay corresponding to a polling rate of 1000Hz
     }
 }
 
@@ -43,7 +42,7 @@ void setupKeyboardMatrix() {
     Serial.println("Setting up Keyboard Matrix done.");
 }
 
-void submitKey();
+// void submitKey();
 // --------------------------------------------------------------
 
 void setup() {
