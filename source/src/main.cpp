@@ -1,12 +1,12 @@
 #include <Arduino.h>
-//#include "translations/ptPT.h"
-#include "boardConfiguration/test2x2.h" // The board specific configuration
+#include "translations/ptPT.h"
+#include "boardConfig/test2x2.h" // The board specific configuration
 
-/*typedef struct {
+typedef struct {
     uint8_t modifier;  // First byte for modifier keys
     uint8_t reserved;  // Second byte (always 0)
     uint8_t keycode[6];  // Up to 6 simultaneous key slots
-} USB_HID_Keyboard_Report_t;*/
+} USB_HID_Keyboard_Report_t;
 
 // Function Declarations ----------------------------------------
 void scanMatrix();
@@ -15,9 +15,8 @@ void setupKeyboardMatrix(void *parameters);
 
 //TASKS ---------------------------------------------------------
 void KeystrokeHandler(void *parameters) {
-    //USB_HID_Keyboard_Report_t hid_report;
-    delay(5000);
-    //Serial.printf("%d\n", task_keystrokeHandler_start);
+    USB_HID_Keyboard_Report_t hid_report;
+    Serial.printf("%d\n", task_keystrokeHandler_start);
 
     for (;;) {
         scanMatrix();
@@ -30,7 +29,7 @@ void scanMatrix() {
         digitalWrite(rowPins[row], HIGH);
         for (int col = 0; col < totalCols; col++) {
             if (digitalRead(colPins[col]) == LOW) {
-                Serial.printf("Key Pressed: %d Key name: %s\n", keyMap[row][col], keyName[row][col]);
+                Serial.printf("Key Pressed: %s\n", keyName[row][col]);
                 Serial.printf("Row: %d Col: %d\n", row, col);
             }
         }
@@ -48,7 +47,6 @@ void setupKeyboardMatrix() {
 // --------------------------------------------------------------
 
 void setup() {
-    delay(500);
     Serial.begin(115200);
     setupKeyboardMatrix();
 
