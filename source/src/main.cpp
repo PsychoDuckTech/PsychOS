@@ -1,6 +1,12 @@
 #include <Arduino.h>
 #include "boardConfiguration/test2x2.h" // The board specific configuration
 
+typedef struct {
+    uint8_t modifier;  // First byte for modifier keys
+    uint8_t reserved;  // Second byte (always 0)
+    uint8_t keycode[6];  // Up to 6 simultaneous key slots
+} USB_HID_Keyboard_Report_t;
+
 // Function Declarations ----------------------------------------
 void scanMatrix();
 void setupKeyboardMatrix(void *parameters);
@@ -10,12 +16,6 @@ void setupKeyboardMatrix(void *parameters);
 void KeystrokeHandler(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
     Serial.print("Started KeystrokeHandler Task\n");
-
-    /*typedef struct {
-        uint8_t modifier;  // First byte for modifier keys
-        uint8_t reserved;  // Second byte (always 0)
-        uint8_t keycode[6];  // Up to 6 simultaneous key slots
-    } USB_HID_Keyboard_Report_t;*/
 
     for (;;) {
         scanMatrix();
