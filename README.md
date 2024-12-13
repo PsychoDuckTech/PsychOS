@@ -22,6 +22,12 @@
 | Display | Unsupported | Not a priority at the moment. |
 | RGB | Unsupported | Not a priority at the moment. |
 
+## Flashing the Firmware
+Once the compilation finishes, go to the releases tab and find the latest release. Download the `firmware.bin` file.
+Set your microcontroller to bootloader mode, then use the `esptool` command to flash the firmware.
+
+If you don't have the [esptool](https://github.com/espressif/esptool) installed, install it using the command: `pip install esptool`.
+
 ## Translations
 Is your preferred language missing localisation of some of the text?
 Translations are stored as `.h` files in the `source/include/translations` folder.
