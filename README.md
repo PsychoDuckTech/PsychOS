@@ -5,8 +5,12 @@ Open Source Keyboard OS developed by PsychoDuck Tech
 
 |     Device     | Status |                  Notes                  |
 | :------------: | :-:    | :-------------------------------------: |
-| Prototype 0    | ❌     | In development                          |
-| 2x2 Matrix     | ✅     | LMFAOOOOOOOOOOO                         |
+| Prototype 0    | ![alt text][unsupported]     | In development                          |
+| 2x2 Matrix     | ![alt text][supported]     | LMFAOOOOOOOOOOO                         |
+
+[supported]: https://img.shields.io/badge/-supported-green "supported"
+[preview]: https://img.shields.io/badge/-preview-orange "preview"
+[unsupported]: https://img.shields.io/badge/-unsupported-red "in development"
 
 ## Translations
 
