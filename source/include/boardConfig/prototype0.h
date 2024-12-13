@@ -1,23 +1,27 @@
 /**
- * Key Array Map for the Prototype 0 Matrix
+ * Prototype 0 Keyboard Matrix Configuration
  */
 
 #include <Arduino.h>
-#include "usb_hid_keys.h" // by MightyPork on GitHub
+#include "usb_hid_keys.h" // by MightyPork on GitHub, customized by GabiBrawl
+#include "multiplexer.h"
 
 // Matrix configuration
 int const totalRows = 6;
 int const totalCols = 16;
+int const usesMultiplexer = true;
 
-// Multiplexer control pins
-#define MUX_S0 22
-#define MUX_S1 23
-#define MUX_S2 24
-#define MUX_S3 25
-#define MUX_SIG 27  // Common Input/Output pin
+// GPIO assignment
+int const rowPins[totalRows] = {40, 13, 12, 11, 10, 9};
+// int const colPins[totalCols] = {22, 23, 24, 25, 27, 28, 44, 43, 31, 32, 33, 34, 35, 36, 37}; // DONT USE 14, 16, 15, 46, 1, 17, 30
 
-// Create multiplexer instance
-Multiplexer colMux(MUX_S0, MUX_S1, MUX_S2, MUX_S3, MUX_SIG);
+// 16bit multiplexer pins and instance
+#define MULTIPLEXER_S0 5
+#define MULTIPLEXER_S1 6
+#define MULTIPLEXER_S2 7
+#define MULTIPLEXER_S3 15
+#define MULTIPLEXER_SIG 4
+Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, MULTIPLEXER_S3, MULTIPLEXER_SIG);
 
 // Matrix Key Map
 const uint8_t keyMap[totalRows][totalCols] = {
@@ -29,7 +33,7 @@ const uint8_t keyMap[totalRows][totalCols] = {
     {KEY_LEFTCTRL, KEY_LEFTMETA, 0, KEY_LEFTALT, 0, 0, KEY_SPACE, 0, 0, 0, KEY_RIGHTALT, 0, KEY_RIGHTCTRL, KEY_LEFT, KEY_DOWN, KEY_RIGHT} // done
 };
 
-// Reconstructed Matrix Key Name
+// Matrix Key Name
 const char* keyName[totalRows][totalCols] = {
     {"ESC", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "SYSRQ", "INSERT", "DELETE"},
     {"BACKSLASH", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "APOSTROPHE", "", "BACKSPACE", "", "HOME"},
@@ -39,6 +43,25 @@ const char* keyName[totalRows][totalCols] = {
     {"LEFTCTRL", "LEFTMETA", "", "LEFTALT", "", "", "SPACE", "", "", "", "RIGHTALT", "", "RIGHTCTRL", "LEFT", "DOWN", "RIGHT"}
 };
 
-// GPIO assignment
-int const rowPins[totalRows] = {4, 5, 7, 18, 8, 3};
-int const colPins[totalCols] = {22, 23, 24, 25, 27, 28, 44, 43, 31, 32, 33, 34, 35, 36, 37}; // DONT USE 14, 16, 15, 46, 1, 17, 30
+// Board Configuration Specific Tasks ----------------------------------------
+void scanMatrixLogic() {
+    for (int row = 0; row < totalRows; row++) {
+        digitalWrite(rowPins[row], HIGH);
+        
+        // Scan columns through the multiplexer
+        for (int col = 0; col < totalCols; col++) {
+            colPinsMultiplexer.selectChannel(col);
+            delayMicroseconds(50);
+            
+            if (!colPinsMultiplexer.readChannel()) {  // Activate on low
+                Serial.printf("Key Pressed: %s\n", keyName[row][col]);
+                Serial.printf("Row: %d Col: %d\n", row, col);
+            }
+        }
+        digitalWrite(rowPins[row], LOW);
+    }
+}
+
+void setupColPins() {
+    Serial.println("No column pins to setup here");
+}
