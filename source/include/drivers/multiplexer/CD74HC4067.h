@@ -27,6 +27,7 @@ class Multiplexer {
             digitalWrite(S1_PIN, (channel >> 1) & 0x01);
             digitalWrite(S2_PIN, (channel >> 2) & 0x01);
             digitalWrite(S3_PIN, (channel >> 3) & 0x01);
+            delay(15); // Allow the multiplexer to stabilize, this is actually needed
         }
 
         // Read the selected channel

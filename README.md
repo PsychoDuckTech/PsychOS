@@ -17,9 +17,12 @@
 | Feature | Status | Notes |
 | :-: | :-: | :-: |
 | Keystroke Handler | In development | Developing multiplexer support. |
-| Macro setting | Unsupported | Macro support for the main board matrix. |
+| Modifiable Configuration | Unsupported | On-the-fly configuration |
+| [Web Configurator](https://github.com/PsychoDuckTech/WebConfigurator) | Unsupported | Web-based configurator for the firmware. |
+| Macro Support | Unsupported | Macro support for the main board matrix. |
 | Modules | Unsupported | Bluetooth Numpad Modules support. |
 | Display | Unsupported | Not a priority at the moment. |
+| Layers | Unsupported | Multiple toggle-able keymap layers. |
 | RGB | Unsupported | Not a priority at the moment. |
 
 ## Flashing the Firmware
@@ -32,6 +35,9 @@ If you don't have the [esptool](https://github.com/espressif/esptool) installed,
 Is your preferred language missing localisation of some of the text?
 Translations are stored as `.h` files in the `source/include/translations` folder.
 _Pull requests_ are loved and accepted to enhance the firmware. <3
+
+## About
+This firmware was tested only on the ESP32-S3.
 
 ## License
 This code is covered by the [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html) license **unless noted elsewhere**.
