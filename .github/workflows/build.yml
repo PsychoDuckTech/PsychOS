@@ -56,7 +56,6 @@ jobs:
       id: release_notes
       run: |
         cat << EOF > RELEASE.md
-        # PsychOS v${{ steps.version.outputs.version }}
 
         ## 🎉 First Alpha Release
 

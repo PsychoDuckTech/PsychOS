@@ -9,7 +9,7 @@ void hostCommunicationBridge(void* parameters) {
     hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));
     HostMessage receivedMessage;
     
-    USB.begin();
+    //USB.begin(); // Comment this line in case you need to use USB for debugging
     ConsumerControl.begin();
     
     while (true) {

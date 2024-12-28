@@ -19,8 +19,6 @@ void setup() {
     initializeBLE();
     initializeMatrix();
     
-    USB.begin();
-    
     TaskHandle_t keyTaskHandle;
     xTaskCreatePinnedToCore(
         keyScanning,          // Task function: The function that will execute as the task.
@@ -62,7 +60,7 @@ void setup() {
         NULL,
         1,
         &hostCommHandle,
-        1
+        0
     );
 }
 

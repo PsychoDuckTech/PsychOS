@@ -6,7 +6,6 @@
 #define CLK_PIN 2
 #define DT_PIN 1
 #define SW_PIN 4
-#define VOLUME_STEPS 1
 #define POLLING_RATE_MS 1 // 1 = 1000Hz
 
 KY040 knob(CLK_PIN, DT_PIN, SW_PIN);
@@ -21,7 +20,7 @@ void knobHandler(void *parameters) {
         if (rotation != 0) {
             HostMessage msg;
             msg.type = VOLUME_CHANGE;
-            msg.data = rotation * VOLUME_STEPS; // Multiply steps here instead of sending multiple messages
+            msg.data = rotation;
             xQueueSend(hostMessageQueue, &msg, 0); // Use 0 timeout
         }
 

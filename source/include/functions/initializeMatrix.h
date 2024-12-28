@@ -12,17 +12,15 @@ void initializeMatrix() {
 
 void setupRowPins() {
     for (int i = 0; i < totalRows; i++) {
-        // Serial.printf("Starting row pin %d (GPIO%d)... ", i, rowPins[i]);
         pinMode(rowPins[i], OUTPUT);
-        digitalWrite(rowPins[i], LOW);
-        // Serial.printf("done\n");
+        digitalWrite(rowPins[i], HIGH); // Set HIGH (inactive) initially
     }
 }
 
 void setupColPins() {
     switch (usesMultiplexer) {
         case true:
-            // Serial.println("No column pins to setup here");
+            // No column pins to setup here
             break;
         case false:
             for (int i = 0; i < totalCols; i++) {
