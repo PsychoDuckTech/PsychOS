@@ -7,7 +7,7 @@
 
 void keyScanning(void *parameters) {
     USB_HID_Keyboard_Report_t hid_report;
-    Serial.println(task_keystrokeHandler_started);
+    Serial.println(task_keyScanning_started);
     Serial.println("\n");
 
     for (;;) {
