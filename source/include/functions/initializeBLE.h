@@ -3,8 +3,8 @@
 
 void initializeBLE() {
     if (!BLE.begin()) {
-        Serial.println("BLE initialization failed!");
+        Serial.println(BLE_initialized_successfully); 
         ESP.restart();
     }
-    Serial.println("BLE initialized successfully");
+    Serial.println(BLE_initialization_failed);
 }

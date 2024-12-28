@@ -7,7 +7,7 @@ void setupColPins();
 void initializeMatrix() {
     setupRowPins();
     setupColPins(); // Present in the board specific configuration
-    Serial.println("Matrix initialized successfully");
+    Serial.println(matrix_initialized_successfully);
 }
 
 void setupRowPins() {
