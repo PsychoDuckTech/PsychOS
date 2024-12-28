@@ -11,7 +11,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
+    - name: Set Version
+      id: version
+      run: |
+        echo "version=0.1.1-alpha" >> "$GITHUB_OUTPUT"
+        
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -38,19 +45,44 @@ jobs:
       id: find_firmware
       run: |
         FIRMWARE_PATH=$(find source/.pio -name "*.bin" | head -n 1)
-        if [ -z "$FIRMWARE_PATH" ]; then
+        if [ -z "$FIRMWARE_PATH"; then
           echo "No firmware file found!"
           exit 1
         fi
         echo "firmware_path=$FIRMWARE_PATH" >> "$GITHUB_OUTPUT"
         echo "Firmware found at: $FIRMWARE_PATH"
       
-    - name: Upload firmware
-      uses: actions/upload-artifact@v3
-      with:
-        name: firmware
-        path: ${{ steps.find_firmware.outputs.firmware_path }}
-        if-no-files-found: error
+    - name: Generate Release Notes
+      id: release_notes
+      run: |
+        cat << EOF > RELEASE.md
+        # PsychOS v${{ steps.version.outputs.version }}
+
+        ## 🎉 First Alpha Release
+
+        ### Key Features
+        - USB HID Communication Bridge
+        - Volume Control System
+          - Smooth increment/decrement with direction lock
+          - Configurable polling rate (1000Hz)
+          - Mute function via encoder press
+        - FreeRTOS Task Management
+
+        ### 📥 Installation
+        Download \`firmware.bin\` and flash using:
+        \`\`\`bash
+        esptool.py --chip esp32s3 --port COM[X] write_flash 0x0 firmware.bin
+        \`\`\`
+
+        ### ⚠️ Known Issues
+        - Matrix scanning still in development
+        - Configuration system not yet implemented
+
+        ### 🔜 Next Steps
+        - Complete matrix scanning implementation
+        - Add configuration interface
+        - Implement layer system
+        EOF
 
     - name: Create Release
       id: create_release
@@ -58,10 +90,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ github.sha }}
-        release_name: Prerelease ${{ github.sha }}
+        tag_name: v${{ steps.version.outputs.version }}
+        release_name: PsychOS v${{ steps.version.outputs.version }}
+        body_path: RELEASE.md
         draft: false
-        prerelease: false
+        prerelease: true
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
