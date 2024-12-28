@@ -1,10 +1,13 @@
 #include <Arduino.h>
 #include "config.h"
 #include "drivers/rotaryEncoder/KY-040.h"
+#include "hostCommunicationBridge.h"
 
 #define CLK_PIN 2
 #define DT_PIN 1
 #define SW_PIN 4
+#define VOLUME_STEPS 1
+#define POLLING_RATE_MS 1 // 1 = 1000Hz
 
 KY040 knob(CLK_PIN, DT_PIN, SW_PIN);
 
@@ -14,15 +17,21 @@ void knobHandler(void *parameters) {
 
     for (;;) {
         int rotation = knob.readEncoder();
+        
         if (rotation != 0) {
-            Serial.printf("Knob rotated: %s\n", rotation > 0 ? "Clockwise" : "Counter-clockwise");
+            HostMessage msg;
+            msg.type = VOLUME_CHANGE;
+            msg.data = rotation * VOLUME_STEPS; // Multiply steps here instead of sending multiple messages
+            xQueueSend(hostMessageQueue, &msg, 0); // Use 0 timeout
         }
 
-        if (knob.isButtonPressed()) {
-            Serial.println("Knob button pressed");
-            vTaskDelay(250 / portTICK_PERIOD_MS); // Debounce delay, 250ms
+        if (knob.checkButtonPress()) {
+            HostMessage msg;
+            msg.type = VOLUME_MUTE;
+            msg.data = 0;
+            xQueueSend(hostMessageQueue, &msg, 0);
         }
 
-        vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay
+        vTaskDelay(pdMS_TO_TICKS(POLLING_RATE_MS));
     }
 }

@@ -1,15 +1,15 @@
 #include <Arduino.h>
 #include <ArduinoBLE.h>
 #include <esp_task_wdt.h>
+#include "config.h"
+#include "tasks/hostCommunicationBridge.cpp"
 #include "tasks/keyScanning.cpp"
 #include "tasks/moduleConnectionHandler.cpp"
 #include "tasks/knobHandler.cpp"
-#include "config.h"
 #include "functions/initializeMatrix.h"
 #include "functions/initializeBLE.h"
 
 void setup() {
-    delay(1500);
     Serial.begin(115200);
     Serial.println(String(OS_version) + ", " + byCompany + "\n");
     
@@ -18,13 +18,10 @@ void setup() {
     
     initializeBLE();
     initializeMatrix();
-
-
-    // Create tasks with increased stack
+    
+    USB.begin();
+    
     TaskHandle_t keyTaskHandle;
-    TaskHandle_t bleTaskHandle;
-    TaskHandle_t knobTaskHandle;
-
     xTaskCreatePinnedToCore(
         keyScanning,          // Task function: The function that will execute as the task.
         "Keystroke Handler",  // Name of the task: A human-readable name for debugging.
@@ -35,6 +32,7 @@ void setup() {
         0                     // Core ID: The CPU core (0 or 1) on which the task will run.
     );
 
+    TaskHandle_t knobTaskHandle;
     xTaskCreatePinnedToCore(
         knobHandler,
         "Knob Handler",
@@ -45,6 +43,7 @@ void setup() {
         0
     );
 
+    TaskHandle_t bleTaskHandle;
     xTaskCreatePinnedToCore(
         moduleConnectionHandler,
         "BLE Handler",
@@ -52,6 +51,17 @@ void setup() {
         NULL,
         1,
         &bleTaskHandle,
+        1
+    );
+
+    TaskHandle_t hostCommHandle;
+    xTaskCreatePinnedToCore(
+        hostCommunicationBridge,
+        "Host Communication",
+        4096,
+        NULL,
+        1,
+        &hostCommHandle,
         1
     );
 }
