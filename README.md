@@ -6,26 +6,35 @@
 ## Supported Matrix Hardware Setups
 |   Device    |          Status          |      Notes      |
 | :---------: | :----------------------: | :-------------: |
-| Prototype 0 | ![alt text][unsupported] | In development  |
+| Prototype 0 | ![alt text][development] | In development  |
 | 2x2 Matrix  |  ![alt text][supported]  | LMFAOOOOOOOOOOO |
 
 [supported]: https://img.shields.io/badge/-supported-green "supported"
 [preview]: https://img.shields.io/badge/-preview-orange "preview"
-[in development]: https://img.shields.io/badge/-unsupported-red "in development"
+[development]: https://img.shields.io/badge/-unsupported-red "in development"
 
 ## Features
-|                                Feature                                |              Status               |                    Notes                    |
-| :-------------------------------------------------------------------: | :-------------------------------: | :-----------------------------------------: |
-|                           Keystroke Handler                           |          In development           |       Developing multiplexer support.       |
-|                       Host Communication Bridge                       | Partial Support: Volume knob only | Keyboard communication to the host machine. |
-|                       Modifiable Configuration                        |            Unsupported            |          On-the-fly configuration           |
-| [Web Configurator](https://github.com/PsychoDuckTech/WebConfigurator) |            Unsupported            |  Web-based configurator for the firmware.   |
-|                            Rotary Encoder                             |             Supported             |            Rotary Knob support.             |
-|                             Macro Support                             |            Unsupported            |  Macro support for the main board matrix.   |
-|                                Modules                                |            Unsupported            |      Bluetooth Numpad Modules support.      |
-|                                Display                                |            Unsupported            |        Not a priority at the moment.        |
-|                                Layers                                 |            Unsupported            |     Multiple toggle-able keymap layers.     |
-|                                  RGB                                  |            Unsupported            |        Not a priority at the moment.        |
+|                                Feature                                |     Status      |                    Notes                    |
+| :-------------------------------------------------------------------: | :-------------: | :-----------------------------------------: |
+|                           Keystroke Handler                           | In development  |       Developing multiplexer support.       |
+|                       Host Communication Bridge                       | Partial Support | Keyboard communication to the host machine. |
+|                       Modifiable Configuration                        |   Unsupported   |          On-the-fly configuration           |
+| [Web Configurator](https://github.com/PsychoDuckTech/WebConfigurator) |   Unsupported   |  Web-based configurator for the firmware.   |
+|                            Rotary Encoder                             |    Supported    |            Rotary Knob support.             |
+|                             Macro Support                             |   Unsupported   |  Macro support for the main board matrix.   |
+|                                Modules                                |   Unsupported   |      Bluetooth Numpad Modules support.      |
+|                                Display                                |   Unsupported   |        Not a priority at the moment.        |
+|                                Layers                                 |   Unsupported   |     Multiple toggle-able keymap layers.     |
+|                                  RGB                                  |   Unsupported   |        Not a priority at the moment.        |
+
+
+## Current Features
+- USB HID Communication
+- Volume Control via Rotary Encoder
+  - Smooth increment/decrement
+  - Mute function via encoder press
+- FreeRTOS Task Management
+- Matrix Scanning (in development)
 
 ## Flashing the Firmware
 Once the compilation finishes, go to the releases tab and find the latest release. Download the `firmware.bin` file.
