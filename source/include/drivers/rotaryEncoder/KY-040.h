@@ -12,7 +12,7 @@ private:
     unsigned long _buttonPressStart;
     bool _buttonWasPressed;
     static const unsigned long DIRECTION_LOCK_TIME = 150; // ms
-    static const unsigned long DEBOUNCE_TIME = 2;
+    static const unsigned long DEBOUNCE_TIME = 7;
     static const unsigned long BUTTON_DEBOUNCE = 50;
 
 public:

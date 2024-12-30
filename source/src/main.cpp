@@ -1,9 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoBLE.h>
-#include <esp_task_wdt.h>
 #include "config.h"
-#include "tasks/hostCommunicationBridge.cpp"
-#include "tasks/keyScanning.cpp"
+#include "tasks/matrixScan.cpp"
 #include "tasks/moduleConnectionHandler.cpp"
 #include "tasks/knobHandler.cpp"
 #include "functions/initializeMatrix.h"
@@ -11,8 +9,16 @@
 
 void setup() {
     Serial.begin(115200);
-    Serial.println(String(OS_version) + ", " + byCompany + "\n");
+    Serial.println(String(OS_version) + ", " + byCompany);
+    Serial.println("95YCH0DUCK\n");
     
+    // Create message queue first
+    QueueHandle_t messageQueue = xQueueCreate(64, sizeof(HostMessage));
+    if (!messageQueue) {
+        Serial.println("Failed to create message queue!");
+        return;
+    }
+
     // Initialize watchdog
     esp_task_wdt_init(10, true);
     
@@ -21,11 +27,11 @@ void setup() {
     
     TaskHandle_t keyTaskHandle;
     xTaskCreatePinnedToCore(
-        keyScanning,          // Task function: The function that will execute as the task.
+        matrixScan,           // Task function: The function that will execute as the task.
         "Keystroke Handler",  // Name of the task: A human-readable name for debugging.
         8192,                 // Stack size: Amount of stack memory allocated to the task (in bytes).
-        NULL,                 // Parameter: A pointer passed as an argument to the task function.
-        2,                    // Priority: The priority of the task (higher values = higher priority).
+        NULL,        // Pass queue handle to task
+        3,                    // Priority: The priority of the task (higher values = higher priority).
         &keyTaskHandle,       // Task handle: A pointer to store the task's handle (optional).
         0                     // Core ID: The CPU core (0 or 1) on which the task will run.
     );
@@ -38,7 +44,7 @@ void setup() {
         NULL,
         1,
         &knobTaskHandle,
-        0
+        1
     );
 
     TaskHandle_t bleTaskHandle;
@@ -55,10 +61,10 @@ void setup() {
     TaskHandle_t hostCommHandle;
     xTaskCreatePinnedToCore(
         hostCommunicationBridge,
-        "Host Communication",
+        "Host Communication Bridge",
         4096,
         NULL,
-        1,
+        2,
         &hostCommHandle,
         0
     );

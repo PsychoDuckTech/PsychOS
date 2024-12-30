@@ -30,6 +30,17 @@ class Multiplexer {
             delay(15); // Allow the multiplexer to stabilize, this is actually needed
         }
 
+        // Add this fast method to the Multiplexer class:
+        void fastSelect(uint8_t channel) {
+            GPIO.out_w1tc = ((1ULL << S0_PIN) | (1ULL << S1_PIN) | (1ULL << S2_PIN) | (1ULL << S3_PIN));
+            GPIO.out_w1ts = (
+                ((channel & 0x01) ? (1ULL << S0_PIN) : 0) |
+                ((channel & 0x02) ? (1ULL << S1_PIN) : 0) |
+                ((channel & 0x04) ? (1ULL << S2_PIN) : 0) |
+                ((channel & 0x08) ? (1ULL << S3_PIN) : 0)
+            );
+        }
+
         // Read the selected channel
         bool readChannel() {
             return digitalRead(SIG_PIN);

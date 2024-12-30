@@ -1,3 +1,9 @@
 {
-    "editor.cursorBlinking": "smooth"
+    "editor.cursorBlinking": "smooth",
+    "files.associations": {
+        "*.py": "python",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
+    }
 }
