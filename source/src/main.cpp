@@ -24,13 +24,14 @@ void setup() {
     
     initializeBLE();
     initializeMatrix();
+    Keyboard.begin();
     
     TaskHandle_t keyTaskHandle;
     xTaskCreatePinnedToCore(
         matrixScan,           // Task function: The function that will execute as the task.
-        "Keystroke Handler",  // Name of the task: A human-readable name for debugging.
+        "Matrix Scanner",     // Name of the task: A human-readable name for debugging.
         8192,                 // Stack size: Amount of stack memory allocated to the task (in bytes).
-        NULL,        // Pass queue handle to task
+        NULL,                 // Pass queue handle to task
         3,                    // Priority: The priority of the task (higher values = higher priority).
         &keyTaskHandle,       // Task handle: A pointer to store the task's handle (optional).
         0                     // Core ID: The CPU core (0 or 1) on which the task will run.

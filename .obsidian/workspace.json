@@ -164,6 +164,11 @@
   },
   "active": "4c1bc0253f950b34",
   "lastOpenFiles": [
+    "source/include/functions/customHID.cpp",
+    "source/include/functions/customHID.c",
+    "source/include/customHID.h",
+    "source/include/functions/customHID.h",
+    "source/include/functions/customHID",
     "source/include/Keyboard.h",
     "source/include/functions/Keyboard.h",
     "source/include/tasks/hostCommunicationBridge.h",
