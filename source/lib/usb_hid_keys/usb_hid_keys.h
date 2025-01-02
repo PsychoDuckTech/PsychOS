@@ -295,14 +295,4 @@
 #define KEY_MEDIA_REFRESH 0xfa
 #define KEY_MEDIA_CALC 0xfb
 
-// Modifier masks
-#define MOD_LCTRL  0x01
-#define MOD_LSHIFT 0x02
-#define MOD_LALT   0x04
-#define MOD_LGUI   0x08
-#define MOD_RCTRL  0x10
-#define MOD_RSHIFT 0x20
-#define MOD_RALT   0x40
-#define MOD_RGUI   0x80
-
 #endif // USB_HID_KEYS

@@ -6,6 +6,5 @@ void initializeBLE() {
         Serial.println(BLE_initialized_successfully); 
         ESP.restart();
     }
-    Serial.println(BLE.begin());
     Serial.println(BLE_initialization_failed);
 }

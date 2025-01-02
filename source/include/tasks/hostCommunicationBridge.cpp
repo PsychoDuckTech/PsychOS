@@ -1,6 +1,7 @@
 #include "hostCommunicationBridge.h"
 
 QueueHandle_t hostMessageQueue;
+USBHIDKeyboard Keyboard;
 USBHIDConsumerControl ConsumerControl;
 
 void hostCommunicationBridge(void* parameters) {
@@ -8,6 +9,7 @@ void hostCommunicationBridge(void* parameters) {
     HostMessage receivedMessage;
     
     USB.begin(); // Comment this line in case you need to use USB for debugging
+    Keyboard.begin();
     ConsumerControl.begin();
 
     Serial.println("Host Communication Bridge started.");
@@ -15,6 +17,13 @@ void hostCommunicationBridge(void* parameters) {
     for (;;) {
         if (xQueueReceive(hostMessageQueue, &receivedMessage, portMAX_DELAY) == pdTRUE) {
             switch(receivedMessage.type) {
+                case KEY_PRESS:
+                    Keyboard.press(receivedMessage.data);
+                    break;
+                case KEY_RELEASE:
+                    Keyboard.release(receivedMessage.data);
+                    break;
+
                 case VOLUME_CHANGE:
                     if (receivedMessage.data > 0) {
                         ConsumerControl.press(CONSUMER_CONTROL_VOLUME_INCREMENT);
