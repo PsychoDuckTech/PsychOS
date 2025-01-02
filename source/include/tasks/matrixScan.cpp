@@ -15,12 +15,11 @@ void matrixScan(void *parameters) {
     for (;;) {
         for (int row = 0; row < totalRows; row++) {
             GPIO.out_w1tc = (1ULL << rowPins[row]);
-            ets_delay_us(7); // Small delay for electrical stability
             
             // Scan the column combination with the current row
             for (int col = 0; col < totalCols; col++) {
                 colPinsMultiplexer.fastSelect(col);
-                ets_delay_us(10);
+                ets_delay_us(3); // small delay for electrical stability
 
                 if (colPinsMultiplexer.readChannel() == LOW) {  // Activate on low
                     switch (keyMap[row][col]) {

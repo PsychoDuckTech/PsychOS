@@ -4,8 +4,8 @@
 #include "tasks/matrixScan.cpp"
 #include "tasks/moduleConnectionHandler.cpp"
 #include "tasks/knobHandler.cpp"
-#include "functions/initializeMatrix.h"
-#include "functions/initializeBLE.h"
+#include "utils/initializeMatrix.h"
+#include "utils/initializeBLE.h"
 
 void setup() {
     Serial.begin(115200);

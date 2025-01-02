@@ -22,15 +22,6 @@ class Multiplexer {
         }
 
         // Select a channel (0-15)
-        void selectChannel(uint8_t channel) {
-            digitalWrite(S0_PIN, channel & 0x01);
-            digitalWrite(S1_PIN, (channel >> 1) & 0x01);
-            digitalWrite(S2_PIN, (channel >> 2) & 0x01);
-            digitalWrite(S3_PIN, (channel >> 3) & 0x01);
-            delay(15); // Allow the multiplexer to stabilize, this is actually needed
-        }
-
-        // Add this fast method to the Multiplexer class:
         void fastSelect(uint8_t channel) {
             GPIO.out_w1tc = ((1ULL << S0_PIN) | (1ULL << S1_PIN) | (1ULL << S2_PIN) | (1ULL << S3_PIN));
             GPIO.out_w1ts = (
@@ -40,6 +31,15 @@ class Multiplexer {
                 ((channel & 0x08) ? (1ULL << S3_PIN) : 0)
             );
         }
+
+        // Old method. This is 1000x slower than the fastSelect method
+        // void selectChannel(uint8_t channel) {
+        //     digitalWrite(S0_PIN, channel & 0x01);
+        //     digitalWrite(S1_PIN, (channel >> 1) & 0x01);
+        //     digitalWrite(S2_PIN, (channel >> 2) & 0x01);
+        //     digitalWrite(S3_PIN, (channel >> 3) & 0x01);
+        //     delay(15); // Allow the multiplexer to stabilize, this is actually needed
+        // }
 
         // Read the selected channel
         bool readChannel() {
