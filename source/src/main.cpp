@@ -11,13 +11,8 @@ void setup() {
     Serial.begin(115200);
     Serial.println(String(OS_version) + ", " + byCompany);
     Serial.println("95YCH0DUCK\n");
-    
-    // Create message queue first
-    QueueHandle_t messageQueue = xQueueCreate(64, sizeof(HostMessage));
-    if (!messageQueue) {
-        Serial.println("Failed to create message queue!");
-        return;
-    }
+
+    delay(10); // Delay to allow the serial monitor to initialize
 
     // Initialize watchdog
     esp_task_wdt_init(10, true);

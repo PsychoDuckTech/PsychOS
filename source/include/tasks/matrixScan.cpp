@@ -2,9 +2,25 @@
 #include "config.h"
 #include "drivers/multiplexer/CD74HC4067.h"
 #include "USB.h"
+#include "TUSB.h"
 
 #define keyMap keyMapL0
 #define keyName keyNameL0
+
+#define REPORT_ID_KEYBOARD 1 // Define REPORT_ID_KEYBOARD
+
+void sendKeystroke(uint8_t keycode) {
+    // Prepare the HID report
+    uint8_t keycode_array[6] = {0}; // Array to hold keycodes
+    keycode_array[0] = keycode; // Set the first keycode
+
+    // Send the HID report
+    tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, keycode_array);
+
+    // Release the key
+    keycode_array[0] = 0;
+    tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, keycode_array);
+}
 
 
 void matrixScan(void *parameters) {
@@ -29,6 +45,8 @@ void matrixScan(void *parameters) {
                             Serial.printf("Empty key\n");
                             break;
                         default:
+                            // Send the 'A' key (keycode 0x04)
+                            //sendKeystroke(0x04);
                             Serial.printf("Key: %s\n", keyName[row][col]);
                             Serial.printf("R: %d, C: %d\n\n", row, col);
                             break;
