@@ -37,37 +37,13 @@ void setup() {
     );
 
     TaskHandle_t knobTaskHandle;
-    xTaskCreatePinnedToCore(
-        knobHandler,
-        "Knob Handler",
-        2048,
-        NULL,
-        1,
-        &knobTaskHandle,
-        1
-    );
+    xTaskCreatePinnedToCore(knobHandler, "Knob Handler", 2048, NULL, 1, &knobTaskHandle, 1);
 
     TaskHandle_t bleTaskHandle;
-    xTaskCreatePinnedToCore(
-        moduleConnectionHandler,
-        "BLE Handler",
-        16384,
-        NULL,
-        1,
-        &bleTaskHandle,
-        1
-    );
+    xTaskCreatePinnedToCore(moduleConnectionHandler, "BLE Handler", 16384, NULL, 1, &bleTaskHandle, 1);
 
     TaskHandle_t hostCommHandle;
-    xTaskCreatePinnedToCore(
-        hostCommunicationBridge,
-        "Host Communication Bridge",
-        4096,
-        NULL,
-        2,
-        &hostCommHandle,
-        0
-    );
+    xTaskCreatePinnedToCore(hostCommunicationBridge, "Host Communication Bridge", 4096, NULL, 2, &hostCommHandle, 0);
 }
 
 void loop() {

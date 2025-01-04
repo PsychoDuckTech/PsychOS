@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include <USB.h>
 #include <USBHIDConsumerControl.h>
-#include <USBHIDKeyboard.h>
 
 enum MessageType {
     VOLUME_CHANGE,
@@ -17,7 +16,6 @@ struct HostMessage {
 };
 
 extern QueueHandle_t hostMessageQueue;
-extern USBHIDKeyboard Keyboard;
 extern USBHIDConsumerControl ConsumerControl;
 
 void hostCommunicationBridge(void* parameters);
