@@ -3,11 +3,23 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 3,
             "patches": [
                 {
                     "date": 1736105583256,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1736107004648,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,10 +6,10 @@\n void hostCommunicationBridge(void* parameters) {\r\n     hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));\r\n     HostMessage receivedMessage;\r\n     \r\n-    //USB.begin(); // Comment this line in case you need to use USB for debugging\r\n-    //ConsumerControl.begin();\r\n+    USB.begin(); // Comment this line in case you need to use USB for debugging\r\n+    ConsumerControl.begin();\r\n \r\n     Serial.println(\"Host Communication Bridge started.\");\r\n     \r\n     for (;;) {\r\n"
+                },
+                {
+                    "date": 1736107031035,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,9 +6,9 @@\n void hostCommunicationBridge(void* parameters) {\r\n     hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));\r\n     HostMessage receivedMessage;\r\n     \r\n-    USB.begin(); // Comment this line in case you need to use USB for debugging\r\n+    // USB.begin(); // Comment this line in case you need to use USB for debugging\r\n     ConsumerControl.begin();\r\n \r\n     Serial.println(\"Host Communication Bridge started.\");\r\n     \r\n"
+                },
+                {
+                    "date": 1736107165611,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,9 +6,8 @@\n void hostCommunicationBridge(void* parameters) {\r\n     hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));\r\n     HostMessage receivedMessage;\r\n     \r\n-    // USB.begin(); // Comment this line in case you need to use USB for debugging\r\n     ConsumerControl.begin();\r\n \r\n     Serial.println(\"Host Communication Bridge started.\");\r\n     \r\n"
                 }
             ],
             "date": 1736105583256,

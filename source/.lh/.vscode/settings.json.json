@@ -1,0 +1,18 @@
+{
+    "sourceFile": ".vscode/settings.json",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1736107230372,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1736107230372,
+            "name": "Commit-0",
+            "content": "{\r\n    \"editor.cursorBlinking\": \"smooth\",\r\n    \"files.associations\": {\r\n        \"*.py\": \"python\",\r\n        \"array\": \"cpp\",\r\n        \"string\": \"cpp\",\r\n        \"string_view\": \"cpp\",\r\n        \"deque\": \"cpp\",\r\n        \"unordered_map\": \"cpp\",\r\n        \"unordered_set\": \"cpp\",\r\n        \"vector\": \"cpp\",\r\n        \"initializer_list\": \"cpp\"\r\n    },\r\n    \"mcu-debug.rtos-views.showRTOS\": false\r\n}"
+        }
+    ]
+}

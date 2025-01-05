@@ -7,8 +7,7 @@ void hostCommunicationBridge(void* parameters) {
     hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));
     HostMessage receivedMessage;
     
-    //USB.begin(); // Comment this line in case you need to use USB for debugging
-    //ConsumerControl.begin();
+    ConsumerControl.begin();
 
     Serial.println("Host Communication Bridge started.");
     
