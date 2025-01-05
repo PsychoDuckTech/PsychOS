@@ -5,7 +5,9 @@
 
 enum MessageType {
     VOLUME_CHANGE,
-    VOLUME_MUTE
+    VOLUME_MUTE,
+    KEY_PRESS,
+    KEY_RELEASE
 };
 
 struct HostMessage {
