@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include "config.h"
 #include "drivers/multiplexer/CD74HC4067.h"
+#include "USB.h"
+#include "TUSB.h"
 
 #define keyMap keyMapL0
 #define keyName keyNameL0
@@ -36,6 +38,8 @@ void matrixScan(void *parameters) {
                             Serial.printf("Empty key\n");
                             break;
                         default:
+                            // Send the 'A' key (keycode 0x04)
+                            //sendKeystroke(0x04);
                             Serial.printf("Key: %s\n", keyName[row][col]);
                             Serial.printf("R: %d, C: %d\n\n", row, col);
                             break;
@@ -59,7 +63,7 @@ void matrixScan(void *parameters) {
         //    lastTime = currentTime;
         //}
 
-        vTaskDelay(1);
+        vTaskDelay(2);
         //delayMicroseconds(500); // 0.5ms delay
     }
 }

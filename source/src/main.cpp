@@ -4,8 +4,8 @@
 #include "tasks/matrixScan.cpp"
 #include "tasks/moduleConnectionHandler.cpp"
 #include "tasks/knobHandler.cpp"
-#include "functions/initializeMatrix.h"
-#include "functions/initializeBLE.h"
+#include "utils/initializeMatrix.h"
+#include "utils/initializeBLE.h"
 
 void setup() {
     Serial.begin(115200);
@@ -30,37 +30,13 @@ void setup() {
     );
 
     TaskHandle_t knobTaskHandle;
-    xTaskCreatePinnedToCore(
-        knobHandler,
-        "Knob Handler",
-        2048,
-        NULL,
-        1,
-        &knobTaskHandle,
-        1
-    );
+    xTaskCreatePinnedToCore(knobHandler, "Knob Handler", 2048, NULL, 1, &knobTaskHandle, 1);
 
     TaskHandle_t bleTaskHandle;
-    xTaskCreatePinnedToCore(
-        moduleConnectionHandler,
-        "BLE Handler",
-        16384,
-        NULL,
-        1,
-        &bleTaskHandle,
-        1
-    );
+    xTaskCreatePinnedToCore(moduleConnectionHandler, "BLE Handler", 16384, NULL, 1, &bleTaskHandle, 1);
 
     TaskHandle_t hostCommHandle;
-    xTaskCreatePinnedToCore(
-        hostCommunicationBridge,
-        "Host Communication Bridge",
-        4096,
-        NULL,
-        2,
-        &hostCommHandle,
-        0
-    );
+    xTaskCreatePinnedToCore(hostCommunicationBridge, "Host Communication Bridge", 4096, NULL, 2, &hostCommHandle, 0);
 }
 
 void loop() {
