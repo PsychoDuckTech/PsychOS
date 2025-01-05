@@ -43,7 +43,8 @@ class Multiplexer {
 
         // Read the selected channel
         bool readChannel() {
-            return digitalRead(SIG_PIN);
+            //return digitalRead(SIG_PIN); // Old method, same in speed as the new one
+            return (REG_READ(GPIO_IN_REG) >> SIG_PIN) & 0x1; // just looks cooler :)
         }
 };
 

@@ -13,6 +13,17 @@
 #ifndef USB_HID_KEYS
 #define USB_HID_KEYS
 
+#include <stdint.h>  // For uint8_t
+
+class CustomHID {
+public:
+    void begin();                     // Initialize the HID interface
+    void sendReport(uint8_t* report); // Send a HID report to the host
+};
+
+// Global HID object
+extern CustomHID customHID; 
+
 /**
  * Modifier masks - used for the first byte in the HID report.
  * NOTE: The second byte in the report is reserved, 0x00
