@@ -1,0 +1,18 @@
+{
+    "sourceFile": "include/translations/enUS.h",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1736106810421,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1736106810421,
+            "name": "Commit-0",
+            "content": "/*\r\n* English US Translation\r\n*/\r\n\r\nconst char *OS_version = \"PsychOS v0.1.3 \";\r\nconst char *byCompany = \"by PsychoDuck Tech \";\r\n \r\n// keyScanning\r\nconst char *task_keyScanning_started = \"Started keyScanning Task. \";\r\n// initialization\r\nconst char *matrix_initialization_failed = \"Matrix initialization failed! \";\r\nconst char *matrix_initialized_successfully = \"Matrix initialized successfully. \";\r\n\r\n// moduleConnectionHandler\r\nconst char *task_moduleConnectionHandler_started = \"Started Module Connection Handler Task. \";\r\nconst char *moduleConnected = \"Module connected! \";\r\nconst char *moduleDisconnected = \"Module disconnected! \";\r\nconst char *waitingForConnection = \"Waiting for connection... \";\r\nconst char *received = \"Received: \";\r\n// initialization\r\nconst char *BLE_initialization_failed = \"BLE initialization failed! \";\r\nconst char *BLE_initialized_successfully = \"BLE initialized successfully. \";\r\n\r\n// knobHandler\r\nconst char *task_knobHandler_started = \"Started Knob Handler Task. \";"
+        }
+    ]
+}

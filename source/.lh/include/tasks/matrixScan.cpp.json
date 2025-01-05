@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 1,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1736105914762,
@@ -12,6 +12,10 @@
                 {
                     "date": 1736106327169,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,9 +22,9 @@\n             \r\n             // Scan the column combination with the current row\r\n             for (int col = 0; col < totalCols; col++) {\r\n                 colPinsMultiplexer.fastSelect(col);\r\n-                ets_delay_us(3); // Small delay for electrical stability\r\n+                ets_delay_us(4); // Small delay for electrical stability\r\n \r\n                 bool isPressed = colPinsMultiplexer.readChannel() == LOW;\r\n                     \r\n                 // if (isPressed != keyStates[row][col]) {\r\n"
+                },
+                {
+                    "date": 1736106721947,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,9 +1,8 @@\n #include <Arduino.h>\r\n #include \"config.h\"\r\n #include \"drivers/multiplexer/CD74HC4067.h\"\r\n #include \"USB.h\"\r\n-#include \"TUSB.h\"\r\n \r\n #define keyMap keyMapL0\r\n #define keyName keyNameL0\r\n \r\n"
                 }
             ],
             "date": 1736105914762,

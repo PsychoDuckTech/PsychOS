@@ -2,7 +2,6 @@
 #include "config.h"
 #include "drivers/multiplexer/CD74HC4067.h"
 #include "USB.h"
-#include "TUSB.h"
 
 #define keyMap keyMapL0
 #define keyName keyNameL0
