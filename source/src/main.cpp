@@ -9,10 +9,9 @@
 
 void setup() {
     Serial.begin(115200);
+    delay(2000); // Delay for the serial monitor to start
     Serial.println(String(OS_version) + ", " + byCompany);
     Serial.println("95YCH0DUCK\n");
-
-    delay(10); // Delay to allow the serial monitor to initialize
 
     // Initialize watchdog
     esp_task_wdt_init(10, true);
@@ -25,7 +24,7 @@ void setup() {
         matrixScan,           // Task function: The function that will execute as the task.
         "Keystroke Handler",  // Name of the task: A human-readable name for debugging.
         8192,                 // Stack size: Amount of stack memory allocated to the task (in bytes).
-        NULL,        // Pass queue handle to task
+        NULL,                 // Task parameters: A pointer to pass to the task function (optional).
         3,                    // Priority: The priority of the task (higher values = higher priority).
         &keyTaskHandle,       // Task handle: A pointer to store the task's handle (optional).
         0                     // Core ID: The CPU core (0 or 1) on which the task will run.

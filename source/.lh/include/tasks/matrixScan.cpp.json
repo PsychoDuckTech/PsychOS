@@ -1,0 +1,22 @@
+{
+    "sourceFile": "include/tasks/matrixScan.cpp",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1736105914762,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1736106327169,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -22,9 +22,9 @@\n             \r\n             // Scan the column combination with the current row\r\n             for (int col = 0; col < totalCols; col++) {\r\n                 colPinsMultiplexer.fastSelect(col);\r\n-                ets_delay_us(3); // Small delay for electrical stability\r\n+                ets_delay_us(4); // Small delay for electrical stability\r\n \r\n                 bool isPressed = colPinsMultiplexer.readChannel() == LOW;\r\n                     \r\n                 // if (isPressed != keyStates[row][col]) {\r\n"
+                }
+            ],
+            "date": 1736105914762,
+            "name": "Commit-0",
+            "content": "#include <Arduino.h>\r\n#include \"config.h\"\r\n#include \"drivers/multiplexer/CD74HC4067.h\"\r\n#include \"USB.h\"\r\n#include \"TUSB.h\"\r\n\r\n#define keyMap keyMapL0\r\n#define keyName keyNameL0\r\n\r\n// State tracking for debounce\r\n//bool keyStates[totalRows][totalCols] = {false};\r\n\r\nvoid matrixScan(void *parameters) {\r\n    Serial.println(task_keyScanning_started); Serial.println(\"\\n\");\r\n\r\n    // unsigned long lastTime = millis();\r\n    // unsigned long pollCount[totalRows][totalCols] = {0};\r\n\r\n    for (;;) {\r\n        for (int row = 0; row < totalRows; row++) {\r\n            GPIO.out_w1tc = (1ULL << rowPins[row]); // Activate current row pin\r\n            \r\n            // Scan the column combination with the current row\r\n            for (int col = 0; col < totalCols; col++) {\r\n                colPinsMultiplexer.fastSelect(col);\r\n                ets_delay_us(3); // Small delay for electrical stability\r\n\r\n                bool isPressed = colPinsMultiplexer.readChannel() == LOW;\r\n                    \r\n                // if (isPressed != keyStates[row][col]) {\r\n                //     keyStates[row][col] = isPressed;\r\n                //     submitKeyPress(keyMap[row][col], isPressed);\r\n                // }\r\n\r\n                if (isPressed) {\r\n                    switch (keyMap[row][col]) {\r\n                        case 0:\r\n                            Serial.printf(\"Empty key\\n\");\r\n                            break;\r\n                        default:\r\n                            Serial.printf(\"Key: %s\\n\", keyName[row][col]);\r\n                            Serial.printf(\"R: %d, C: %d\\n\\n\", row, col);\r\n                            break;\r\n                    }\r\n                }\r\n                // pollCount[row][col]++;\r\n            }\r\n            GPIO.out_w1ts = (1ULL << rowPins[row]); // Reset the row pin\r\n        }\r\n\r\n        // Print individual key polling rates\r\n        //unsigned long currentTime = millis();\r\n        //if (currentTime - lastTime >= 1000) {\r\n        //    Serial.println(\"Individual key polling rates (polls/sec):\");\r\n        //    for (int row = 0; row < totalRows; row++) {\r\n        //        for (int col = 0; col < totalCols; col++) {\r\n        //            Serial.printf(\"Key [%d][%d]: %lu\\n\", row, col, pollCount[row][col]);\r\n        //            pollCount[row][col] = 0; // Reset the count for the next second\r\n        //        }\r\n        //    }\r\n        //    lastTime = currentTime;\r\n        //}\r\n\r\n        vTaskDelay(1);\r\n        //delayMicroseconds(500); // 0.5ms delay\r\n    }\r\n}"
+        }
+    ]
+}

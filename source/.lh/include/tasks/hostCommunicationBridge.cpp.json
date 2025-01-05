@@ -1,0 +1,18 @@
+{
+    "sourceFile": "include/tasks/hostCommunicationBridge.cpp",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1736105583256,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1736105583256,
+            "name": "Commit-0",
+            "content": "#include \"hostCommunicationBridge.h\"\r\n\r\nQueueHandle_t hostMessageQueue;\r\nUSBHIDConsumerControl ConsumerControl;\r\n\r\nvoid hostCommunicationBridge(void* parameters) {\r\n    hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));\r\n    HostMessage receivedMessage;\r\n    \r\n    //USB.begin(); // Comment this line in case you need to use USB for debugging\r\n    //ConsumerControl.begin();\r\n\r\n    Serial.println(\"Host Communication Bridge started.\");\r\n    \r\n    for (;;) {\r\n        if (xQueueReceive(hostMessageQueue, &receivedMessage, portMAX_DELAY) == pdTRUE) {\r\n            switch(receivedMessage.type) {\r\n                case VOLUME_CHANGE:\r\n                    if (receivedMessage.data > 0) {\r\n                        ConsumerControl.press(CONSUMER_CONTROL_VOLUME_INCREMENT);\r\n                        ConsumerControl.release();\r\n                    } else {\r\n                        ConsumerControl.press(CONSUMER_CONTROL_VOLUME_DECREMENT);\r\n                        ConsumerControl.release();\r\n                    }\r\n                    break;\r\n                case VOLUME_MUTE:\r\n                    ConsumerControl.press(CONSUMER_CONTROL_MUTE);\r\n                    ConsumerControl.release();\r\n                    break;\r\n            }\r\n        }\r\n    }\r\n}"
+        }
+    ]
+}

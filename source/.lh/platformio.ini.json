@@ -1,0 +1,18 @@
+{
+    "sourceFile": "platformio.ini",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1736105433250,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1736105433249,
+            "name": "Commit-0",
+            "content": "; PlatformIO Project Configuration File\r\n;\r\n;   Build options: build flags, source filter\r\n;   Upload options: custom upload port, speed and extra flags\r\n;   Library options: dependencies, extra library storages\r\n;   Advanced options: extra scripting\r\n;\r\n; Please visit documentation for other options and examples\r\n; https://docs.platformio.org/page/projectconf.html\r\n\r\n[env:esp32-s3-devkitc-1]\r\nplatform = espressif32\r\nboard = esp32-s3-devkitc-1\r\nframework = arduino\r\nmonitor_speed = 115200\r\nboard_build.arduino.usb_mode = cdc_hid\r\nbuild_flags = \r\n    -I${PROJECT_DIR}/src\r\n    -I${PROJECT_DIR}/src/tasks\r\n    -D ARDUINO_USB_CDC_ON_BOOT=1\r\nbuild_unflags = -D ARDUINO_USB_MODE\r\nlib_deps =\r\n    arduino-libraries/ArduinoBLE@^1.3.7\r\n    ;adafruit/Adafruit TinyUSB Library\r\n\r\n[platformio]\r\ndescription = PsychOS Keyboard OS Firmware"
+        }
+    ]
+}

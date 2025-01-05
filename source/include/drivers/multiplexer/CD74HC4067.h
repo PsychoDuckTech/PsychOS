@@ -32,18 +32,19 @@ class Multiplexer {
             );
         }
 
-        // Old method. This is 1000x slower than the fastSelect method
-        // void selectChannel(uint8_t channel) {
-        //     digitalWrite(S0_PIN, channel & 0x01);
-        //     digitalWrite(S1_PIN, (channel >> 1) & 0x01);
-        //     digitalWrite(S2_PIN, (channel >> 2) & 0x01);
-        //     digitalWrite(S3_PIN, (channel >> 3) & 0x01);
-        //     delay(15); // Allow the multiplexer to stabilize, this is actually needed
-        // }
+        // Old method for selecting a channel, literally 1000 times slower than fastSelect
+        /*void selectChannel(uint8_t channel) {
+            digitalWrite(S0_PIN, channel & 0x01);
+            digitalWrite(S1_PIN, (channel >> 1) & 0x01);
+            digitalWrite(S2_PIN, (channel >> 2) & 0x01);
+            digitalWrite(S3_PIN, (channel >> 3) & 0x01);
+            delay(15); // Allow the multiplexer to stabilize, this is actually needed
+        }*/
 
         // Read the selected channel
         bool readChannel() {
-            return digitalRead(SIG_PIN);
+            //return digitalRead(SIG_PIN); // Old method, same in speed as the new one
+            return (REG_READ(GPIO_IN_REG) >> SIG_PIN) & 0x1; // just looks cooler :)
         }
 };
 
