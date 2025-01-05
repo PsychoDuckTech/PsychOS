@@ -12,6 +12,8 @@ void setup() {
     Serial.println(String(OS_version) + ", " + byCompany);
     Serial.println("95YCH0DUCK\n");
 
+    delay(10); // Delay to allow the serial monitor to initialize
+
     // Initialize watchdog
     esp_task_wdt_init(10, true);
     
