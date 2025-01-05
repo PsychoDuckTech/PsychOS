@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "config.h"
 #include "drivers/multiplexer/CD74HC4067.h"
-//#include "functions/submitKeyPress.cpp"
 
 #define keyMap keyMapL0
 #define keyName keyNameL0
@@ -9,12 +8,8 @@
 // State tracking for debounce
 //bool keyStates[totalRows][totalCols] = {false};
 
-//void submitKeyPress(uint8_t key, bool pressed);
-
 void matrixScan(void *parameters) {
     Serial.println(task_keyScanning_started); Serial.println("\n");
-
-    //customHID.begin();
 
     // unsigned long lastTime = millis();
     // unsigned long pollCount[totalRows][totalCols] = {0};

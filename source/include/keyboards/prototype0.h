@@ -2,7 +2,7 @@
  * Prototype 0 Keyboard Matrix Configuration
  */
 #include <Arduino.h>
-#include "../lib/usb_hid_keys/usb_hid_keys.h" // by MightyPork on GitHub, customized by GabiBrawl
+#include "../include/usbHIDKeyCodes.h" // by MightyPork on GitHub, customized by GabiBrawl
 #include "drivers/multiplexer/CD74HC4067.h"
 
 extern int colPins[];

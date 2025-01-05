@@ -10,19 +10,8 @@
  * https://source.android.com/devices/input/keyboard-devices.html
  */
 
-#ifndef USB_HID_KEYS
-#define USB_HID_KEYS
-
-#include <stdint.h>  // For uint8_t
-
-class CustomHID {
-public:
-    void begin();                     // Initialize the HID interface
-    void sendReport(uint8_t* report); // Send a HID report to the host
-};
-
-// Global HID object
-extern CustomHID customHID; 
+#ifndef USBHIDKEYCODES_H
+#define USBHIDKEYCODES_H
 
 /**
  * Modifier masks - used for the first byte in the HID report.
@@ -306,4 +295,4 @@ extern CustomHID customHID;
 #define KEY_MEDIA_REFRESH 0xfa
 #define KEY_MEDIA_CALC 0xfb
 
-#endif // USB_HID_KEYS
+#endif // USBHIDKEYCODES_H
