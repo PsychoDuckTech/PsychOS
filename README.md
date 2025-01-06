@@ -16,15 +16,15 @@
 ## Features
 |                                Feature                                |     Status      |                    Notes                    |
 | :-------------------------------------------------------------------: | :-------------: | :-----------------------------------------: |
-|                           Keystroke Handler                           | In development  |       Developing multiplexer support.       |
+|                           Keystroke Handler                           |    Supported    |       Developing multiplexer support.       |
 |                       Host Communication Bridge                       | Partial Support | Keyboard communication to the host machine. |
 |                       Modifiable Configuration                        |   Unsupported   |          On-the-fly configuration           |
 | [Web Configurator](https://github.com/PsychoDuckTech/WebConfigurator) |   Unsupported   |  Web-based configurator for the firmware.   |
 |                            Rotary Encoder                             |    Supported    |            Rotary Knob support.             |
 |                             Macro Support                             |   Unsupported   |  Macro support for the main board matrix.   |
-|                                Modules                                |   Unsupported   |      Bluetooth Numpad Modules support.      |
-|                                Display                                |   Unsupported   |        Not a priority at the moment.        |
-|                                Layers                                 |   Unsupported   |     Multiple toggle-able keymap layers.     |
+|                                Modules                                |       WIP       |      Bluetooth Numpad Modules support.      |
+|                                Display                                |       WIP       |        Not a priority at the moment.        |
+|                                Layers                                 |       WIP       |     Multiple toggle-able keymap layers.     |
 |                                  RGB                                  |   Unsupported   |        Not a priority at the moment.        |
 
 
