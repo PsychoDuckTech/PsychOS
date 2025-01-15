@@ -23,7 +23,7 @@
 |                            Rotary Encoder                             |    Supported    |            Rotary Knob support.             |
 |                             Macro Support                             |   Unsupported   |  Macro support for the main board matrix.   |
 |                                Modules                                |       WIP       |      Bluetooth Numpad Modules support.      |
-|                                Display                                |       WIP       |        Not a priority at the moment.        |
+|                                Display                                |    Supported    |        Not responsive at the moment.        |
 |                                Layers                                 |       WIP       |     Multiple toggle-able keymap layers.     |
 |                                  RGB                                  |   Unsupported   |        Not a priority at the moment.        |
 
