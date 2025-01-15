@@ -2,7 +2,7 @@
 * English US Translation
 */
 
-const char *OS_version = "PsychOS v0.1.3 ";
+const char *OS_version = "PsychOS v0.1.1 ";
 const char *byCompany = "by PsychoDuck Tech ";
  
 // keyScanning

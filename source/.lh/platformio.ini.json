@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 31,
+            "activePatchIndex": 37,
             "patches": [
                 {
                     "date": 1736105433250,
@@ -132,6 +132,30 @@
                 {
                     "date": 1736324928159,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,8 +27,7 @@\n build_unflags = -D ARDUINO_USB_MODE\n lib_deps =\n     arduino-libraries/ArduinoBLE@^1.3.7\n     adafruit/Adafruit TinyUSB Library\n-    HID-Project\n \n [platformio]\n description = PsychOS Keyboard OS Firmware\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1736451184520,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,7 +27,8 @@\n build_unflags = -D ARDUINO_USB_MODE\n lib_deps =\n     arduino-libraries/ArduinoBLE@^1.3.7\n     adafruit/Adafruit TinyUSB Library\n+    Adafruit_GFX\n \n [platformio]\n description = PsychOS Keyboard OS Firmware\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1736451201659,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,8 +27,7 @@\n build_unflags = -D ARDUINO_USB_MODE\n lib_deps =\n     arduino-libraries/ArduinoBLE@^1.3.7\n     adafruit/Adafruit TinyUSB Library\n-    Adafruit_GFX\n \n [platformio]\n description = PsychOS Keyboard OS Firmware\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1736451252680,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -27,7 +27,8 @@\n build_unflags = -D ARDUINO_USB_MODE\n lib_deps =\n     arduino-libraries/ArduinoBLE@^1.3.7\n     adafruit/Adafruit TinyUSB Library\n+    adafruit/Adafruit GFX Library@^1.11.11\n \n [platformio]\n description = PsychOS Keyboard OS Firmware\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1736538153279,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,9 +26,9 @@\n     ;-Iinclude/\n build_unflags = -D ARDUINO_USB_MODE\n lib_deps =\n     arduino-libraries/ArduinoBLE@^1.3.7\n-    adafruit/Adafruit TinyUSB Library\n-    adafruit/Adafruit GFX Library@^1.11.11\n+    ;adafruit/Adafruit TinyUSB Library\n+    ;adafruit/Adafruit GFX Library@^1.11.11\n \n [platformio]\n description = PsychOS Keyboard OS Firmware\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1736970063011,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -17,18 +17,12 @@\n build_flags = \n     -I${PROJECT_DIR}/src\n     -I${PROJECT_DIR}/src/tasks\n     -D ARDUINO_USB_CDC_ON_BOOT=1\n-    -D ARDUINO_TINYUSB_ENABLED=0\n-    -D CONFIG_TINYUSB=0\n-    -D USE_TINYUSB=0\n-    ;-DUSE_TINYUSB\n-    ;-DCFG_TUSB_CONFIG_FILE=\\\"custom_tusb_config.h\\\"\n-    ;-Iinclude/\n build_unflags = -D ARDUINO_USB_MODE\n lib_deps =\n     arduino-libraries/ArduinoBLE@^1.3.7\n+    adafruit/Adafruit ILI9341@^1.6.1\n     ;adafruit/Adafruit TinyUSB Library\n-    ;adafruit/Adafruit GFX Library@^1.11.11\n \n [platformio]\n description = PsychOS Keyboard OS Firmware\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1736970072628,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -21,8 +21,8 @@\n build_unflags = -D ARDUINO_USB_MODE\n lib_deps =\n     arduino-libraries/ArduinoBLE@^1.3.7\n     adafruit/Adafruit ILI9341@^1.6.1\n-    ;adafruit/Adafruit TinyUSB Library\n+    adafruit/Adafruit TinyUSB Library\n \n [platformio]\n description = PsychOS Keyboard OS Firmware\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1736105433249,

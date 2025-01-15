@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <USB.h>
 #include <USBHIDConsumerControl.h>
 
 enum MessageType {
