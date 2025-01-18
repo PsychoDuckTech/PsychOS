@@ -5,6 +5,7 @@
 #include "tasks/moduleConnectionHandler.cpp"
 #include "tasks/knobHandler.cpp"
 #include "tasks/displayHandler.cpp"
+#include "tasks/clock.cpp"
 #include "utils/initializeMatrix.h"
 #include "utils/initializeBLE.h"
 
@@ -49,11 +50,14 @@ void setup()
     TaskHandle_t knobTaskHandle;
     xTaskCreatePinnedToCore(knobHandler, "Knob Handler", 2048, NULL, 1, &knobTaskHandle, 1);
 
-    TaskHandle_t bleTaskHandle;
-    xTaskCreatePinnedToCore(moduleConnectionHandler, "BLE Handler", 16384, NULL, 1, &bleTaskHandle, 1);
-
     TaskHandle_t hostCommHandle;
     xTaskCreatePinnedToCore(hostCommunicationBridge, "Host Communication Bridge", 4096, NULL, 2, &hostCommHandle, 0);
+
+    TaskHandle_t clock;
+    xTaskCreatePinnedToCore(clockTask, "Clock", 1024, NULL, 1, &clock, 1);
+
+    TaskHandle_t bleTaskHandle;
+    xTaskCreatePinnedToCore(moduleConnectionHandler, "BLE Handler", 16384, NULL, 1, &bleTaskHandle, 1);
 
     TaskHandle_t displayHandle;
     xTaskCreatePinnedToCore(displayHandler, "Display Handler", 4096, NULL, 1, &displayHandle, 1);

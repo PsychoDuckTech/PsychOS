@@ -46,8 +46,8 @@ void matrixScan(void *parameters)
                         Serial.printf("Empty key\n");
                         break;
                     default:
-                        Serial.printf("Key: %s\n", keyName[row][col]);
-                        Serial.printf("R: %d, C: %d\n\n", row, col);
+                        Serial.printf("K: %s\n", keyName[row][col]);
+                        // Serial.printf("R: %d, C: %d\n\n", row, col);
                         break;
                     }
                 }

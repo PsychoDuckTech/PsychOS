@@ -1,0 +1,30 @@
+{
+    "sourceFile": "include/tasks/clock.h",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1737201737600,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1737202854305,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,7 +6,5 @@\n extern int hour;\n extern int minute;\n extern int second;\n \n-void clockTask(void *parameters);\n-\n #endif // CLOCK_TASK_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737203056950,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,5 +6,7 @@\n extern int hour;\n extern int minute;\n extern int second;\n \n+void clockTask(void *parameters);\n+\n #endif // CLOCK_TASK_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737204514400,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -5,8 +5,9 @@\n \n extern int hour;\n extern int minute;\n extern int second;\n+extern int updated;\n \n void clockTask(void *parameters);\n \n #endif // CLOCK_TASK_H\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1737201737600,
+            "name": "Commit-0",
+            "content": "#ifndef CLOCK_TASK_H\n#define CLOCK_TASK_H\n\n#include <Arduino.h>\n\nextern int hour;\nextern int minute;\nextern int second;\n\nvoid clockTask(void *parameters);\n\n#endif // CLOCK_TASK_H"
+        }
+    ]
+}

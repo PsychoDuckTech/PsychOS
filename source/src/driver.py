@@ -1,6 +1,7 @@
 import serial
 import os
 import time
+import subprocess
 
 # Find available USB ports
 # List available ports
@@ -17,9 +18,20 @@ def send_data(caps_lock_status, hour, minute):
     data = f"{caps_lock_status},{hour},{minute}\n"
     ser.write(data.encode())
     print(f"Sent: {data.strip()}")
+    
+def get_caps_lock_status():
+    try:
+        output = subprocess.check_output(['xset', 'q'])
+        output = output.decode('utf-8')
+        for line in output.splitlines():
+            if 'Caps Lock:' in line:
+                return 'on' in line.split()[3]
+    except Exception as e:
+        print(f"Error: {e}")
+        return 0
 
 # Initial values
-caps_lock_status = False
+caps_lock_status = "false"
 hour = 12
 minute = 34
 
@@ -29,6 +41,7 @@ try:
     
     while True:
         start_time = time.time()
+        caps_lock_status = get_caps_lock_status()
         
         # Update caps_lock_status every toggle_interval seconds
         if time.time() - last_toggle_time >= toggle_interval:
