@@ -1,10 +1,5 @@
 #include "clock.h"
 
-int hours = 0;
-int minutes = 0;
-int seconds = 0;
-int updatedMinutes = true;
-
 void clockTask(void *parameters)
 {
     bool refreshFlags[3] = {false, false, false}; // [capsLockStatus, hours, minutes]
@@ -30,4 +25,21 @@ void clockTask(void *parameters)
             }
         }
     }
+}
+
+void updateClock(int newHours, int newMinutes, int newSeconds)
+{
+    if (newHours >= 0 && newHours < 24)
+    {
+        hours = newHours;
+    }
+    if (newMinutes >= 0 && newMinutes < 60)
+    {
+        minutes = newMinutes;
+    }
+    if (newSeconds >= 0 && newSeconds < 60)
+    {
+        seconds = newSeconds;
+    }
+    updatedMinutes = true;
 }

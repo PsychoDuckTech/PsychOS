@@ -84,8 +84,6 @@ void displayTime(void *parameters)
 
 void displayTopBar(void *parameters)
 {
-    clearTopBar(parameters);
-
     tft.drawBitmap(11, 9, image_menu_settings_sliders_bits, 14, 16, 0xDED9);
 
     tft.drawBitmap(157, 9, image_cloud_sync_bits, 17, 16, 0xF22B);
@@ -103,10 +101,10 @@ void displayTopBar(void *parameters)
     tft.print(capsLockStatus ? "ON" : "OFF");
 }
 
-void clearTopBar(void *parameters)
+/*void clearTopBar()
 {
     tft.fillRect(0, 0, ILI9341_TFTWIDTH, 40, 0x10A2);
-}
+}*/
 
 void clearTime(void *parameters)
 {

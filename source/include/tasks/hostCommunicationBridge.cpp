@@ -1,4 +1,5 @@
 #include "hostCommunicationBridge.h"
+#include "commandProcessor.cpp"
 
 QueueHandle_t hostMessageQueue;
 USBHIDConsumerControl ConsumerControl;

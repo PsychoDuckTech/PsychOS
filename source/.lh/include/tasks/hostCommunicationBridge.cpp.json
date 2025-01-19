@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 4,
+            "activePatchIndex": 5,
             "patches": [
                 {
                     "date": 1736105583256,
@@ -24,6 +24,10 @@
                 {
                     "date": 1737201967282,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,19 +1,48 @@\n #include \"hostCommunicationBridge.h\"\n+#include <freertos/FreeRTOS.h>\n+#include <freertos/task.h>\n \n QueueHandle_t hostMessageQueue;\n+QueueHandle_t displayQueue;\n+QueueHandle_t clockQueue;\n USBHIDConsumerControl ConsumerControl;\n \n void hostCommunicationBridge(void *parameters)\n {\n     hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));\n+    displayQueue = xQueueCreate(10, sizeof(DisplayMessage));\n+    clockQueue = xQueueCreate(10, sizeof(ClockMessage));\n     HostMessage receivedMessage;\n+    DisplayMessage displayMessage;\n+    ClockMessage clockMessage;\n     ConsumerControl.begin();\n \n     Serial.println(\"Host Communication Bridge started.\");\n \n     for (;;)\n     {\n+        if (Serial.available())\n+        {\n+            String line = Serial.readStringUntil('\\n');\n+            Serial.println(line);\n+            int comma1 = line.indexOf(',');\n+            int comma2 = line.lastIndexOf(',');\n+            bool newCapsLockStatus = line.substring(0, comma1).toInt() == 1;\n+            int newHour = line.substring(comma1 + 1, comma2).toInt();\n+            int newMinute = line.substring(comma2 + 1).toInt();\n+\n+            displayMessage.capsLockStatus = newCapsLockStatus;\n+            displayMessage.hour = newHour;\n+            displayMessage.minute = newMinute;\n+            xQueueSend(displayQueue, &displayMessage, portMAX_DELAY);\n+\n+            clockMessage.capsLockStatus = newCapsLockStatus;\n+            clockMessage.hour = newHour;\n+            clockMessage.minute = newMinute;\n+            xQueueSend(clockQueue, &clockMessage, portMAX_DELAY);\n+        }\n+\n         if (xQueueReceive(hostMessageQueue, &receivedMessage, portMAX_DELAY) == pdTRUE)\n         {\n             switch (receivedMessage.type)\n             {\n"
+                },
+                {
+                    "date": 1737286024810,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -26,14 +26,17 @@\n                 else\n                 {\n                     ConsumerControl.press(CONSUMER_CONTROL_VOLUME_DECREMENT);\n                     ConsumerControl.release();\n+                    ConsumerControl.sendReport();\n                 }\n                 break;\n             case VOLUME_MUTE:\n                 ConsumerControl.press(CONSUMER_CONTROL_MUTE);\n                 ConsumerControl.release();\n                 break;\n             }\n         }\n+\n+\n     }\n }\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1736105583256,
