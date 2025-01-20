@@ -7,6 +7,7 @@
 #include "tasks/displayHandler.cpp"
 #include "tasks/clock.h"
 #include "tasks/clock.cpp"
+#include "tasks/serialHandler.cpp"
 #include "utils/initializeMatrix.h"
 #include "utils/initializeBLE.h"
 
@@ -62,6 +63,9 @@ void setup()
 
     TaskHandle_t displayHandle;
     xTaskCreatePinnedToCore(displayHandler, "Display Handler", 4096, NULL, 1, &displayHandle, 1);
+
+    TaskHandle_t serialHandle;
+    xTaskCreatePinnedToCore(serialHandler, "Serial Handler", 4096, NULL, 1, &serialHandle, 1);
 
     processCommand("time.hours 12");
 }

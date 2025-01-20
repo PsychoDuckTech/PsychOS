@@ -1,64 +1,143 @@
 #include <Arduino.h>
 #include "clock.h"
+#include "globals.h"
+
+bool capsLockStatus = false;
+bool connectionStatus = false;
+bool moduleConnectionStatus = false;
+
+// Define a structure for commands
+struct Command
+{
+    const char *name;              // Command name
+    void (*updateFunc)(int value); // Function to update the variable
+    int (*getFunc)();              // Function to get the variable value
+    int minValue;                  // Minimum allowed value
+    int maxValue;                  // Maximum allowed value
+};
+
+// Define update and get functions for each variable
+void updateHours(int value)
+{
+    updateClock(value, -1, -1);
+    Serial.println("Hours updated to: " + String(hours));
+}
+
+int getHours()
+{
+    return hours;
+}
+
+void updateMinutes(int value)
+{
+    updateClock(-1, value, -1);
+    Serial.println("Minutes updated to: " + String(minutes));
+}
+
+int getMinutes()
+{
+    return minutes;
+}
+
+void updateSeconds(int value)
+{
+    updateClock(-1, -1, value);
+    Serial.println("Seconds updated to: " + String(seconds));
+}
+
+int getSeconds()
+{
+    return seconds;
+}
+
+void updateCaps(int value)
+{
+    capsLockStatus = (value != 0); // Set capsLockStatus to true if value is non-zero
+    Serial.println("Caps lock status updated to: " + String(capsLockStatus));
+}
+
+int getCaps()
+{
+    return capsLockStatus;
+}
+
+void updateConnectionStatus(int value)
+{
+    connectionStatus = (value != 0); // Set capsLockStatus to true if value is non-zero
+    Serial.println("Connection status updated to: " + String(connectionStatus));
+}
+
+int getConnectionStatus()
+{
+    return connectionStatus;
+}
+
+// Create a command table
+Command commandTable[] = {
+    {"time.hours", updateHours, getHours, 0, 23},
+    {"time.minutes", updateMinutes, getMinutes, 0, 59},
+    {"time.seconds", updateSeconds, getSeconds, 0, 59},
+    {"caps", updateCaps, getCaps, 0, 1}, // Use 0 and 1 for boolean values
+    {"connectionStatus", updateConnectionStatus, getConnectionStatus, 0, 1},
+};
+
+const int commandCount = sizeof(commandTable) / sizeof(commandTable[0]); // Count of commands
 
 void processCommand(String data)
 {
-    int dotIndex = data.indexOf('.');   // Locate the dot in the command
-    int spaceIndex = data.indexOf(' '); // Locate the space before the value
+    data.trim(); // Remove leading/trailing spaces
 
-    if (dotIndex == -1 || spaceIndex == -1 || spaceIndex < dotIndex)
+    int spaceIndex = data.indexOf(' '); // Locate the space before the value
+    int queryIndex = data.indexOf('?'); // Locate the question mark
+
+    // Check if the command is valid
+    if (spaceIndex == -1 && queryIndex == -1)
     {
-        Serial.println("Invalid command format. Use: time.hours <value>");
+        Serial.println("Invalid command format. Use: <command> <value> or <command>?");
         return;
     }
 
-    // Extract the command part (e.g., "time.hours")
-    String command = data.substring(0, spaceIndex);
-    Serial.println("Command part: " + command); // Debug print
+    String command;
+    int value = 0;
+    bool isQuery = (queryIndex != -1);
 
-    // Extract the value part
-    int value = data.substring(spaceIndex + 1).toInt();
-    Serial.println("Value part: " + String(value)); // Debug print
-
-    // Determine which variable to update
-    if (command == "time.hours")
+    // Extract command and value/query
+    if (isQuery)
     {
-        if (value >= 0 && value < 24)
-        {
-            updateClock(value, -1, -1);
-            Serial.println("Hours updated to: " + String(hours));
-        }
-        else
-        {
-            Serial.println("Invalid hours value. Must be between 0 and 23.");
-        }
-    }
-    else if (command == "time.minutes")
-    {
-        if (value >= 0 && value < 60)
-        {
-            updateClock(-1, value, -1);
-            Serial.println("Minutes updated to: " + String(minutes));
-        }
-        else
-        {
-            Serial.println("Invalid minutes value. Must be between 0 and 59.");
-        }
-    }
-    else if (command == "time.seconds")
-    {
-        if (value >= 0 && value < 60)
-        {
-            updateClock(-1, -1, value);
-            Serial.println("Seconds updated to: " + String(seconds));
-        }
-        else
-        {
-            Serial.println("Invalid seconds value. Must be between 0 and 59.");
-        }
+        command = data.substring(0, queryIndex);
     }
     else
     {
-        Serial.println("Unknown command: " + command);
+        command = data.substring(0, spaceIndex);
+        value = data.substring(spaceIndex + 1).toInt();
     }
+
+    // Iterate through the command table to find a match
+    for (int i = 0; i < commandCount; i++)
+    {
+        if (command == commandTable[i].name)
+        {
+            if (isQuery)
+            {
+                // Query command
+                Serial.println(command + " is: " + String(commandTable[i].getFunc()));
+            }
+            else
+            {
+                // Validate and update the value
+                if (value >= commandTable[i].minValue && value <= commandTable[i].maxValue)
+                {
+                    commandTable[i].updateFunc(value); // Call the associated function
+                }
+                else
+                {
+                    Serial.println("Invalid value for " + command + ". Must be between " +
+                                   commandTable[i].minValue + " and " + commandTable[i].maxValue + ".");
+                }
+            }
+            return; // Command handled
+        }
+    }
+
+    Serial.println("Unknown command: " + command);
 }

@@ -1,0 +1,30 @@
+{
+    "sourceFile": "include/globals.h",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1737399653554,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1737405221070,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,6 +3,7 @@\n #define GLOBALS_H\n \n extern bool connectionStatus;\n extern bool capsLockStatus;\n+extern bool moduleConnected;\n \n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737405325744,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,7 +3,7 @@\n #define GLOBALS_H\n \n extern bool connectionStatus;\n extern bool capsLockStatus;\n-extern bool moduleConnected;\n+extern bool moduleConnectionStatus;\n \n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737408514217,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,6 +4,7 @@\n \n extern bool connectionStatus;\n extern bool capsLockStatus;\n extern bool moduleConnectionStatus;\n+extern bool mediaPlayingName;\n \n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                }
+            ],
+            "date": 1737399653553,
+            "name": "Commit-0",
+            "content": "// globals.h\n#ifndef GLOBALS_H\n#define GLOBALS_H\n\nextern bool connectionStatus;\nextern bool capsLockStatus;\n\n#endif // GLOBALS_H"
+        }
+    ]
+}

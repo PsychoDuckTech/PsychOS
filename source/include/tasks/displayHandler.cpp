@@ -1,5 +1,6 @@
 #include <Adafruit_ILI9341.h> // no touch functionality due to having less pins than expected on the ESP32-S3 microcontroller ): sadge
 #include "UI/main.h"          // main screen UI elements
+#include "globals.h"          // global variables
 
 #define LCD_CS 13
 #define LCD_RST 17
@@ -20,8 +21,6 @@ void displayTopBar(void *parameters);
 void clearTopBar(void *parameters);
 void displayDemo(void *parameters);
 
-bool capsLockStatus = false;
-
 void displayHandler(void *parameters)
 {
     SPI.begin(SPI_SCK, -1, SPI_MOSI); // -1 means that the MISO pin is not used, due to espressif robbing me my pins iykyk
@@ -38,20 +37,8 @@ void displayHandler(void *parameters)
 
     for (;;)
     {
-        if (Serial.available())
-        {
-            String line = Serial.readStringUntil('\n');
-            Serial.println(line);
-
-            // Parse the received data
-            int comma1 = line.indexOf(',');
-            int comma2 = line.lastIndexOf(',');
-            bool newCapsLockStatus = line.substring(0, comma1).toInt() == 1;
-            int newHour = line.substring(comma1 + 1, comma2).toInt();
-            int newMinute = line.substring(comma2 + 1).toInt();
-        }
-
         displayTopBar(parameters);
+
         if (updatedMinutes)
         {
             displayTime(parameters);
@@ -86,9 +73,9 @@ void displayTopBar(void *parameters)
 {
     tft.drawBitmap(11, 9, image_menu_settings_sliders_bits, 14, 16, 0xDED9);
 
-    tft.drawBitmap(157, 9, image_cloud_sync_bits, 17, 16, 0xF22B);
+    tft.drawBitmap(157, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? 0x9C1F : 0xF22B);
 
-    tft.drawBitmap(182, 9, image_bluetooth_connected_bits, 14, 16, 0x9C1F);
+    tft.drawBitmap(182, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? 0x9C1F : 0xF22B);
 
     tft.setTextSize(1);
     tft.setTextColor(0xDED9);
@@ -97,6 +84,7 @@ void displayTopBar(void *parameters)
     tft.print("Caps");
 
     tft.setTextColor(capsLockStatus ? 0xFD40 : 0x7BEF); // ON or OFF
+    tft.fillRect(206, 18, 17, 8, 0x10A2);
     tft.setCursor(206, 18);
     tft.print(capsLockStatus ? "ON" : "OFF");
 }
@@ -125,7 +113,7 @@ void displayDemo(void *parameters)
     tft.setCursor(18, 274);
     tft.print("Bury you - Ari.");
 
-    // music_play
+    // music_play button
     tft.drawBitmap(198, 263, image_music_play_bits, 15, 16, 0xDED9);
 
     // Layer 11

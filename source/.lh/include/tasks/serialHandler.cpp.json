@@ -1,0 +1,26 @@
+{
+    "sourceFile": "include/tasks/serialHandler.cpp",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 2,
+            "patches": [
+                {
+                    "date": 1737387300384,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1737387307788,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,7 @@\n #include <Arduino.h>\n \n-void serialHandler()\n+void serialHandler(void *parameters)\n {\n \n     if (Serial.available() > 0)\n     {\n"
+                },
+                {
+                    "date": 1737387316573,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,5 +1,6 @@\n #include <Arduino.h>\n+int str;\n \n void serialHandler(void *parameters)\n {\n \n"
+                }
+            ],
+            "date": 1737387300384,
+            "name": "Commit-0",
+            "content": "#include <Arduino.h>\n\nvoid serialHandler () {\n    \n        if (Serial.available() > 0)\n        {\n            str = Serial.read();\n            Serial.println(\"hello there\");\n        }\n}"
+        }
+    ]
+}
