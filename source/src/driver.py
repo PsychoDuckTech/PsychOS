@@ -69,6 +69,24 @@ class ESP32Driver:
         if self.last_time_update is None or now.hour != self.last_time_update.hour:
             print("System time has changed, updating ESP32 time...")
             self.update_time_from_system()
+    
+    def get_playing_media():
+        try:
+            session_bus = dbus.SessionBus()
+            players = [service for service in session_bus.list_names() if service.startswith('org.mpris.MediaPlayer2.')]
+            for player in players:
+                proxy = session_bus.get_object(player, '/org/mpris/MediaPlayer2')
+                interface = dbus.Interface(proxy, 'org.freedesktop.DBus.Properties')
+                status = interface.Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus')
+                if status == "Playing":
+                    metadata = interface.Get('org.mpris.MediaPlayer2.Player', 'Metadata')
+                    title = metadata.get('xesam:title', 'Unknown Title')
+                    artist = metadata.get('xesam:artist', ['Unknown Artist'])[0]
+                    return f"{artist} - {title}"
+            return "No Media"
+        except Exception as e:
+            return f"Error: {e}"
+
 
     @staticmethod
     def get_caps_lock_status():
