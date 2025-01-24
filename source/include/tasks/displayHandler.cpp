@@ -12,6 +12,13 @@
 #define SPI_MOSI 12
 #define SPI_SCK 18
 
+int firstDraw = 1;
+
+RGBState rgbState = {
+    .currentSelection = 0,
+    .values = {255, 255, 255, 100}, // Default values
+    .needsRefresh = true};
+
 // Declare global variables
 Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
 ScreenType currentScreen = MainScreen;
@@ -43,6 +50,11 @@ void switchScreen(ScreenType newScreen)
         updateMainScreen = false; // Set flag to false when switching away from main screen
         displaySettingsScreen(nullptr);
         break;
+    case RGBSubmenu:
+        updateMainScreen = false;
+        rgbState.needsRefresh = true; // Force full redraw
+        break;
+
         // Add cases for submenus here
     }
 
@@ -81,6 +93,10 @@ void displayHandler(void *parameters)
 
         case SettingsScreen:
             // Screen is updated through knob interactions
+            break;
+
+        case RGBSubmenu:
+            displayRGBSubmenu(parameters);
             break;
 
             // Add cases for submenus here

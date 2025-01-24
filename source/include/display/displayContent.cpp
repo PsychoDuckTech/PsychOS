@@ -10,6 +10,8 @@ extern bool capsLockStatus;
 extern int hours;
 extern int minutes;
 
+int rgbValues[4] = {255, 255, 255, 100};
+
 void displayMainScreen(void *parameters)
 {
     displayTopBar(parameters);
@@ -109,45 +111,37 @@ void displaySettingsScreen(void *parameters)
 
 void displayRGBSubmenu(void *parameters)
 {
-    // Simulate RGB LED settings
+    static bool firstDraw = true;
     const char *rgbOptions[] = {"Red", "Green", "Blue", "Brightness"};
-    int rgbValues[] = {255, 255, 255, 100}; // Default values for RGB and brightness
 
-    // Draw RGB options
-    tft.fillScreen(0x10A2);
-    tft.setTextSize(2);
-    tft.setFont(&FreeSansBold9pt7b);
-    for (int i = 0; i < 4; i++)
+    if (firstDraw)
     {
-        tft.setCursor(30, 60 + (i * 30));
-        if (i == settingsSelectedOption)
+        tft.fillScreen(0x10A2);
+        tft.setTextSize(1);
+        tft.setFont(&FreeSansBold9pt7b);
+
+        // Draw permanent labels
+        for (int i = 0; i < 4; i++)
         {
-            tft.setTextColor(0xFD40); // Highlight selected
+            tft.setCursor(30, 60 + (i * 30));
+            tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
+            tft.print(rgbOptions[i]);
         }
-        else
-        {
-            tft.setTextColor(0xDED9); // Normal color
-        }
-        tft.print(rgbOptions[i]);
-        tft.setCursor(150, 60 + (i * 30));
-        tft.print(rgbValues[i]);
+        firstDraw = false;
     }
 
-    // Footer text
-    tft.setTextSize(1);
-    tft.setFont();
-    tft.setTextColor(0x7BEF);
-    tft.setCursor(50, 220);
-    tft.print("Adjust RGB settings");
-    tft.setCursor(70, 235);
-    tft.print("build 0.1.4a");
-
-    // Print to serial for simulation
-    Serial.println("RGB Submenu:");
+    // Update only dynamic elements
     for (int i = 0; i < 4; i++)
     {
-        Serial.print(rgbOptions[i]);
-        Serial.print(": ");
-        Serial.println(rgbValues[i]);
+        // Selection highlight
+        tft.fillRect(25, 45 + (i * 30), 170, 25,
+                     (i == rgbState.currentSelection) ? 0x2945 : 0x10A2);
+
+        // Value display
+        tft.setCursor(150, 60 + (i * 30));
+        tft.setTextColor((i == rgbState.currentSelection) ? 0xFD40 : 0xDED9,
+                         (i == rgbState.currentSelection) ? 0x2945 : 0x10A2);
+        tft.print(rgbState.values[i]);
+        tft.print(i == 3 ? "%" : "   "); // Add spaces to clear previous values
     }
 }

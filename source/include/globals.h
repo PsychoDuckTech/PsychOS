@@ -14,4 +14,16 @@ extern int updatedMinutes;
 extern int settingsSelectedOption;
 extern bool inSettingsSubmenu;
 
+extern int rgbValues[4];
+
+struct RGBState
+{
+    uint8_t currentSelection; // 0-3: Red, Green, Blue, Brightness
+    uint8_t values[4];        // [Red, Green, Blue, Brightness%]
+    bool needsRefresh;        // Flag for partial updates
+};
+extern int firstDraw;
+
+extern RGBState rgbState;
+
 #endif // GLOBALS_H
