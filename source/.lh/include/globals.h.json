@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 6,
+            "activePatchIndex": 9,
             "patches": [
                 {
                     "date": 1737399653554,
@@ -32,6 +32,18 @@
                 {
                     "date": 1737736188299,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,9 +9,5 @@\n \n extern int settingsSelectedOption;\n extern bool inSettingsSubmenu;\n \n-#define MAX_MENU_DEPTH 5\n-ScreenType menuStack[MAX_MENU_DEPTH];\n-int menuStackIndex = 0;\n-\n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737746562379,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,13 +1,24 @@\n-// globals.h\n #ifndef GLOBALS_H\n #define GLOBALS_H\n \n+#include <Adafruit_ILI9341.h>\n+\n+extern Adafruit_ILI9341 tft;\n extern bool connectionStatus;\n+extern bool moduleConnectionStatus;\n extern bool capsLockStatus;\n-extern bool moduleConnectionStatus;\n-extern bool mediaPlayingName;\n+extern int hours;\n+extern int minutes;\n+extern int updatedMinutes;\n \n+enum ScreenType {\n+    MainScreen,\n+    SettingsScreen\n+    // Add other screen types here\n+};\n+\n+extern ScreenType currentScreen;\n extern int settingsSelectedOption;\n extern bool inSettingsSubmenu;\n \n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737746567578,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -13,9 +13,9 @@\n \n enum ScreenType\n {\n     MainScreen,\n-    SettingsScreen\n+    SettingsScreen,\n     // Add other screen types here\n };\n \n extern ScreenType currentScreen;\n"
+                },
+                {
+                    "date": 1737746594517,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -10,15 +10,8 @@\n extern int hours;\n extern int minutes;\n extern int updatedMinutes;\n \n-enum ScreenType\n-{\n-    MainScreen,\n-    SettingsScreen,\n-    // Add other screen types here\n-};\n-\n extern ScreenType currentScreen;\n extern int settingsSelectedOption;\n extern bool inSettingsSubmenu;\n \n"
                 }
             ],
             "date": 1737399653553,

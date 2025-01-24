@@ -1,11 +1,15 @@
-// globals.h
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <Adafruit_ILI9341.h>
+
+extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
-extern bool capsLockStatus;
 extern bool moduleConnectionStatus;
-extern bool mediaPlayingName;
+extern bool capsLockStatus;
+extern int hours;
+extern int minutes;
+extern int updatedMinutes;
 
 extern int settingsSelectedOption;
 extern bool inSettingsSubmenu;

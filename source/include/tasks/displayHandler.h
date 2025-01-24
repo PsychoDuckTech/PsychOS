@@ -2,6 +2,8 @@
 #ifndef SCREEN_MANAGER_H
 #define SCREEN_MANAGER_H
 
+#include "globals.h"
+
 enum ScreenType
 {
     MainScreen,
@@ -19,8 +21,6 @@ struct MenuItem
 };
 
 void switchScreen(ScreenType newScreen);
-void displayMainScreen(void *parameters);
-void displaySettingsScreen(void *parameters);
 
 extern ScreenType currentScreen;
 extern int settingsSelectedOption;
@@ -28,5 +28,8 @@ extern bool inSettingsSubmenu;
 
 void switchScreen(ScreenType newScreen);
 void displaySettingsScreen(void *parameters);
+
+void displayHandler(void *parameters);
+void switchScreen(ScreenType newScreen);
 
 #endif // SCREEN_MANAGER_H

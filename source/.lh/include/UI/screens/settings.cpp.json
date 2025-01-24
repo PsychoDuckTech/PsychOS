@@ -1,0 +1,22 @@
+{
+    "sourceFile": "include/UI/screens/settings.cpp",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1737746102860,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1737746142122,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,4 +1,6 @@\n+#include \"UI/main.h\"\n+\n void displaySettingsScreen(void *parameters)\n {\n     const char *menuItems[] = {\"Modules\", \"Keybinds\", \"Integrations\", \"RGB\"};\n \n"
+                }
+            ],
+            "date": 1737746102860,
+            "name": "Commit-0",
+            "content": "void displaySettingsScreen(void *parameters)\n{\n    const char *menuItems[] = {\"Modules\", \"Keybinds\", \"Integrations\", \"RGB\"};\n\n    tft.fillScreen(0x10A2);\n\n    // Draw menu items\n    tft.setTextSize(2);\n    tft.setFont(&FreeSansBold9pt7b);\n    for (int i = 0; i < 4; i++)\n    {\n        tft.setCursor(30, 60 + (i * 30));\n        if (i == settingsSelectedOption)\n        {\n            tft.setTextColor(0xFD40); // Highlight selected\n        }\n        else\n        {\n            tft.setTextColor(0xDED9); // Normal color\n        }\n        tft.print(menuItems[i]);\n    }\n\n    // Footer text\n    tft.setTextSize(1);\n    tft.setFont();\n    tft.setTextColor(0x7BEF);\n    tft.setCursor(50, 220);\n    tft.print(\"Powered by PsychOS\");\n    tft.setCursor(70, 235);\n    tft.print(\"build 0.1.4α\");\n}"
+        }
+    ]
+}
