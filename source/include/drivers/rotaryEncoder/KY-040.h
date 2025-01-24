@@ -12,14 +12,17 @@ private:
     unsigned long _lastDirectionTime;
     unsigned long _buttonPressStart;
     bool _buttonWasPressed;
+    bool _longPressEventDetected;
     static const unsigned long DIRECTION_LOCK_TIME = 150; // ms
     static const unsigned long BUTTON_DEBOUNCE = 50;
+    static const unsigned long LONG_PRESS_TIME = 350; // ms
 
 public:
     KY040(int clkPin, int dtPin, int swPin)
         : _clkPin(clkPin), _dtPin(dtPin), _swPin(swPin),
           _lastClk(0), _lastDirection(0), _lastDirectionTime(0),
-          _buttonPressStart(0), _buttonWasPressed(false) {}
+          _buttonPressStart(0), _buttonWasPressed(false),
+          _longPressEventDetected(false) {}
 
     void begin()
     {
@@ -67,18 +70,41 @@ public:
         {
             _buttonPressStart = currentTime;
             _buttonWasPressed = true;
+            _longPressEventDetected = false; // Reset long press flag on new press
             return false;
         }
 
         if (!currentState && _buttonWasPressed)
         {
+            unsigned long pressDuration = currentTime - _buttonPressStart;
             _buttonWasPressed = false;
-            if ((currentTime - _buttonPressStart) > BUTTON_DEBOUNCE)
+
+            if (pressDuration >= BUTTON_DEBOUNCE)
             {
-                return true;
+                if (pressDuration < LONG_PRESS_TIME)
+                {
+                    // Short press detected
+                    return true;
+                }
+                else
+                {
+                    // Long press detected, mark for checkLongPress()
+                    _longPressEventDetected = true;
+                }
             }
+            return false;
         }
 
+        return false;
+    }
+
+    bool checkLongPress()
+    {
+        if (_longPressEventDetected)
+        {
+            _longPressEventDetected = false;
+            return true;
+        }
         return false;
     }
 

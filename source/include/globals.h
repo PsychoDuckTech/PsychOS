@@ -7,4 +7,7 @@ extern bool capsLockStatus;
 extern bool moduleConnectionStatus;
 extern bool mediaPlayingName;
 
+extern int settingsSelectedOption;
+extern bool inSettingsSubmenu;
+
 #endif // GLOBALS_H

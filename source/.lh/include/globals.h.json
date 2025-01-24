@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 3,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1737399653554,
@@ -20,6 +20,18 @@
                 {
                     "date": 1737408514217,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -4,6 +4,7 @@\n \n extern bool connectionStatus;\n extern bool capsLockStatus;\n extern bool moduleConnectionStatus;\n+extern bool mediaPlayingName;\n \n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737734174679,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -6,5 +6,8 @@\n extern bool capsLockStatus;\n extern bool moduleConnectionStatus;\n extern bool mediaPlayingName;\n \n+extern int settingsSelectedOption;\n+extern bool inSettingsSubmenu;\n+\n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737735119209,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,5 +9,9 @@\n \n extern int settingsSelectedOption;\n extern bool inSettingsSubmenu;\n \n+#define MAX_MENU_DEPTH 5\n+ScreenType menuStack[MAX_MENU_DEPTH];\n+int menuStackIndex = 0;\n+\n #endif // GLOBALS_H\n\\ No newline at end of file\n"
+                },
+                {
+                    "date": 1737736188299,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -9,9 +9,5 @@\n \n extern int settingsSelectedOption;\n extern bool inSettingsSubmenu;\n \n-#define MAX_MENU_DEPTH 5\n-ScreenType menuStack[MAX_MENU_DEPTH];\n-int menuStackIndex = 0;\n-\n #endif // GLOBALS_H\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1737399653553,
