@@ -80,8 +80,6 @@ void displaySettingsScreen(void *parameters)
 {
     const char *menuItems[] = {"Modules", "Keybinds", "Integrations", "RGB"};
 
-    tft.fillScreen(0x10A2);
-
     // Draw menu items
     tft.setTextSize(2);
     tft.setFont(&FreeSansBold9pt7b);
@@ -107,4 +105,49 @@ void displaySettingsScreen(void *parameters)
     tft.print("Powered by PsychOS");
     tft.setCursor(70, 235);
     tft.print("build 0.1.4a");
+}
+
+void displayRGBSubmenu(void *parameters)
+{
+    // Simulate RGB LED settings
+    const char *rgbOptions[] = {"Red", "Green", "Blue", "Brightness"};
+    int rgbValues[] = {255, 255, 255, 100}; // Default values for RGB and brightness
+
+    // Draw RGB options
+    tft.fillScreen(0x10A2);
+    tft.setTextSize(2);
+    tft.setFont(&FreeSansBold9pt7b);
+    for (int i = 0; i < 4; i++)
+    {
+        tft.setCursor(30, 60 + (i * 30));
+        if (i == settingsSelectedOption)
+        {
+            tft.setTextColor(0xFD40); // Highlight selected
+        }
+        else
+        {
+            tft.setTextColor(0xDED9); // Normal color
+        }
+        tft.print(rgbOptions[i]);
+        tft.setCursor(150, 60 + (i * 30));
+        tft.print(rgbValues[i]);
+    }
+
+    // Footer text
+    tft.setTextSize(1);
+    tft.setFont();
+    tft.setTextColor(0x7BEF);
+    tft.setCursor(50, 220);
+    tft.print("Adjust RGB settings");
+    tft.setCursor(70, 235);
+    tft.print("build 0.1.4a");
+
+    // Print to serial for simulation
+    Serial.println("RGB Submenu:");
+    for (int i = 0; i < 4; i++)
+    {
+        Serial.print(rgbOptions[i]);
+        Serial.print(": ");
+        Serial.println(rgbValues[i]);
+    }
 }

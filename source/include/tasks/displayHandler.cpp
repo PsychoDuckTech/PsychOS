@@ -2,6 +2,8 @@
 #include "displayHandler.h"
 #include "display/displayContent.cpp"
 #include "globals.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
 // Define constants
 #define LCD_CS 13
@@ -15,10 +17,14 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
 ScreenType currentScreen = MainScreen;
 int settingsSelectedOption = 0;
 bool inSettingsSubmenu = false;
+bool updateMainScreen = true; // Add this flag
 extern int updatedMinutes;
+SemaphoreHandle_t screenMutex; // Add a mutex
 
 void switchScreen(ScreenType newScreen)
 {
+    xSemaphoreTake(screenMutex, portMAX_DELAY); // Take the mutex before switching screens
+
     if (newScreen == SettingsScreen)
     {
         settingsSelectedOption = 0; // Reset selection when entering settings
@@ -30,13 +36,17 @@ void switchScreen(ScreenType newScreen)
     switch (currentScreen)
     {
     case MainScreen:
+        updateMainScreen = true; // Set flag to true when switching to main screen
         displayMainScreen(nullptr);
         break;
     case SettingsScreen:
+        updateMainScreen = false; // Set flag to false when switching away from main screen
         displaySettingsScreen(nullptr);
         break;
         // Add cases for submenus here
     }
+
+    xSemaphoreGive(screenMutex); // Release the mutex after switching screens
 }
 
 void displayHandler(void *parameters)
@@ -48,18 +58,24 @@ void displayHandler(void *parameters)
     tft.setRotation(2);
     Serial.println("Display Handler started.");
 
-    switchScreen(MainScreen); // Initialize main screen
+    screenMutex = xSemaphoreCreateMutex(); // Create the mutex
+    switchScreen(MainScreen);              // Initialize main screen
 
     for (;;)
     {
+        xSemaphoreTake(screenMutex, portMAX_DELAY); // Take the mutex before updating the screen
+
         switch (currentScreen)
         {
         case MainScreen:
-            displayTopBar(parameters);
-            if (updatedMinutes)
+            if (updateMainScreen) // Check the flag before updating the main screen
             {
-                displayTime(parameters);
-                updatedMinutes = false;
+                displayTopBar(parameters);
+                if (updatedMinutes)
+                {
+                    displayTime(parameters);
+                    updatedMinutes = false;
+                }
             }
             break;
 
@@ -73,6 +89,7 @@ void displayHandler(void *parameters)
             break;
         }
 
+        xSemaphoreGive(screenMutex); // Release the mutex after updating the screen
         vTaskDelay(1 / portTICK_PERIOD_MS);
     }
 }

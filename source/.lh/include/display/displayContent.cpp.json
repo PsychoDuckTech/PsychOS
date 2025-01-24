@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 3,
+            "activePatchIndex": 6,
             "patches": [
                 {
                     "date": 1737746398782,
@@ -20,6 +20,18 @@
                 {
                     "date": 1737746976217,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -11,9 +11,8 @@\n extern int minutes;\n \n void displayMainScreen(void *parameters)\n {\n-    tft.fillScreen(0x10A2);\n     displayTopBar(parameters);\n     displayTime(parameters);\n     displayDemo(parameters);\n }\n"
+                },
+                {
+                    "date": 1737748100228,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -79,10 +79,8 @@\n void displaySettingsScreen(void *parameters)\n {\n     const char *menuItems[] = {\"Modules\", \"Keybinds\", \"Integrations\", \"RGB\"};\n \n-    tft.fillScreen(0x10A2);\n-\n     // Draw menu items\n     tft.setTextSize(2);\n     tft.setFont(&FreeSansBold9pt7b);\n     for (int i = 0; i < 4; i++)\n"
+                },
+                {
+                    "date": 1737748892167,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -104,5 +104,12 @@\n     tft.setCursor(50, 220);\n     tft.print(\"Powered by PsychOS\");\n     tft.setCursor(70, 235);\n     tft.print(\"build 0.1.4a\");\n-}\n\\ No newline at end of file\n+}\n+\n+MenuItem rgbMenu[] = {\n+    {\"Red Channel\", [](){ Serial.println(\"Adjusting Red\"); }},\n+    {\"Green Channel\", [](){ Serial.println(\"Adjusting Green\"); }},\n+    {\"Blue Channel\", [](){ Serial.println(\"Adjusting Blue\"); }},\n+    {\"Back\", [](){ menuStackIndex--; }}\n+};\n"
+                },
+                {
+                    "date": 1737748907145,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -104,15 +104,5 @@\n     tft.setCursor(50, 220);\n     tft.print(\"Powered by PsychOS\");\n     tft.setCursor(70, 235);\n     tft.print(\"build 0.1.4a\");\n-}\n-\n-MenuItem rgbMenu[] = {\n-    {\"Red Channel\", []()\n-     { Serial.println(\"Adjusting Red\"); }},\n-    {\"Green Channel\", []()\n-     { Serial.println(\"Adjusting Green\"); }},\n-    {\"Blue Channel\", []()\n-     { Serial.println(\"Adjusting Blue\"); }},\n-    {\"Back\", []()\n-     { menuStackIndex--; }}};\n+}\n\\ No newline at end of file\n"
                 }
             ],
             "date": 1737746398782,
