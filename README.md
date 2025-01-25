@@ -4,10 +4,10 @@
 </div>
 
 ## Supported Matrix Hardware Setups
-|   Device    |          Status          |      Notes      |
-| :---------: | :----------------------: | :-------------: |
-| Prototype 0 | ![alt text][development] | In development  |
-| 2x2 Matrix  |  ![alt text][supported]  | LMFAOOOOOOOOOOO |
+|   Device    |           Status           |       Notes        |
+| :---------: |  :----------------------:  |  :-------------:   |
+| Prototype 0 |   ![alt text][supported]   |  Actively tweaked  |
+| 2x2 Matrix  |  ![alt text][development]  | Temporarily halted |
 
 [supported]: https://img.shields.io/badge/-supported-green "supported"
 [preview]: https://img.shields.io/badge/-preview-orange "preview"
