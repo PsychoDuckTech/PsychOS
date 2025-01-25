@@ -1,9 +1,13 @@
 /**
  * Prototype 0 Keyboard Matrix Configuration
  */
+#pragma once
 #include <Arduino.h>
 #include "../include/usbHIDKeyCodes.h" // by MightyPork on GitHub, customized by GabiBrawl
 #include "drivers/multiplexer/CD74HC4067.h"
+
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 320
 
 extern int colPins[];
 

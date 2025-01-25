@@ -31,9 +31,11 @@ void displayTopBar(void *parameters)
     tft.setCursor(206, 8);
     tft.print("Caps");
 
-    tft.setTextColor(capsLockStatus ? 0xFD40 : 0x7BEF);
-    tft.fillRect(206, 18, 17, 8, 0x10A2);
     tft.setCursor(206, 18);
+    tft.setTextColor(0x10A2);
+    tft.print(capsLockStatus ? "OFF" : "ON");
+    tft.setCursor(206, 18);
+    tft.setTextColor(capsLockStatus ? 0xFD40 : 0x7BEF);
     tft.print(capsLockStatus ? "ON" : "OFF");
 }
 

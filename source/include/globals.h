@@ -1,6 +1,11 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#define BG_COLOR 0x10A2
+#define TEXT_COLOR 0xDED9
+#define HIGHLIGHT_COLOR 0xFD40
+#define SELECTED_COLOR 0x2945
+
 #include <Adafruit_ILI9341.h>
 
 extern Adafruit_ILI9341 tft;
@@ -25,5 +30,7 @@ struct RGBState
 extern int firstDraw;
 
 extern RGBState rgbState;
+
+extern GFXcanvas16 displayCanvas; // RAM buffer
 
 #endif // GLOBALS_H
