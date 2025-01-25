@@ -11,18 +11,6 @@
 #include "utils/initializeMatrix.h"
 #include "utils/initializeBLE.h"
 
-#include "soc/io_mux_reg.h" // Provides access to the IO_MUX registers
-#include "driver/gpio.h"    // Standard GPIO functions
-
-void disableJTAG()
-{
-    // Disable JTAG by reconfiguring pins to GPIO functionality
-    REG_WRITE(IO_MUX_GPIO39_REG, 0x80); // Set GPIO 39 to GPIO mode
-    REG_WRITE(IO_MUX_GPIO40_REG, 0x80); // Set GPIO 40 to GPIO mode
-    REG_WRITE(IO_MUX_GPIO41_REG, 0x80); // Set GPIO 41 to GPIO mode
-    REG_WRITE(IO_MUX_GPIO42_REG, 0x80); // Set GPIO 42 to GPIO mode
-}
-
 void setup()
 {
     Serial.begin(115200);
