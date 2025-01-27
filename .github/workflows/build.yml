@@ -28,7 +28,7 @@ jobs:
     - name: Validate Tag Availability
       id: check_tag
       run: |
-        VERSION="0.2.0-beta"
+        VERSION="0.2.1-beta"
         if git rev-parse "v$VERSION" >/dev/null 2>&1; then
           echo "::error::Tag v$VERSION already exists!"
           exit 1
@@ -63,15 +63,19 @@ jobs:
       id: find_firmware
       run: |
         set -e
-        FIRMWARE_PATH=$(find source/.pio -name '*.bin' -print -quit)
+        # Specific path to firmware binary (adjust based on your platformio.ini environment)
+        FIRMWARE_PATH=$(find source/.pio/build -name 'firmware*.bin' -not -name '*bootloader*' -type f -print -quit)
+
         if [ -z "$FIRMWARE_PATH" ]; then
-          echo "::error::No firmware file found!"
+          echo "::error::Firmware binary not found in build artifacts!"
           exit 1
         fi
-        FIRMWARE_NAME="firmware-${{ steps.check_tag.outputs.version }}.bin"
+
+        FIRMWARE_NAME="psychos-${{ steps.check_tag.outputs.version }}.bin"
         mv "$FIRMWARE_PATH" "$FIRMWARE_NAME"
         echo "firmware_path=$FIRMWARE_NAME" >> "$GITHUB_OUTPUT"
         echo "firmware_name=$FIRMWARE_NAME" >> "$GITHUB_OUTPUT"
+        echo "Found firmware: $FIRMWARE_NAME"
 
     - name: Generate Release Notes
       id: release_notes
