@@ -1,9 +1,8 @@
-#include <Adafruit_ILI9341.h>
+#include <Arduino.h>
+// #include <Adafruit_ILI9341.h>
 #include "displayHandler.h"
 #include "display/displayContent.cpp"
 #include "globals.h"
-#include <freertos/FreeRTOS.h>
-#include <freertos/semphr.h>
 
 // Define constants
 #define LCD_CS 13
@@ -24,8 +23,7 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
 ScreenType currentScreen = MainScreen;
 int settingsSelectedOption = 0;
 bool inSettingsSubmenu = false;
-bool updateMainScreen = true; // Add this flag
-extern int updatedMinutes;
+bool updateMainScreen = true;  // Add this flag
 SemaphoreHandle_t screenMutex; // Add a mutex
 
 void switchScreen(ScreenType newScreen)
@@ -108,4 +106,18 @@ void displayHandler(void *parameters)
         xSemaphoreGive(screenMutex); // Release the mutex after updating the screen
         vTaskDelay(1 / portTICK_PERIOD_MS);
     }
+}
+
+void startDisplayTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseType_t priority = 1)
+{
+    TaskHandle_t displayHandle;
+    xTaskCreatePinnedToCore(
+        displayHandler,    // Function to be called
+        "Display Handler", // Name of the task
+        stackDepth,        // Stack size in words
+        NULL,              // Task input parameter
+        priority,          // Priority of the task
+        &displayHandle,    // Task handle
+        core               // Core where the task should run
+    );
 }

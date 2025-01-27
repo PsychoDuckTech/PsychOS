@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "knobHandler.h"
 #include "config.h"
 #include "drivers/rotaryEncoder/KY-040.h"
 #include "hostCommunicationBridge.h"
@@ -123,4 +124,17 @@ void knobHandler(void *parameters)
 
         vTaskDelay(pdMS_TO_TICKS(POLLING_RATE_MS));
     }
+}
+
+void startKnobHandlerTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
+{
+    TaskHandle_t knobTaskHandle;
+    xTaskCreatePinnedToCore(
+        knobHandler,
+        "Knob Handler",
+        stackDepth,
+        NULL,
+        priority,
+        &knobTaskHandle,
+        core);
 }

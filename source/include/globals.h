@@ -1,5 +1,4 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #define BG_COLOR 0x10A2
 #define TEXT_COLOR 0xDED9
@@ -14,7 +13,6 @@ extern bool moduleConnectionStatus;
 extern bool capsLockStatus;
 extern int hours;
 extern int minutes;
-extern int updatedMinutes;
 
 extern int settingsSelectedOption;
 extern bool inSettingsSubmenu;
@@ -30,7 +28,3 @@ struct RGBState
 extern int firstDraw;
 
 extern RGBState rgbState;
-
-extern GFXcanvas16 displayCanvas; // RAM buffer
-
-#endif // GLOBALS_H

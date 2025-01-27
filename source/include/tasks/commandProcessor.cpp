@@ -6,16 +6,6 @@ bool capsLockStatus = false;
 bool connectionStatus = false;
 bool moduleConnectionStatus = false;
 
-// Define a structure for commands
-struct Command
-{
-    const char *name;              // Command name
-    void (*updateFunc)(int value); // Function to update the variable
-    int (*getFunc)();              // Function to get the variable value
-    int minValue;                  // Minimum allowed value
-    int maxValue;                  // Maximum allowed value
-};
-
 // Define update and get functions for each variable
 void updateHours(int value)
 {

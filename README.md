@@ -16,14 +16,14 @@
 ## Features
 |                                Feature                                |     Status      |                    Notes                    |
 | :-------------------------------------------------------------------: | :-------------: | :-----------------------------------------: |
-|                           Keystroke Handler                           |    Supported    |       Developing multiplexer support.       |
+|                           Keystroke Handler                           |    Supported    |           TinyUSB library issues            |
 |                       Host Communication Bridge                       | Partial Support | Keyboard communication to the host machine. |
 |                       Modifiable Configuration                        |   Unsupported   |          On-the-fly configuration           |
 | [Web Configurator](https://github.com/PsychoDuckTech/WebConfigurator) |   Unsupported   |  Web-based configurator for the firmware.   |
 |                            Rotary Encoder                             |    Supported    |            Rotary Knob support.             |
 |                             Macro Support                             |   Unsupported   |  Macro support for the main board matrix.   |
 |                                Modules                                |       WIP       |      Bluetooth Numpad Modules support.      |
-|                                Display                                |    Supported    |        Not responsive at the moment.        |
+|                                Display                                |    Supported    |                  Functional                 |
 |                                Layers                                 |       WIP       |     Multiple toggle-able keymap layers.     |
 |                                  RGB                                  |   Unsupported   |        Not a priority at the moment.        |
 
@@ -46,6 +46,12 @@ If you don't have the [esptool](https://github.com/espressif/esptool) installed,
 Is your preferred language missing localisation of some of the text?
 Translations are stored as `.h` files in the `source/include/translations` folder.
 _Pull requests_ are loved and accepted to enhance the firmware. <3
+
+## Versioning Scheme
+We follow [Semantic Versioning 2.0.0](https://semver.org/) with:
+- Format: `MAJOR.MINOR.PATCH-PRERELEASE+BUILD`
+- Pre-release stages: `alpha` < `beta` < `rc`
+- Build metadata: Date (YYYYMMDD) and CI run number
 
 ## About
 This firmware was tested only on the ESP32-S3.

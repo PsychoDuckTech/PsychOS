@@ -1,15 +1,9 @@
-#include <Arduino.h>
-#include "config.h"
-#include "drivers/multiplexer/CD74HC4067.h"
-#include "USB.h"
+#include "matrixScan.h"
 
 #define keyMap keyMapL0
 #define keyName keyNameL0
 
-// Benchmarking
-#define benchmark false // true or false
-
-// bool keyStates[totalRows][totalCols] = {false};
+#define benchmark false
 
 void matrixScan(void *parameters)
 {
@@ -73,7 +67,13 @@ void matrixScan(void *parameters)
                 lastTime = currentTime;
             }
         }
-        vTaskDelay(1);
+        vTaskDelay(1); // allows other tasks to run, 1ms delay
         // delayMicroseconds(500); // 0.5ms delay
     }
+}
+
+void startMatrixScanTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
+{
+    xTaskCreatePinnedToCore(
+        matrixScan, "MatrixScan", stackDepth, NULL, priority, NULL, core);
 }

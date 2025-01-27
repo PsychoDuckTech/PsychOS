@@ -1,64 +1,53 @@
+/**
+ * Prototype 0 Keyboard Matrix Configuration Refresh
+ */
 #include <Arduino.h>
-#include <ArduinoBLE.h>
-#include "config.h"
-#include "tasks/matrixScan.cpp"
-#include "tasks/moduleConnectionHandler.cpp"
-#include "tasks/knobHandler.cpp"
-#include "tasks/displayHandler.cpp"
-#include "tasks/clock.h"
-#include "tasks/clock.cpp"
-#include "tasks/serialHandler.cpp"
-#include "utils/initializeMatrix.h"
-#include "utils/initializeBLE.h"
+#include "main.h"
+
+// GPIO assignment
+#define MULTIPLEXER_S0 5
+#define MULTIPLEXER_S1 6
+#define MULTIPLEXER_S2 7
+#define MULTIPLEXER_S3 15
+#define MULTIPLEXER_SIG 35
+
+Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, MULTIPLEXER_S3, MULTIPLEXER_SIG);
+
+// Matrix Configuration
+const int totalRows = 6;
+const int totalCols = 16;
+const int usesMultiplexer = true;
+const int rowPins[totalRows] = {21, 4, 3, 8, 11, 12};
+
+// Key Mapping (Layer 0)
+const uint8_t keyMapL0[totalRows][totalCols] = {
+    {KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_SYSRQ, KEY_INSERT, KEY_DELETE},
+    {KEY_BACKSLASH, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0, KEY_APOSTROPHE, 0, KEY_BACKSPACE, 0, KEY_HOME},
+    {KEY_TAB, KEY_Q, KEY_W, KEY_E, KEY_R, KEY_T, KEY_Y, KEY_U, KEY_I, KEY_O, KEY_P, KEY_PLUS_ASTERISK, KEY_ACUTE_GRAVE, 0, 0, KEY_END},
+    {KEY_CAPSLOCK, KEY_A, KEY_S, KEY_D, KEY_F, KEY_G, KEY_H, KEY_J, KEY_K, KEY_L, KEY_C_CEDILLA, KEY_ORDINAL_MASCULINE, KEY_CIRCUMFLEX_TILDE, KEY_ENTER, 0, KEY_PAGEUP},
+    {KEY_LEFTSHIFT, KEY_LESS_GREATER, KEY_Z, KEY_X, KEY_C, KEY_V, KEY_B, KEY_N, KEY_M, KEY_COMMA, KEY_DOT, KEY_MINUS_UNDERSCORE, KEY_RIGHT_SHIFT, 0, KEY_UP, KEY_PAGEDOWN},
+    {KEY_LEFTCTRL, KEY_LEFTMETA, 0, KEY_LEFTALT, 0, 0, KEY_SPACE, 0, 0, 0, KEY_RIGHTALT, 0, KEY_RIGHTCTRL, KEY_LEFT, KEY_DOWN, KEY_RIGHT}};
+
+const char *keyNameL0[totalRows][totalCols] = {
+    {"ESC", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "SYSRQ", "INSERT", "DELETE"},
+    {"BACKSLASH", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "APOSTROPHE", 0, "BACKSPACE", 0, "HOME"},
+    {"TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "EQUAL", "GRAVE", 0, 0, "END"},
+    {"CAPSLOCK", "A", "S", "D", "F", "G", "H", "J", "K", "L", "C_CEDILLA", "ORDINAL_MASCULINE", "CIRCUMFLEX_TILDE", "ENTER", 0, "PAGEUP"},
+    {"LEFTSHIFT", "LESS_GREATER", "Z", "X", "C", "V", "B", "N", "M", "COMMA", "DOT", "MINUS", "RIGHT_SHIFT", 0, "UP", "PAGEDOWN"},
+    {"LEFTCTRL", "LEFTMETA", 0, "LEFTALT", 0, 0, "SPACE", 0, 0, 0, "RIGHTALT", 0, "RIGHTCTRL", "LEFT", "DOWN", "RIGHT"}};
 
 void setup()
 {
     Serial.begin(115200);
-    delay(2000); // Delay for the serial monitor to start
     Serial.println(String(OS_version) + ", " + byCompany);
-    Serial.println("Mr. 95YCH0DUCK\n");
 
-    // Disable JTAG to free GPIO 39–42 for general use THIS IS MERELY FOR LATER REFERENCE
-
-    // Initialize watchdog
-    esp_task_wdt_init(10, true);
-
-    initializeBLE();
-    initializeMatrix();
-
-    TaskHandle_t keyTaskHandle;
-    xTaskCreatePinnedToCore(
-        matrixScan,          // Task function: The function that will execute as the task.
-        "Keystroke Handler", // Name of the task: A human-readable name for debugging.
-        8192,                // Stack size: Amount of stack memory allocated to the task (in bytes).
-        NULL,                // Task parameters: A pointer to pass to the task function (optional).
-        3,                   // Priority: The priority of the task (higher values = higher priority).
-        &keyTaskHandle,      // Task handle: A pointer to store the task's handle (optional).
-        0                    // Core ID: The CPU core (0 or 1) on which the task will run.
-    );
-
-    TaskHandle_t knobTaskHandle;
-    xTaskCreatePinnedToCore(knobHandler, "Knob Handler", 2048, NULL, 1, &knobTaskHandle, 1);
-
-    TaskHandle_t hostCommHandle;
-    xTaskCreatePinnedToCore(hostCommunicationBridge, "Host Communication Bridge", 4096, NULL, 2, &hostCommHandle, 0);
-
-    TaskHandle_t clock;
-    xTaskCreatePinnedToCore(clockTask, "Clock", 1024, NULL, 1, &clock, 1);
-
-    TaskHandle_t bleTaskHandle;
-    xTaskCreatePinnedToCore(moduleConnectionHandler, "BLE Handler", 16384, NULL, 1, &bleTaskHandle, 1);
-
-    TaskHandle_t displayHandle;
-    xTaskCreatePinnedToCore(displayHandler, "Display Handler", 4096, NULL, 1, &displayHandle, 1);
-
-    TaskHandle_t serialHandle;
-    xTaskCreatePinnedToCore(serialHandler, "Serial Handler", 4096, NULL, 1, &serialHandle, 1);
-
-    processCommand("time.hours 12");
+    startClockTask();
+    startDisplayTask();
+    startMatrixScanTask(); // Core 0, priority 3
+    startKnobHandlerTask();
+    startHostCommTask();
+    startBleTask();
+    startSerialTask();
 }
 
-void loop()
-{
-    // not required due to the use of FreeRTOS tasks
-}
+void loop() {} // FreeRTOS handles tasks

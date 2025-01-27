@@ -1,5 +1,5 @@
 #include "hostCommunicationBridge.h"
-#include "commandProcessor.cpp"
+#include "commandProcessor.h"
 
 QueueHandle_t hostMessageQueue;
 USBHIDConsumerControl ConsumerControl;
@@ -37,4 +37,18 @@ void hostCommunicationBridge(void *parameters)
             }
         }
     }
+}
+
+void startHostCommTask(UBaseType_t core = 0, uint32_t stackDepth = 4096, UBaseType_t priority = 2)
+{
+    TaskHandle_t hostCommHandle;
+    xTaskCreatePinnedToCore(
+        hostCommunicationBridge,     // Function to be called
+        "Host Communication Bridge", // Name of the task
+        stackDepth,                  // Stack size in words
+        NULL,                        // Task input parameter
+        priority,                    // Priority of the task
+        &hostCommHandle,             // Task handle
+        core                         // Core where the task should run
+    );
 }

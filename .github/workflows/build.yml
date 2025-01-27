@@ -1,106 +1,117 @@
-name: PlatformIO CI
+name: 🚀 PsychOS CI/CD Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'source/**'
+      - 'platformio.ini'
+  pull_request:
+    paths:
+      - 'source/**'
+      - 'platformio.ini'
 
 permissions:
   contents: write
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Set Version
-      id: version
+    - name: Validate Tag Availability
+      id: check_tag
       run: |
-        echo "version=0.1.4-alpha" >> "$GITHUB_OUTPUT"
-        
-    - name: Set up Python
+        VERSION="0.2.0-beta"
+        if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+          echo "::error::Tag v$VERSION already exists!"
+          exit 1
+        fi
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Set up Python 3.10
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
-    
-    - name: Install PlatformIO
+        python-version: '3.10'
+
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install platformio
-    
+
     - name: Cache PlatformIO
       uses: actions/cache@v3
       with:
         path: ~/.platformio
-        key: ${{ runner.os }}-platformio-${{ hashFiles('**/platformio.ini') }}
+        key: ${{ runner.os }}-platformio-${{ hashFiles('source/platformio.ini') }}
         restore-keys: |
           ${{ runner.os }}-platformio-
-    
-    - name: Run PlatformIO Compiler
+
+    - name: Build Firmware
       run: platformio run
       working-directory: source
+      env:
+        PLATFORMIO_FORCE_COLOR: true
 
-    - name: Find Firmware
+    - name: Locate Firmware
       id: find_firmware
       run: |
-        FIRMWARE_PATH=$(find source/.pio -name "*.bin" | head -n 1)
-        if [ -z "$FIRMWARE_PATH"; then
-          echo "No firmware file found!"
+        set -e
+        FIRMWARE_PATH=$(find source/.pio -name '*.bin' -print -quit)
+        if [ -z "$FIRMWARE_PATH" ]; then
+          echo "::error::No firmware file found!"
           exit 1
         fi
-        echo "firmware_path=$FIRMWARE_PATH" >> "$GITHUB_OUTPUT"
-        echo "Firmware found at: $FIRMWARE_PATH"
-      
+        FIRMWARE_NAME="firmware-${{ steps.check_tag.outputs.version }}.bin"
+        mv "$FIRMWARE_PATH" "$FIRMWARE_NAME"
+        echo "firmware_path=$FIRMWARE_NAME" >> "$GITHUB_OUTPUT"
+        echo "firmware_name=$FIRMWARE_NAME" >> "$GITHUB_OUTPUT"
+
     - name: Generate Release Notes
       id: release_notes
       run: |
         cat << EOF > RELEASE.md
+        ## 🎉 PsychOS Alpha Release v${{ steps.check_tag.outputs.version }}
 
-        ## 🎉 First Alpha Release
-
-        ### Key Features
+        ### ✨ New Features
         - USB HID Communication Bridge
         - Volume Control System
           - Smooth increment/decrement with direction lock
           - Configurable polling rate (1000Hz)
-          - Mute function via encoder press
         - FreeRTOS Task Management
 
         ### 📥 Installation
-        Download \`firmware.bin\` and flash using:
+        Download \`${{ steps.find_firmware.outputs.firmware_name }}\` and flash using:
         \`\`\`bash
-        esptool.py --chip esp32s3 --port COM[X] write_flash 0x0 firmware.bin
+        # Windows
+        esptool.py --chip esp32s3 --port COM[X] write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
+        
+        # Linux/macOS
+        esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
         \`\`\`
 
         ### ⚠️ Known Issues
-        - Matrix scanning still in development
-        - Configuration system not yet implemented
+        - Matrix scanning in development
+        - Configuration system pending
 
-        ### 🔜 Next Steps
+        ### 🛠️ Next Steps
         - Complete matrix scanning implementation
         - Add configuration interface
         - Implement layer system
         EOF
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
       with:
-        tag_name: v${{ steps.version.outputs.version }}
-        release_name: PsychOS v${{ steps.version.outputs.version }}
+        tag_name: v${{ steps.check_tag.outputs.version }}
+        name: PsychOS v${{ steps.check_tag.outputs.version }}
         body_path: RELEASE.md
-        draft: false
         prerelease: true
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ steps.find_firmware.outputs.firmware_path }}
-        asset_name: firmware.bin
-        asset_content_type: application/octet-stream
+        files: |
+          ${{ steps.find_firmware.outputs.firmware_path }}

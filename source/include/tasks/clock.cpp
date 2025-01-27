@@ -1,5 +1,10 @@
 #include "clock.h"
 
+int hours = 0;
+int minutes = 0;
+int seconds = 0;
+bool updatedMinutes = true;
+
 void clockTask(void *parameters)
 {
     bool refreshFlags[3] = {false, false, false}; // [capsLockStatus, hours, minutes]
@@ -42,4 +47,17 @@ void updateClock(int newHours, int newMinutes, int newSeconds)
         seconds = newSeconds;
     }
     updatedMinutes = true;
+}
+
+void startClockTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
+{
+    TaskHandle_t clock;
+    xTaskCreatePinnedToCore(
+        clockTask,
+        "Clock",
+        stackDepth,
+        NULL,
+        priority,
+        &clock,
+        core);
 }
