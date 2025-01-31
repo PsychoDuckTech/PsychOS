@@ -45,9 +45,14 @@ void setup()
     startDisplayTask();
     startMatrixScanTask(); // Core 0, priority 3
     startKnobHandlerTask();
-    startHostCommTask();
     startBleTask();
     startSerialTask();
+
+#ifdef BLE_MASTER
+    startHostCommTask();
+#elif BLE_SLAVE
+    nullptr
+#endif
 }
 
 void loop() {} // FreeRTOS handles tasks
