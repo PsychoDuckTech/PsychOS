@@ -8,6 +8,7 @@
 // Global Constants
 extern const char *OS_version;
 extern const char *byCompany;
+#define PRODUCT_NAME "Kibodo one"
 
 // Matrix Configuration
 extern const int totalRows;

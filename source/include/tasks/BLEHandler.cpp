@@ -7,20 +7,20 @@
 BLEService psychoService("19B10000-E8F2-537E-4F6C-D104768A1214");
 BLEStringCharacteristic psychoCharacteristic("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite, 512);
 
-void moduleConnectionHandler(void *parameter)
+void BLEHandler(void *parameter)
 {
     initializeBLE();
 
     bool wasConnected = false;
 
     // Setup BLE service and characteristic
-    BLE.setLocalName("Prototype0");
+    BLE.setLocalName(PRODUCT_NAME);
     BLE.setAdvertisedService(psychoService);
     psychoService.addCharacteristic(psychoCharacteristic);
     BLE.addService(psychoService);
     BLE.advertise();
 
-    Serial.println(String(task_moduleConnectionHandler_started) + waitingForConnection);
+    Serial.println(String(task_BLEHandler_started) + waitingForConnection);
 
     for (;;)
     {
@@ -61,12 +61,12 @@ void startBleTask(UBaseType_t core = 1, uint32_t stackDepth = 16384, UBaseType_t
 {
     TaskHandle_t bleTaskHandle;
     xTaskCreatePinnedToCore(
-        moduleConnectionHandler, // Function to be called
-        "BLE Handler",           // Name of the task
-        stackDepth,              // Stack size in words
-        NULL,                    // Task input parameter
-        priority,                // Priority of the task
-        &bleTaskHandle,          // Task handle
-        core                     // Core where the task should run
+        BLEHandler,     // Function to be called
+        "BLE Handler",  // Name of the task
+        stackDepth,     // Stack size in words
+        NULL,           // Task input parameter
+        priority,       // Priority of the task
+        &bleTaskHandle, // Task handle
+        core            // Core where the task should run
     );
 }

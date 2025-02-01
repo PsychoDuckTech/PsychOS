@@ -2,6 +2,7 @@
 #define CLOCK_TASK_H
 
 #include <Arduino.h>
+#include "main.h"
 
 // Declare variables as extern (no initialization)
 extern int hours;

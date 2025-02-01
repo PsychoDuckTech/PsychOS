@@ -14,7 +14,7 @@ const char *matrix_initialization_failed = "Matrix initialization failed! ";
 const char *matrix_initialized_successfully = "Matrix initialized successfully. ";
 
 // moduleConnectionHandler
-const char *task_moduleConnectionHandler_started = "Started Module Connection Handler Task. ";
+const char *task_BLEHandler_started = "Started BLE Handler Task. ";
 const char *moduleConnected = "Module connected! ";
 const char *moduleDisconnected = "Module disconnected! ";
 const char *waitingForConnection = "Waiting for connection... ";
@@ -25,3 +25,6 @@ const char *BLE_initialized_successfully = "BLE initialized successfully. ";
 
 // knobHandler
 const char *task_knobHandler_started = "Started Knob Handler Task. ";
+
+// clock
+const char *task_clock_started = "Clock Task started. ";

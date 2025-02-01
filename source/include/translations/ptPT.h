@@ -14,7 +14,7 @@ const char *matrix_initialization_failed = "Falha na configuração da matriz! "
 const char *matrix_initialized_successfully = "Matriz configurada com sucesso. ";
 
 // moduleConnectionHandler
-const char *task_moduleConnectionHandler_started = "Tarefa do Controlador de Conexão de Módulo Iniciada. ";
+const char *task_BLEHandler_started = "Tarefa gestor de BLE Iniciada. ";
 const char *moduleConnected = "Módulo conectado! ";
 const char *moduleDisconnected = "Módulo desconectado! ";
 const char *waitingForConnection = "Aguardando conexão... ";
@@ -25,3 +25,6 @@ const char *BLE_initialized_successfully = "BLE configurado com sucesso. ";
 
 // knobHandler
 const char *task_knobHandler_started = "Tarefa do Controlador de Knob Rotativo Iniciada. ";
+
+// clock
+const char *task_clock_started = "Tarefa do relógio iniciada. ";

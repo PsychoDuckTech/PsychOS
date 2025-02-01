@@ -1,4 +1,5 @@
 #include "clock.h"
+#include "main.h"
 
 int hours = 0;
 int minutes = 0;
@@ -8,7 +9,7 @@ bool updatedMinutes = true;
 void clockTask(void *parameters)
 {
     bool refreshFlags[3] = {false, false, false}; // [capsLockStatus, hours, minutes]
-    Serial.println("Clock Task started.");
+    Serial.println(task_clock_started);
 
     for (;;)
     {

@@ -27,8 +27,8 @@
 // mediaHandler
 // #include "tasks/mediaHandler.cpp"
 
-// moduleConnectionHandler
-#include "tasks/moduleConnectionHandler.cpp"
+// BLEHandler
+#include "tasks/BLEHandler.cpp"
 
 // serialHandler
 #include "tasks/serialHandler.cpp"

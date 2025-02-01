@@ -38,6 +38,7 @@ const char *keyNameL0[totalRows][totalCols] = {
 
 void setup()
 {
+    delay(1000); // Wait for Serial to initialize
     Serial.begin(115200);
     Serial.println(String(OS_version) + ", " + byCompany);
 
