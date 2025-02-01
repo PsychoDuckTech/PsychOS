@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "knobHandler.h"
-#include "config.h"
 #include "drivers/rotaryEncoder/KY-040.h"
 #include "hostCommunicationBridge.h"
 #include "displayHandler.h"

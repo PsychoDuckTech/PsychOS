@@ -3,12 +3,15 @@
 #include <USB.h>
 #include <USBHIDConsumerControl.h>
 
-enum MessageType {
+enum MessageType
+{
     VOLUME_CHANGE,
-    VOLUME_MUTE
+    VOLUME_MUTE,
+    KEY_PRESS
 };
 
-struct HostMessage {
+struct HostMessage
+{
     MessageType type;
     int8_t data;
 };
@@ -16,4 +19,4 @@ struct HostMessage {
 extern QueueHandle_t hostMessageQueue;
 extern USBHIDConsumerControl ConsumerControl;
 
-void hostCommunicationBridge(void* parameters);
+void hostCommunicationBridge(void *parameters);

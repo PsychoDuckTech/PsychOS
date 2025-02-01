@@ -52,7 +52,7 @@ void setup()
 #ifdef BLE_MASTER
     startHostCommTask();
 #elif BLE_SLAVE
-    nullptr
+    nullptr;
 #endif
 }
 

@@ -130,4 +130,5 @@ void processCommand(String data)
     }
 
     Serial.println("Unknown command: " + command);
+    vTaskDelay(1);
 }

@@ -1,4 +1,7 @@
 #include "matrixScan.h"
+#include "BLEHandler.h"
+
+extern BLECharacteristic psychoCharacteristic;
 
 #define keyMap keyMapL0
 #define keyName keyNameL0
@@ -40,8 +43,17 @@ void matrixScan(void *parameters)
                         Serial.printf("Empty key\n");
                         break;
                     default:
+#ifdef BLE_MASTER
                         Serial.printf("K: %s\n", keyName[row][col]);
-                        // Serial.printf("R: %d, C: %d\n\n", row, col);
+// Serial.printf("R: %d, C: %d\n\n", row, col);
+#elif defined(BLE_SLAVE)
+                        // Send via BLE to master
+                        if (moduleConnectionStatus)
+                        {
+                            uint8_t data[1] = {keyMap[row][col]};
+                            psychoCharacteristic.writeValue(data, 1);
+                        }
+#endif
                         break;
                     }
                 }

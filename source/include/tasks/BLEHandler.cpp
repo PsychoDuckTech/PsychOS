@@ -1,11 +1,19 @@
 #include <Arduino.h>
 #include <ArduinoBLE.h>
-#include "config.h"
+#include "BLEHandler.h"
 #include "globals.h"
 #include "utils/initializeBLE.h"
+#include "tasks/matrixScan.h"
 
-BLEService psychoService("19B10000-E8F2-537E-4F6C-D104768A1214");
-BLEStringCharacteristic psychoCharacteristic("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite, 512);
+/*
+Target data flow: Slave Matrix -> BLE -> Master BLE -> Host Bridge -> USB HID
+*/
+
+#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-000000000001"
+
+BLEService psychoService(SERVICE_UUID);
+BLECharacteristic psychoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite | BLENotify, 20);
 
 void BLEHandler(void *parameter)
 {
@@ -13,51 +21,95 @@ void BLEHandler(void *parameter)
 
     bool wasConnected = false;
 
-    // Setup BLE service and characteristic
-    BLE.setLocalName(PRODUCT_NAME);
-    BLE.setAdvertisedService(psychoService);
+#ifdef BLE_MASTER // MASTER SETUP
+    BLE.setLocalName("PsychoMaster");
+    BLE.setDeviceName("PsychoMaster");
     psychoService.addCharacteristic(psychoCharacteristic);
     BLE.addService(psychoService);
     BLE.advertise();
-
-    Serial.println(String(task_BLEHandler_started) + waitingForConnection);
+    Serial.println("BLE Master: Advertising for modules");
+#elif defined(BLE_SLAVE) // SLAVE SETUP
+    BLE.setLocalName("PsychoSlave");
+    BLE.setDeviceName("PsychoSlave");
+#endif
 
     for (;;)
     {
-        BLE.poll();
-        bool isConnected = BLE.connected();
-
-        if (isConnected && !wasConnected)
-        {
-            Serial.println(moduleConnected);
-            moduleConnectionStatus = 1;
-            vTaskDelay(2000 / portTICK_PERIOD_MS); // Wait for the client to be ready. DONT REMOVE
-        }
-        else if (!isConnected && wasConnected)
-        {
-            Serial.println(moduleDisconnected);
-            moduleConnectionStatus = 0;
-        }
-
-        if (isConnected)
-        {
-            if (psychoCharacteristic.written())
-            {
-                String message = psychoCharacteristic.value();
-                Serial.println(received + message);
-            }
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-        else
-        {
-            vTaskDelay(1500 / portTICK_PERIOD_MS);
-        }
-
-        wasConnected = isConnected;
+#ifdef BLE_MASTER
+        handleMasterBLE();
+#elif defined(BLE_SLAVE)
+        handleSlaveBLE();
+#endif
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
-void startBleTask(UBaseType_t core = 1, uint32_t stackDepth = 16384, UBaseType_t priority = 1)
+// MASTER-SPECIFIC HANDLING
+#ifdef BLE_MASTER
+void handleMasterBLE()
+{
+    static BLEDevice peripheral;
+
+    if (!BLE.connected())
+    {
+        peripheral = BLE.available();
+        if (peripheral)
+        {
+            if (peripheral.localName() == "PsychoSlave")
+            {
+                BLE.stopAdvertise();
+                Serial.println("Connecting to slave...");
+                peripheral.connect();
+                psychoCharacteristic.subscribe();
+                moduleConnectionStatus = true;
+            }
+        }
+    }
+
+    if (psychoCharacteristic.written())
+    {
+        uint8_t data[20];
+        int length = psychoCharacteristic.readValue(data, 20);
+        handleReceivedKeypress(data, length);
+    }
+}
+#endif
+
+// SLAVE-SPECIFIC HANDLING
+#ifdef BLE_SLAVE
+void handleSlaveBLE()
+{
+    static bool autoConnected = false;
+
+    if (!autoConnected)
+    {
+        BLEDevice central = BLE.central();
+        if (central && central.localName() == "PsychoMaster")
+        {
+            Serial.println("Connected to master!");
+            moduleConnectionStatus = true;
+            autoConnected = true;
+        }
+    }
+
+    if (moduleConnectionStatus)
+    {
+        // Keypress data will be sent through matrixScan
+    }
+}
+#endif
+
+// Common function to handle received keypresses
+void handleReceivedKeypress(uint8_t *data, int length)
+{
+    // Convert BLE data to keypress (to be handled in HostCommunicationBridge)
+    HostMessage msg;
+    msg.type = KEY_PRESS;
+    msg.data = data[0]; // First byte is keycode
+    xQueueSend(hostMessageQueue, &msg, 0);
+}
+
+void startBleTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
     TaskHandle_t bleTaskHandle;
     xTaskCreatePinnedToCore(
