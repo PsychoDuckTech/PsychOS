@@ -7,7 +7,7 @@ extern BLECharacteristic psychoCharacteristic;
 #define keyName keyNameL0
 
 #define benchmark false
-#define DEBOUNCE_DELAY_MS 3
+#define DEBOUNCE_DELAY_MS 10
 
 void matrixScan(void *parameters)
 {
@@ -17,12 +17,27 @@ void matrixScan(void *parameters)
     unsigned long lastTime = millis();
     unsigned long pollCount[totalRows][totalCols] = {0};
 
-    // Array to store the confirmed (debounced) state of each key.
-    bool keyStates[totalRows][totalCols] = {0};
-    // Array to store the last instantaneous reading.
-    bool lastReading[totalRows][totalCols] = {0};
-    // Array to store the last time a state change was detected.
-    unsigned long lastDebounceTime[totalRows][totalCols] = {0};
+    // Arrays to store key states and debounce information.
+    bool keyStates[totalRows][totalCols];
+    bool lastReading[totalRows][totalCols];
+    unsigned long lastDebounceTime[totalRows][totalCols];
+
+    // Initialize all key states with a single scan.
+    for (int row = 0; row < totalRows; row++)
+    {
+        GPIO.out_w1tc = (1ULL << rowPins[row]);   // Activate current row pin
+        for (int col = 0; col < totalCols; col++) // Scan the column combination with the current row
+        {
+            colPinsMultiplexer.fastSelect(col);
+            ets_delay_us(4); // Small delay for electrical stability
+
+            bool reading = (colPinsMultiplexer.readChannel() == LOW);
+            keyStates[row][col] = reading;
+            lastReading[row][col] = reading;
+            lastDebounceTime[row][col] = millis();
+        }
+        GPIO.out_w1ts = (1ULL << rowPins[row]); // Reset the row pin
+    }
 
     for (;;)
     {
@@ -30,7 +45,6 @@ void matrixScan(void *parameters)
         {
             GPIO.out_w1tc = (1ULL << rowPins[row]); // Activate current row pin
 
-            // Scan the column combination with the current row
             for (int col = 0; col < totalCols; col++)
             {
                 colPinsMultiplexer.fastSelect(col);
@@ -43,8 +57,8 @@ void matrixScan(void *parameters)
                 {
                     lastDebounceTime[row][col] = millis();
                 }
-                // If the reading is stable for longer than the debounce delay,
-                // and it's different from the confirmed state, update the state.
+
+                // If the reading is stable for longer than the debounce delay, update the confirmed state.
                 if ((millis() - lastDebounceTime[row][col]) > DEBOUNCE_DELAY_MS)
                 {
                     if (reading != keyStates[row][col])
@@ -69,7 +83,7 @@ void matrixScan(void *parameters)
                         }
                     }
                 }
-                // Save the current reading for the next iteration.
+
                 lastReading[row][col] = reading;
                 pollCount[row][col]++;
             }
