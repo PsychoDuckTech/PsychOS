@@ -1,6 +1,8 @@
 /*
-* Portuguese Portugal Translation
-*/
+ * Portuguese Portugal Translation
+ */
+
+#pragma once
 
 const char *OS_version = "PsychOS v0.0.0 ";
 const char *byCompany = "por PsychoDuck Tech ";

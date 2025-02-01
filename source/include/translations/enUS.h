@@ -1,10 +1,12 @@
 /*
-* English US Translation
-*/
+ * English US Translation
+ */
+
+#pragma once
 
 const char *OS_version = "PsychOS v0.1.1 ";
 const char *byCompany = "by PsychoDuck Tech ";
- 
+
 // keyScanning
 const char *task_keyScanning_started = "Started keyScanning Task. ";
 // initialization
