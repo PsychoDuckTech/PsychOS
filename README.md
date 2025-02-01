@@ -25,6 +25,7 @@
 |                                Modules                                |       WIP       |      Bluetooth Numpad Modules support.      |
 |                                Display                                |    Supported    |                  Functional                 |
 |                                Layers                                 |       WIP       |     Multiple toggle-able keymap layers.     |
+|                                  WPM|                                 |    Supported    |                  WPM counter                |
 |                                  RGB                                  |   Unsupported   |        Not a priority at the moment.        |
 
 
