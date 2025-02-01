@@ -121,7 +121,7 @@ class ESP32Driver:
                 self.handle_reconnection()
                 self.check_and_update_time()
                 self.update_caps_lock_status()
-                #time.sleep(0.1)  # Check every .1 seconds
+                time.sleep(0.4)  # Check every .1 seconds
         except KeyboardInterrupt:
             print("Exiting driver loop...")
         finally:

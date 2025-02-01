@@ -7,6 +7,7 @@ extern BLECharacteristic psychoCharacteristic;
 #define keyName keyNameL0
 
 #define benchmark false
+#define DEBOUNCE_DELAY_MS 3
 
 void matrixScan(void *parameters)
 {
@@ -15,6 +16,13 @@ void matrixScan(void *parameters)
 
     unsigned long lastTime = millis();
     unsigned long pollCount[totalRows][totalCols] = {0};
+
+    // Array to store the confirmed (debounced) state of each key.
+    bool keyStates[totalRows][totalCols] = {0};
+    // Array to store the last instantaneous reading.
+    bool lastReading[totalRows][totalCols] = {0};
+    // Array to store the last time a state change was detected.
+    unsigned long lastDebounceTime[totalRows][totalCols] = {0};
 
     for (;;)
     {
@@ -28,42 +36,48 @@ void matrixScan(void *parameters)
                 colPinsMultiplexer.fastSelect(col);
                 ets_delay_us(4); // Small delay for electrical stability
 
-                bool isPressed = colPinsMultiplexer.readChannel() == LOW;
+                bool reading = (colPinsMultiplexer.readChannel() == LOW);
 
-                // if (isPressed != keyStates[row][col]) {
-                //     keyStates[row][col] = isPressed;
-                //     submitKeyPress(keyMap[row][col], isPressed);
-                // }
-
-                if (isPressed)
+                // If the reading has changed from the last reading, reset the debounce timer.
+                if (reading != lastReading[row][col])
                 {
-                    switch (keyMap[row][col])
+                    lastDebounceTime[row][col] = millis();
+                }
+                // If the reading is stable for longer than the debounce delay,
+                // and it's different from the confirmed state, update the state.
+                if ((millis() - lastDebounceTime[row][col]) > DEBOUNCE_DELAY_MS)
+                {
+                    if (reading != keyStates[row][col])
                     {
-                    case 0:
-                        Serial.printf("Empty key\n");
-                        break;
-                    default:
-#ifdef BLE_MASTER
-                        Serial.printf("K: %s\n", keyName[row][col]);
-// Serial.printf("R: %d, C: %d\n\n", row, col);
-#elif defined(BLE_SLAVE)
-                        // Send via BLE to master
-                        if (moduleConnectionStatus)
+                        keyStates[row][col] = reading;
+                        switch (keyMap[row][col])
                         {
-                            uint8_t data[1] = {keyMap[row][col]};
-                            psychoCharacteristic.writeValue(data, 1);
-                        }
+                        case 0:
+                            Serial.printf("Empty key %s\n", (reading ? "pressed" : "released"));
+                            break;
+                        default:
+#ifdef BLE_MASTER
+                            Serial.printf("Key %s %s\n", keyName[row][col], (reading ? "pressed" : "released"));
+#elif defined(BLE_SLAVE)
+                            if (moduleConnectionStatus)
+                            {
+                                uint8_t data[2] = {keyMap[row][col], (reading ? 1 : 0)};
+                                psychoCharacteristic.writeValue(data, 2);
+                            }
 #endif
-                        break;
+                            break;
+                        }
                     }
                 }
+                // Save the current reading for the next iteration.
+                lastReading[row][col] = reading;
                 pollCount[row][col]++;
             }
             GPIO.out_w1ts = (1ULL << rowPins[row]); // Reset the row pin
         }
+
         if (benchmark)
         {
-            // Print individual key polling rates unsigned long currentTime = millis();
             unsigned long currentTime = millis();
             if (currentTime - lastTime >= 1000)
             {
@@ -73,14 +87,13 @@ void matrixScan(void *parameters)
                     for (int col = 0; col < totalCols; col++)
                     {
                         Serial.printf("Key [%d][%d]: %lu\n", row, col, pollCount[row][col]);
-                        pollCount[row][col] = 0; // Reset the count for the next second
+                        pollCount[row][col] = 0;
                     }
                 }
                 lastTime = currentTime;
             }
         }
-        vTaskDelay(1); // allows other tasks to run, 1ms delay
-        // delayMicroseconds(500); // 0.5ms delay
+        vTaskDelay(1); // allow other tasks to run, 1ms delay
     }
 }
 
