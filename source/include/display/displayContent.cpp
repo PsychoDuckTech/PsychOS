@@ -16,6 +16,7 @@ void displayMainScreen(void *parameters)
 {
     displayTopBar(parameters);
     displayTime(parameters);
+    displayWPM(parameters);
     displayDemo(parameters);
 }
 
@@ -59,6 +60,21 @@ void displayTime(void *parameters)
 void clearTime(void *parameters)
 {
     tft.fillRect(75, 51, 90, 130, 0x10A2);
+}
+
+void displayWPM(void *parameters)
+{
+    clearWPM(parameters);
+    tft.setTextColor(0xDED9);
+    tft.setTextSize(1);
+    tft.setFont();
+    tft.setCursor(11, 304);
+    tft.print("WPM:" + String(WPMCounter::wpm));
+}
+
+void clearWPM(void *parameters)
+{
+    tft.fillRect(11, 304, 50, 16, 0x10A2);
 }
 
 void displayDemo(void *parameters)

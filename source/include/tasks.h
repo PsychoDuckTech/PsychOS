@@ -24,6 +24,10 @@
 #include "tasks/matrixScan.h"
 #include "tasks/matrixScan.cpp"
 
+// wpmCounter
+#include "tasks/wpmCounter.h"
+#include "tasks/wpmCounter.cpp"
+
 // mediaHandler
 // #include "tasks/mediaHandler.cpp"
 

@@ -86,6 +86,11 @@ void displayHandler(void *parameters)
                     displayTime(parameters);
                     updatedMinutes = false;
                 }
+                if (WPMCounter::updated)
+                {
+                    displayWPM(parameters);
+                    WPMCounter::updated = false;
+                }
             }
             break;
 

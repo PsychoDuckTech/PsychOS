@@ -1,5 +1,6 @@
 #include "matrixScan.h"
 #include "BLEHandler.h"
+#include "wpmCounter.h"
 
 extern BLECharacteristic psychoCharacteristic;
 
@@ -64,6 +65,11 @@ void matrixScan(void *parameters)
                     if (reading != keyStates[row][col])
                     {
                         keyStates[row][col] = reading;
+                        if (reading)
+                        { // Only on press events
+                            WPMCounter::recordKeyPress();
+                        }
+
                         switch (keyMap[row][col])
                         {
                         case 0:
