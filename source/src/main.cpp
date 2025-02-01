@@ -1,7 +1,6 @@
 /**
  * Prototype 0 Keyboard Matrix Configuration Refresh
  */
-#include <Arduino.h>
 #include "main.h"
 
 // GPIO assignment
@@ -41,6 +40,8 @@ void setup()
     delay(1000); // Wait for Serial to initialize
     Serial.begin(115200);
     Serial.println(String(OS_version) + ", " + byCompany);
+
+    initializeMatrix();
 
     startClockTask();
     startDisplayTask();
