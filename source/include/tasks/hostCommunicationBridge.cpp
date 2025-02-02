@@ -34,6 +34,12 @@ void hostCommunicationBridge(void *parameters)
                 ConsumerControl.press(CONSUMER_CONTROL_MUTE);
                 ConsumerControl.release();
                 break;
+            case KEY_PRESS:
+                Serial.println(receivedMessage.data);
+                break;
+            case KEY_RELEASE:
+                Serial.println(receivedMessage.data);
+                break;
             }
         }
     }

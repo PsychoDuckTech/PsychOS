@@ -76,15 +76,21 @@ void matrixScan(void *parameters)
                             Serial.printf("Empty key %s\n", (reading ? "pressed" : "released"));
                             break;
                         default:
-#ifdef BLE_MASTER
                             Serial.printf("Key %s %s\n", keyName[row][col], (reading ? "pressed" : "released"));
-#elif defined(BLE_SLAVE)
-                            if (moduleConnectionStatus)
+                            if (reading)
                             {
-                                uint8_t data[2] = {keyMap[row][col], (reading ? 1 : 0)};
-                                psychoCharacteristic.writeValue(data, 2);
+                                HostMessage msg;
+                                msg.type = KEY_PRESS;
+                                msg.data = keyMap[row][col];
+                                xQueueSend(hostMessageQueue, &msg, 0);
                             }
-#endif
+                            else
+                            {
+                                HostMessage msg;
+                                msg.type = KEY_RELEASE;
+                                msg.data = keyMap[row][col];
+                                xQueueSend(hostMessageQueue, &msg, 0);
+                            }
                             break;
                         }
                     }

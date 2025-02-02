@@ -21,31 +21,20 @@ void BLEHandler(void *parameter)
 
     bool wasConnected = false;
 
-#ifdef BLE_MASTER // MASTER SETUP
     BLE.setLocalName("Kibodo one");
     BLE.setDeviceName("Kibodo one");
     psychoService.addCharacteristic(psychoCharacteristic);
     BLE.addService(psychoService);
     BLE.advertise();
     Serial.println("BLE Master: Advertising for modules");
-#elif defined(BLE_SLAVE) // SLAVE SETUP
-    BLE.setLocalName("PsychoSlave");
-    BLE.setDeviceName("PsychoSlave");
-#endif
 
     for (;;)
     {
-#ifdef BLE_MASTER
         handleMasterBLE();
-#elif defined(BLE_SLAVE)
-        handleSlaveBLE();
-#endif
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
-// MASTER-SPECIFIC HANDLING
-#ifdef BLE_MASTER
 void handleMasterBLE()
 {
     static BLEDevice peripheral;
@@ -91,38 +80,13 @@ void handleMasterBLE()
             static bool lastCaps = false;
             if (capsLockStatus != lastCaps)
             {
-                uint8_t capsData[1] = {capsLockStatus ? 1 : 0};
+                uint8_t capsData[1] = {static_cast<uint8_t>(capsLockStatus ? 1 : 0)};
                 psychoCharacteristic.writeValue(capsData, 1);
                 lastCaps = capsLockStatus;
             }
         }
     }
 }
-#endif
-
-// SLAVE-SPECIFIC HANDLING
-#ifdef BLE_SLAVE
-void handleSlaveBLE()
-{
-    static bool autoConnected = false;
-
-    if (!autoConnected)
-    {
-        BLEDevice central = BLE.central();
-        if (central && central.localName() == "PsychoMaster")
-        {
-            Serial.println("Connected to master!");
-            moduleConnectionStatus = true;
-            autoConnected = true;
-        }
-    }
-
-    if (moduleConnectionStatus)
-    {
-        // Keypress data will be sent through matrixScan
-    }
-}
-#endif
 
 // Common function to handle received keypresses
 void handleReceivedKeypress(uint8_t *data, int length)
