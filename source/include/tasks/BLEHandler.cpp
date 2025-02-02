@@ -22,8 +22,8 @@ void BLEHandler(void *parameter)
     bool wasConnected = false;
 
 #ifdef BLE_MASTER // MASTER SETUP
-    BLE.setLocalName("PsychoMaster");
-    BLE.setDeviceName("PsychoMaster");
+    BLE.setLocalName("Kibodo one");
+    BLE.setDeviceName("Kibodo one");
     psychoService.addCharacteristic(psychoCharacteristic);
     BLE.addService(psychoService);
     BLE.advertise();
@@ -52,14 +52,30 @@ void handleMasterBLE()
 
     if (!BLE.connected())
     {
-        BLE.scanForName("PsychoNumpad"); // Target module name
+        BLE.scanForName("Tenki one");
         peripheral = BLE.available();
         if (peripheral)
         {
+            Serial.print("Found peripheral: ");
+            Serial.println(peripheral.localName());
             BLE.stopScan();
-            peripheral.connect();
-            psychoCharacteristic.subscribe();
-            moduleConnectionStatus = true;
+            if (peripheral.connect())
+            {
+                Serial.println("Connected to peripheral");
+                psychoCharacteristic.subscribe();
+                psychoCharacteristic.setEventHandler(BLEWritten, [](BLEDevice central, BLECharacteristic characteristic)
+                                                     {
+                    uint8_t data[2];
+                    int len = characteristic.readValue(data, 2);
+                    if (len > 0) {
+                        Serial.print("Received key data: ");
+                        Serial.print(data[0]);
+                        Serial.print(", ");
+                        Serial.println(data[1]);
+                        handleReceivedKeypress(data, len);
+                    } });
+                moduleConnectionStatus = true;
+            }
         }
     }
 
@@ -67,8 +83,10 @@ void handleMasterBLE()
     static bool lastCaps = false;
     if (capsLockStatus != lastCaps)
     {
-        uint8_t capsData[1] = {capsLockStatus ? 1 : 0};
+        uint8_t capsData[1] = {static_cast<uint8_t>(capsLockStatus ? 1 : 0)};
         psychoCharacteristic.writeValue(capsData, 1);
+        Serial.print("Sent CapsLock: ");
+        Serial.println(capsData[0]);
         lastCaps = capsLockStatus;
     }
 }
