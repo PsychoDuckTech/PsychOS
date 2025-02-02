@@ -1,5 +1,8 @@
 #include "hostCommunicationBridge.h"
 #include "commandProcessor.h"
+#include <USBHIDKeyboard.h>
+
+USBHIDKeyboard Keyboard;
 
 QueueHandle_t hostMessageQueue;
 USBHIDConsumerControl ConsumerControl;
@@ -8,6 +11,7 @@ void hostCommunicationBridge(void *parameters)
 {
     hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));
     HostMessage receivedMessage;
+    Keyboard.begin();
     ConsumerControl.begin();
 
     Serial.println("Host Communication Bridge started.");
@@ -35,10 +39,10 @@ void hostCommunicationBridge(void *parameters)
                 ConsumerControl.release();
                 break;
             case KEY_PRESS:
-                Serial.println(receivedMessage.data);
+                Keyboard.press(receivedMessage.data);
                 break;
             case KEY_RELEASE:
-                Serial.println(receivedMessage.data);
+                Keyboard.release(receivedMessage.data);
                 break;
             }
         }

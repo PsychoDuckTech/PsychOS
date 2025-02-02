@@ -129,5 +129,5 @@ class ESP32Driver:
 
 # Example usage:
 if __name__ == "__main__":
-    esp = ESP32Driver(port="/dev/ttyACM0")
+    esp = ESP32Driver(port="/dev/ttyACM1")
     esp.run_forever()
