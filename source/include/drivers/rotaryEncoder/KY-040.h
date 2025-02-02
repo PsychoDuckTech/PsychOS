@@ -15,7 +15,7 @@ private:
     bool _longPressEventDetected;
     static const unsigned long DIRECTION_LOCK_TIME = 150; // ms
     static const unsigned long BUTTON_DEBOUNCE = 50;
-    static const unsigned long LONG_PRESS_TIME = 150; // ms
+    static const unsigned long LONG_PRESS_TIME = 225; // ms
 
     // Double-tap detection variables
     static const unsigned long DOUBLE_PRESS_TIMEOUT = 250; // ms

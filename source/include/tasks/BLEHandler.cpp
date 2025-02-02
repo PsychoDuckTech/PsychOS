@@ -52,25 +52,24 @@ void handleMasterBLE()
 
     if (!BLE.connected())
     {
+        BLE.scanForName("PsychoNumpad"); // Target module name
         peripheral = BLE.available();
         if (peripheral)
         {
-            if (peripheral.localName() == "PsychoSlave")
-            {
-                BLE.stopAdvertise();
-                Serial.println("Connecting to slave...");
-                peripheral.connect();
-                psychoCharacteristic.subscribe();
-                moduleConnectionStatus = true;
-            }
+            BLE.stopScan();
+            peripheral.connect();
+            psychoCharacteristic.subscribe();
+            moduleConnectionStatus = true;
         }
     }
 
-    if (psychoCharacteristic.written())
+    // Send CapsLock status to module
+    static bool lastCaps = false;
+    if (capsLockStatus != lastCaps)
     {
-        uint8_t data[20];
-        int length = psychoCharacteristic.readValue(data, 20);
-        handleReceivedKeypress(data, length);
+        uint8_t capsData[1] = {capsLockStatus ? 1 : 0};
+        psychoCharacteristic.writeValue(capsData, 1);
+        lastCaps = capsLockStatus;
     }
 }
 #endif
