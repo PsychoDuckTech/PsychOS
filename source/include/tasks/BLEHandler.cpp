@@ -49,45 +49,53 @@ void BLEHandler(void *parameter)
 void handleMasterBLE()
 {
     static BLEDevice peripheral;
+    static bool wasConnected = false;
 
     if (!BLE.connected())
     {
+        if (wasConnected)
+        {
+            // Connection lost
+            moduleConnectionStatus = false;
+            wasConnected = false;
+            Serial.println("Disconnected from slave");
+        }
         BLE.scanForName("Tenki one");
         peripheral = BLE.available();
         if (peripheral)
         {
-            Serial.print("Found peripheral: ");
-            Serial.println(peripheral.localName());
             BLE.stopScan();
             if (peripheral.connect())
             {
-                Serial.println("Connected to peripheral");
                 psychoCharacteristic.subscribe();
-                psychoCharacteristic.setEventHandler(BLEWritten, [](BLEDevice central, BLECharacteristic characteristic)
-                                                     {
-                    uint8_t data[2];
-                    int len = characteristic.readValue(data, 2);
-                    if (len > 0) {
-                        Serial.print("Received key data: ");
-                        Serial.print(data[0]);
-                        Serial.print(", ");
-                        Serial.println(data[1]);
-                        handleReceivedKeypress(data, len);
-                    } });
                 moduleConnectionStatus = true;
+                wasConnected = true;
+                Serial.println("Connected to slave");
             }
         }
     }
-
-    // Send CapsLock status to module
-    static bool lastCaps = false;
-    if (capsLockStatus != lastCaps)
+    else
     {
-        uint8_t capsData[1] = {static_cast<uint8_t>(capsLockStatus ? 1 : 0)};
-        psychoCharacteristic.writeValue(capsData, 1);
-        Serial.print("Sent CapsLock: ");
-        Serial.println(capsData[0]);
-        lastCaps = capsLockStatus;
+        // Check if still connected
+        if (!peripheral.connected())
+        {
+            // Disconnected
+            moduleConnectionStatus = false;
+            wasConnected = false;
+            Serial.println("Disconnected from slave");
+            BLE.disconnect(); // Ensure clean disconnect
+        }
+        else
+        {
+            // Send CapsLock status
+            static bool lastCaps = false;
+            if (capsLockStatus != lastCaps)
+            {
+                uint8_t capsData[1] = {capsLockStatus ? 1 : 0};
+                psychoCharacteristic.writeValue(capsData, 1);
+                lastCaps = capsLockStatus;
+            }
+        }
     }
 }
 #endif
