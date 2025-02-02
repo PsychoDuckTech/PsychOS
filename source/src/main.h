@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Arduino.h>
+#include <USBHIDKeyboard.h>
 #include "translations/enUS.h"
 #include "drivers/multiplexer/CD74HC4067.h"
-#include "../include/usbHIDKeyCodes.h" // by MightyPork on GitHub, customized by GabiBrawl
+// #include "../include/usbHIDKeyCodes.h" // by MightyPork on GitHub, customized by GabiBrawl
 
 // Global Constants
 extern const char *OS_version;
