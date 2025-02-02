@@ -1,6 +1,5 @@
 <div align="center">
   <h1>PsychOS</h1>
-  <h2>Open Source Keyboard OS developed by PsychoDuck Tech</h2>
 </div>
 
 ## Supported Matrix Hardware Setups
@@ -56,6 +55,8 @@ We follow [Semantic Versioning 2.0.0](https://semver.org/) with:
 
 ## About
 This firmware was tested only on the ESP32-S3.
+
+Developed by PsychoDuck Tech.
 
 ## License
 This code is covered by the [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html) license **unless noted elsewhere**.
