@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "source",
+			"path": "../../temp/source"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.py": "python",
+			"array": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"deque": "cpp",
+			"unordered_map": "cpp",
+			"unordered_set": "cpp",
+			"vector": "cpp",
+			"initializer_list": "cpp",
+			"sstream": "cpp"
+		},
+		"mcu-debug.rtos-views.showRTOS": false,
+		"liveServer.settings.multiRootWorkspaceName": "source"
+	}
+}

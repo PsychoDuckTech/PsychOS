@@ -23,6 +23,7 @@ void knobHandler(void *parameters)
         int rotation = knob.readEncoder();
         bool longPress = knob.checkLongPress();
         bool shortPress = knob.checkButtonPress();
+        bool doublePress = knob.checkButtonDoublePress();
 
         if (currentScreen == SettingsScreen)
         {
@@ -118,6 +119,15 @@ void knobHandler(void *parameters)
             else
             {
                 switchScreen(MainScreen);
+            }
+        }
+
+        if (doublePress)
+        {
+            // Handle double press
+            if (currentScreen == MainScreen)
+            {
+                capsLockStatus = !capsLockStatus;
             }
         }
 

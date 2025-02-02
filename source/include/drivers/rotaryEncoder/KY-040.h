@@ -15,7 +15,13 @@ private:
     bool _longPressEventDetected;
     static const unsigned long DIRECTION_LOCK_TIME = 150; // ms
     static const unsigned long BUTTON_DEBOUNCE = 50;
-    static const unsigned long LONG_PRESS_TIME = 350; // ms
+    static const unsigned long LONG_PRESS_TIME = 150; // ms
+
+    // Double-tap detection variables
+    static const unsigned long DOUBLE_PRESS_TIMEOUT = 250; // ms
+    bool _pendingSinglePress = false;
+    unsigned long _pendingSinglePressTime = 0;
+    bool _doublePressDetected = false;
 
 public:
     KY040(int clkPin, int dtPin, int swPin)
@@ -84,17 +90,54 @@ public:
                 if (pressDuration < LONG_PRESS_TIME)
                 {
                     // Short press detected
-                    return true;
+                    if (!_pendingSinglePress)
+                    {
+                        // First press in potential double-tap
+                        _pendingSinglePress = true;
+                        _pendingSinglePressTime = currentTime;
+                    }
+                    else
+                    {
+                        // Second press within the timeout
+                        if (currentTime - _pendingSinglePressTime <= DOUBLE_PRESS_TIMEOUT)
+                        {
+                            _doublePressDetected = true;
+                            _pendingSinglePress = false;
+                        }
+                        else
+                        {
+                            // Second press after timeout, treat as new single press
+                            _pendingSinglePress = true;
+                            _pendingSinglePressTime = currentTime;
+                        }
+                    }
                 }
                 else
                 {
-                    // Long press detected, mark for checkLongPress()
+                    // Long press detected
                     _longPressEventDetected = true;
                 }
             }
             return false;
         }
 
+        // Check if pending single press has timed out
+        if (_pendingSinglePress && (currentTime - _pendingSinglePressTime) > DOUBLE_PRESS_TIMEOUT)
+        {
+            _pendingSinglePress = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool checkButtonDoublePress()
+    {
+        if (_doublePressDetected)
+        {
+            _doublePressDetected = false;
+            return true;
+        }
         return false;
     }
 
