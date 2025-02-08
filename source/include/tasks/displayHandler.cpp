@@ -18,6 +18,8 @@ RGBState rgbState = {
     .values = {255, 255, 255, 100}, // Default values
     .needsRefresh = true};
 
+extern bool updatedMinutes; // Declaration of external variable
+
 // Declare global variables
 Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
 ScreenType currentScreen = MainScreen;
