@@ -16,7 +16,7 @@ Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, M
 const int totalRows = 6;
 const int totalCols = 16;
 const int usesMultiplexer = true;
-const int rowPins[totalRows] = {21, 4, 3, 8, 11, 14};
+const int rowPins[totalRows] = {21, 4, 14, 10, 11, 9};
 
 // Key Mapping (Layer 0)
 const uint8_t keyMapL0[totalRows][totalCols] = {
