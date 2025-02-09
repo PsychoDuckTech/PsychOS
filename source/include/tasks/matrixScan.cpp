@@ -77,7 +77,10 @@ void matrixScan(void *parameters)
                             Serial.printf("Empty key %s\n", (reading ? "pressed" : "released"));
                             break;
                         default:
-                            Serial.printf("Key %s %s\n", keyName[row][col], (reading ? "pressed" : "released"));
+                            if (benchmark)
+                            {
+                                Serial.printf("Key %s %s\n", keyName[row][col], (reading ? "pressed" : "released"));
+                            }
                             if (reading)
                             {
                                 HostMessage msg;
