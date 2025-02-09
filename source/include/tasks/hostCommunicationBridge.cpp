@@ -1,6 +1,7 @@
 #include "hostCommunicationBridge.h"
 #include "commandProcessor.h"
 #include <USBHIDKeyboard.h>
+#include "wpmCounter.h"
 
 USBHIDKeyboard Keyboard;
 
@@ -39,6 +40,7 @@ void hostCommunicationBridge(void *parameters)
                 ConsumerControl.release();
                 break;
             case KEY_PRESS:
+                WPMCounter::recordKeyPress();
                 Keyboard.press(receivedMessage.data);
                 break;
             case KEY_RELEASE:

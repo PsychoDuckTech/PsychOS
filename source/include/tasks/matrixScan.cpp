@@ -1,13 +1,12 @@
 #include "matrixScan.h"
 #include "BLEHandler.h"
-#include "wpmCounter.h"
 
 extern BLECharacteristic psychoCharacteristic;
 
 #define keyMap keyMapL0
 #define keyName keyNameL0
 
-#define benchmark true
+#define benchmark false
 #define DEBOUNCE_DELAY_MS 10
 
 void matrixScan(void *parameters)
@@ -66,10 +65,6 @@ void matrixScan(void *parameters)
                     if (reading != keyStates[row][col])
                     {
                         keyStates[row][col] = reading;
-                        if (reading)
-                        { // Only on press events
-                            WPMCounter::recordKeyPress();
-                        }
 
                         switch (keyMap[row][col])
                         {
