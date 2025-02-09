@@ -104,20 +104,13 @@ void matrixScan(void *parameters)
 
         if (benchmark)
         {
-            unsigned long currentTime = millis();
-            if (currentTime - lastTime >= 1000)
+            unsigned long **pollCountPtr = new unsigned long *[totalRows];
+            for (int i = 0; i < totalRows; i++)
             {
-                Serial.println("Individual key polling rates (polls/sec):");
-                for (int row = 0; row < totalRows; row++)
-                {
-                    for (int col = 0; col < totalCols; col++)
-                    {
-                        Serial.printf("Key [%d][%d]: %lu\n", row, col, pollCount[row][col]);
-                        pollCount[row][col] = 0;
-                    }
-                }
-                lastTime = currentTime;
+                pollCountPtr[i] = pollCount[i];
             }
+            printKeyPollingRates(totalRows, totalCols, pollCountPtr, lastTime);
+            delete[] pollCountPtr;
         }
         vTaskDelay(1); // allow other tasks to run, 1ms delay
     }

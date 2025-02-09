@@ -4,6 +4,7 @@
 #include "main.h"
 #include "drivers/multiplexer/CD74HC4067.h"
 #include "utils/initializeMatrix.h"
+#include "utils/benchmark.cpp"
 
 // External Variables from main.cpp
 extern Multiplexer colPinsMultiplexer;
