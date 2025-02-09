@@ -4,11 +4,11 @@
 #include "main.h"
 
 // GPIO assignment
-#define MULTIPLEXER_S0 5
-#define MULTIPLEXER_S1 6
-#define MULTIPLEXER_S2 7
-#define MULTIPLEXER_S3 15
-#define MULTIPLEXER_SIG 35
+const int MULTIPLEXER_S0 = 5;
+const int MULTIPLEXER_S1 = 6;
+const int MULTIPLEXER_S2 = 7;
+const int MULTIPLEXER_S3 = 15;
+const int MULTIPLEXER_SIG = 35;
 
 Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, MULTIPLEXER_S3, MULTIPLEXER_SIG);
 
@@ -38,8 +38,13 @@ const char *keyNameL0[totalRows][totalCols] = {
 void setup()
 {
     delay(1000); // Wait for Serial to initialize
-    Serial.begin(115200);
-    Serial.println(String(OS_version) + ", " + byCompany);
+
+    const int serialBaudRate = 115200;
+    Serial.begin(serialBaudRate);
+
+    char versionString[50];
+    snprintf(versionString, sizeof(versionString), "%s, %s", OS_version, byCompany);
+    Serial.println(versionString);
 
     initializeMatrix();
 

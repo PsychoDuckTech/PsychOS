@@ -2,8 +2,11 @@ import time
 import serial
 import os
 from datetime import datetime
+import dbus
 
 class ESP32Driver:
+    SLEEP_DURATION = 0.4
+
     def __init__(self, port, baudrate=115200):
         self.port = port
         self.baudrate = baudrate
@@ -69,8 +72,8 @@ class ESP32Driver:
         if self.last_time_update is None or now.hour != self.last_time_update.hour:
             print("System time has changed, updating ESP32 time...")
             self.update_time_from_system()
-    
-    def get_playing_media():
+
+    def get_playing_media(self):
         try:
             session_bus = dbus.SessionBus()
             players = [service for service in session_bus.list_names() if service.startswith('org.mpris.MediaPlayer2.')]
@@ -86,7 +89,6 @@ class ESP32Driver:
             return "No Media"
         except Exception as e:
             return f"Error: {e}"
-
 
     @staticmethod
     def get_caps_lock_status():
@@ -121,7 +123,7 @@ class ESP32Driver:
                 self.handle_reconnection()
                 self.check_and_update_time()
                 self.update_caps_lock_status()
-                time.sleep(0.4)  # Check every .1 seconds
+                time.sleep(self.SLEEP_DURATION)  # Check every .4 seconds
         except KeyboardInterrupt:
             print("Exiting driver loop...")
         finally:

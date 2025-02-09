@@ -4,12 +4,11 @@
 #include <USBHIDKeyboard.h>
 #include "translations/enUS.h"
 #include "drivers/multiplexer/CD74HC4067.h"
-// #include "../include/usbHIDKeyCodes.h" // by MightyPork on GitHub, customized by GabiBrawl
 
 // Global Constants
 extern const char *OS_version;
 extern const char *byCompany;
-#define PRODUCT_NAME "Kibodo one"
+const char *PRODUCT_NAME = "Kibodo one";
 
 // Matrix Configuration
 extern const int totalRows;
