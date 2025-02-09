@@ -7,7 +7,7 @@ extern BLECharacteristic psychoCharacteristic;
 #define keyMap keyMapL0
 #define keyName keyNameL0
 
-#define benchmark false
+#define benchmark true
 #define DEBOUNCE_DELAY_MS 10
 
 void matrixScan(void *parameters)
@@ -30,7 +30,7 @@ void matrixScan(void *parameters)
         for (int col = 0; col < totalCols; col++) // Scan the column combination with the current row
         {
             colPinsMultiplexer.fastSelect(col);
-            ets_delay_us(4); // Small delay for electrical stability
+            ets_delay_us(2); // Reduced delay for electrical stability
 
             bool reading = (colPinsMultiplexer.readChannel() == LOW);
             keyStates[row][col] = reading;
@@ -42,6 +42,7 @@ void matrixScan(void *parameters)
 
     for (;;)
     {
+        unsigned long currentTime = millis(); // Cache the current time
         for (int row = 0; row < totalRows; row++)
         {
             GPIO.out_w1tc = (1ULL << rowPins[row]); // Activate current row pin
@@ -49,18 +50,18 @@ void matrixScan(void *parameters)
             for (int col = 0; col < totalCols; col++)
             {
                 colPinsMultiplexer.fastSelect(col);
-                ets_delay_us(4); // Small delay for electrical stability
+                ets_delay_us(2); // Reduced delay for electrical stability
 
                 bool reading = (colPinsMultiplexer.readChannel() == LOW);
 
                 // If the reading has changed from the last reading, reset the debounce timer.
                 if (reading != lastReading[row][col])
                 {
-                    lastDebounceTime[row][col] = millis();
+                    lastDebounceTime[row][col] = currentTime;
                 }
 
                 // If the reading is stable for longer than the debounce delay, update the confirmed state.
-                if ((millis() - lastDebounceTime[row][col]) > DEBOUNCE_DELAY_MS)
+                if ((currentTime - lastDebounceTime[row][col]) > DEBOUNCE_DELAY_MS)
                 {
                     if (reading != keyStates[row][col])
                     {
