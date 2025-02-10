@@ -3,6 +3,8 @@
  */
 #include "main.h"
 
+int moduleCount = 2; // Initialize with the actual number of connected modules
+
 // GPIO assignment
 const int MULTIPLEXER_S0 = 5;
 const int MULTIPLEXER_S1 = 6;

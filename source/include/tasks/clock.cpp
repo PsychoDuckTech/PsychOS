@@ -3,8 +3,8 @@
 
 int hours = 0;
 int minutes = 0;
-int seconds = 0;
-bool updatedMinutes = true;
+int seconds = 0; // Add this line
+bool updatedMinutes = false;
 
 void clockTask(void *parameters)
 {

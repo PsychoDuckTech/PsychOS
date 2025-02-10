@@ -9,6 +9,8 @@
 #define SW_PIN 0
 #define POLLING_RATE_MS 1 // 1 = 1000Hz, 2 = 500Hz
 
+extern int moduleCount; // Add this line at the top
+
 KY040 knob(CLK_PIN, DT_PIN, SW_PIN);
 
 void displayRGBSubmenu(void *parameters);
@@ -18,6 +20,10 @@ void knobHandler(void *parameters)
     knob.begin();
     Serial.println("Knob Handler started");
 
+    int lastRotation = 0;
+    unsigned long lastDebounceTime = 0;
+    const unsigned long debounceDelay = 50; // 50ms debounce delay
+
     for (;;)
     {
         int rotation = knob.readEncoder();
@@ -25,109 +31,34 @@ void knobHandler(void *parameters)
         bool shortPress = knob.checkButtonPress();
         bool doublePress = knob.checkButtonDoublePress();
 
-        if (currentScreen == SettingsScreen)
-        {
-            // Handle settings navigation
-            if (rotation != 0)
-            {
-                settingsSelectedOption = (settingsSelectedOption + (rotation > 0 ? 1 : -1)) % 4;
-                if (settingsSelectedOption < 0)
-                    settingsSelectedOption = 3;
-                displaySettingsScreen(nullptr); // Refresh display
-            }
+        unsigned long currentTime = millis();
 
-            if (shortPress)
-            {
-                // Handle submenu entry
-                switch (settingsSelectedOption)
-                {
-                case 0:
-                    switchScreen(ModulesSubmenu);
-                    break;
-                case 1:
-                    switchScreen(KeybindsSubmenu);
-                    break;
-                case 2:
-                    switchScreen(IntegrationsSubmenu);
-                    break;
-                case 3:
-                    switchScreen(RGBSubmenu);
-                    break;
-                }
-            }
+        if (rotation != lastRotation)
+        {
+            lastDebounceTime = currentTime;
+            lastRotation = rotation;
         }
-        else if (currentScreen == MainScreen)
+
+        if ((currentTime - lastDebounceTime) > debounceDelay)
         {
-            // Original volume handling
             if (rotation != 0)
             {
-                HostMessage msg;
-                msg.type = VOLUME_CHANGE;
-                msg.data = rotation;
-                xQueueSend(hostMessageQueue, &msg, 0);
+                handleRotation(rotation);
             }
 
             if (shortPress)
             {
-                HostMessage msg;
-                msg.type = VOLUME_MUTE;
-                msg.data = 0;
-                xQueueSend(hostMessageQueue, &msg, 0);
-            }
-        }
-        if (currentScreen == RGBSubmenu)
-        {
-            // Handle value changes
-            int rotation = knob.readEncoder();
-            if (rotation != 0)
-            {
-                int8_t delta = rotation > 0 ? 1 : -1;
-                if (rgbState.currentSelection == 3)
-                { // Brightness
-                    rgbState.values[3] = constrain(rgbState.values[3] + delta, 0, 100);
-                }
-                else
-                { // RGB channels
-                    rgbState.values[rgbState.currentSelection] =
-                        constrain(rgbState.values[rgbState.currentSelection] + delta, 0, 255);
-                }
-                rgbState.needsRefresh = true;
+                handleShortPress();
             }
 
-            // Handle selection change
-            if (shortPress)
-            {
-                rgbState.currentSelection = (rgbState.currentSelection + 1) % 4;
-                rgbState.needsRefresh = true;
-            }
-
-            // Exit on long press
             if (longPress)
             {
-                switchScreen(SettingsScreen);
-                firstDraw = true; // Reset for next entry
+                handleLongPress();
             }
-        }
 
-        // Long press handling
-        if (longPress)
-        {
-            if (currentScreen == MainScreen)
+            if (doublePress)
             {
-                switchScreen(SettingsScreen);
-            }
-            else
-            {
-                switchScreen(MainScreen);
-            }
-        }
-
-        if (doublePress)
-        {
-            // Handle double press
-            if (currentScreen == MainScreen)
-            {
-                capsLockStatus = !capsLockStatus;
+                handleDoublePress();
             }
         }
 
