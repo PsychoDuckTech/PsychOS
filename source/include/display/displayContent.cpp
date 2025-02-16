@@ -174,26 +174,108 @@ void displayRGBSubmenu(void *parameters)
 
 void displayClockSubmenu(void *parameters)
 {
-    tft.fillScreen(0x10A2); // Clear the screen with a background color
+    static int lastHours = -1;
+    static int lastMinutes = -1;
+    static int lastSeconds = -1;
+    static int lastSelectedOption = -1;
+
+    // Clear the screen when entering the submenu
+    if (lastHours == -1 && lastMinutes == -1 && lastSeconds == -1)
+    {
+        tft.fillScreen(0x10A2);
+    }
 
     tft.setTextSize(2);
-    tft.setTextColor(0xFFFF); // White color
+    tft.setTextColor(0xDED9);
     tft.setCursor(10, 30);
     tft.print("Set Time");
 
+    // Update only if values have changed
+    if (hours != lastHours)
+    {
+        tft.setTextSize(3);
+        tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
+        tft.setCursor(10, 70);
+        tft.print("Hours: ");
+        tft.setTextColor(0xFD40, 0x10A2);
+        tft.print(hours < 10 ? "0" : ""); // Append 0 for single digit
+        tft.print(hours);
+        lastHours = hours;
+    }
+
+    if (minutes != lastMinutes)
+    {
+        tft.setTextSize(3);
+        tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
+        tft.setCursor(10, 110);
+        tft.print("Minutes: ");
+        tft.setTextColor(0xFD40, 0x10A2);
+        tft.print(minutes < 10 ? "0" : ""); // Append 0 for single digit
+        tft.print(minutes);
+        lastMinutes = minutes;
+    }
+
     tft.setTextSize(3);
-    tft.setCursor(10, 70);
-    tft.print("Hours: ");
-    tft.print(hours);
-
-    tft.setCursor(10, 110);
-    tft.print("Minutes: ");
-    tft.print(minutes);
-
+    tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
     tft.setCursor(10, 150);
     tft.print("Seconds: ");
+    tft.setTextColor(0xFD40, 0x10A2);
+    tft.print(seconds < 10 ? "0" : ""); // Append 0 for single digit
     tft.print(seconds);
+    lastSeconds = seconds;
 
-    // Highlight the selected option
-    tft.drawRect(5, 65 + settingsSelectedOption * 40, 230, 40, 0xFD40);
+    // Highlight the selected option only if it has changed
+    if (settingsSelectedOption != lastSelectedOption)
+    {
+        tft.drawRect(5, 65 + lastSelectedOption * 40, 230, 40, 0x10A2);     // Clear previous highlight
+        tft.drawRect(5, 65 + settingsSelectedOption * 40, 230, 40, 0xFD40); // Draw new highlight
+        lastSelectedOption = settingsSelectedOption;
+    }
+}
+
+void displayModulesSubmenu(void *parameters)
+{
+    static bool firstDraw = true;
+    const char *noModuleMessage = "No module connected";
+    const char *moduleName = "Connected Module"; // Replace with actual module name
+
+    if (firstDraw)
+    {
+        tft.fillScreen(0x10A2);
+        tft.setTextSize(2);
+        tft.setFont(&FreeSansBold9pt7b);
+        tft.setTextColor(0xDED9);
+
+        // Draw title
+        int titleWidth = strlen("Modules") * 16; // Approximate width calculation
+        tft.setCursor((tft.width() - titleWidth) / 2, 40);
+        tft.print("Modules");
+
+        firstDraw = false;
+    }
+
+    // Clear previous module name or message
+    tft.fillRect(11, 85, 200, 35, 0x10A2);
+
+    // Display message or module name
+    tft.setCursor(11, 85);
+    if (!moduleConnectionStatus)
+    {
+        tft.setTextColor(0xF22B);
+        tft.print(noModuleMessage);
+    }
+    else
+    {
+        tft.setTextColor(0xDED9);
+        tft.print(moduleName);
+    }
+
+    // Footer text
+    tft.setTextSize(1);
+    tft.setFont();
+    tft.setTextColor(0x7BEF);
+    tft.setCursor(65, 296);
+    tft.print("Powered by PsychOS");
+    tft.setCursor(79, 305);
+    tft.print("build 0.1.4a");
 }
