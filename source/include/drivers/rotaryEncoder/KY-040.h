@@ -13,7 +13,7 @@ private:
     unsigned long _buttonPressStart;
     bool _buttonWasPressed;
     bool _longPressEventDetected;
-    static const unsigned long DIRECTION_LOCK_TIME = 150; // ms
+    static const unsigned long DIRECTION_LOCK_TIME = 200; // ms
     static const unsigned long BUTTON_DEBOUNCE = 50;
     static const unsigned long LONG_PRESS_TIME = 225; // ms
 
@@ -51,17 +51,26 @@ public:
             // If direction changed, check lock
             if (direction != _lastDirection)
             {
-                // If previous direction was locked, block opposite
+                // If previous direction was locked, return previous direction
                 if ((currentTime - _lastDirectionTime) < DIRECTION_LOCK_TIME)
                 {
                     _lastClk = currentClk;
-                    return 0;
+                    return _lastDirection;
                 }
             }
 
+            // Update the last state and direction
             _lastClk = currentClk;
             _lastDirection = direction;
             _lastDirectionTime = currentTime;
+
+            // Check for rapid direction changes
+            if ((currentTime - _lastDirectionTime) < DIRECTION_LOCK_TIME)
+            {
+                // If a rapid change is detected, return the previous direction
+                return _lastDirection;
+            }
+
             return direction;
         }
         return 0;

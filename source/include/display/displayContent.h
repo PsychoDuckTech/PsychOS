@@ -12,5 +12,6 @@ void displayWPM(void *parameters);
 void displayDemo(void *parameters);
 void displaySettingsScreen(void *parameters);
 void displayRGBSubmenu(void *parameters);
+void displayClockSubmenu(void *parameters);
 
 #endif // DISPLAY_CONTENT_H

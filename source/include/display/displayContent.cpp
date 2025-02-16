@@ -101,13 +101,12 @@ void displaySettingsScreen(void *parameters)
     tft.setTextSize(2);
     tft.setFont(&FreeSansBold9pt7b);
     tft.setTextColor(0xDED9);
-
     // Centered title
-    int titleWidth = strlen("Settings") * 12; // Approximate width calculation
+    int titleWidth = strlen("Settings") * 16; // Approximate width calculation
     tft.setCursor((tft.width() - titleWidth) / 2, 40);
     tft.print("Settings");
 
-    const char *menuItems[] = {"Modules", "RGB", "Clock", "IoT"};
+    const char *menuItems[] = {"Modules", "Lighting", "Clock", "Iot"};
 
     // Draw menu items
     tft.setTextSize(2);
@@ -130,9 +129,9 @@ void displaySettingsScreen(void *parameters)
     tft.setTextSize(1);
     tft.setFont();
     tft.setTextColor(0x7BEF);
-    tft.setCursor(50, 220);
+    tft.setCursor(65, 296);
     tft.print("Powered by PsychOS");
-    tft.setCursor(70, 235);
+    tft.setCursor(79, 305);
     tft.print("build 0.1.4a");
 }
 
@@ -173,88 +172,28 @@ void displayRGBSubmenu(void *parameters)
     }
 }
 
-void displayModulesSubmenu(void *parameters)
-{
-    tft.fillScreen(ILI9341_BLACK);
-    tft.setTextColor(ILI9341_WHITE);
-    tft.setTextSize(2);
-
-    // Centered title
-    int titleWidth = strlen("Modules") * 12; // Approximate width calculation
-    tft.setCursor((tft.width() - titleWidth) / 2, 10);
-    tft.print("Modules");
-
-    if (moduleConnectionStatus)
-    {
-        const char *modules[] = {"Module 1", "Module 2"}; // Replace with actual module names
-        int moduleCount = sizeof(modules) / sizeof(modules[0]);
-
-        for (int i = 0; i < moduleCount; i++)
-        {
-            tft.setCursor(10, 40 + (i * 30));
-            if (i == settingsSelectedOption)
-            {
-                tft.setTextColor(ILI9341_RED); // Highlight selected
-            }
-            else
-            {
-                tft.setTextColor(ILI9341_WHITE); // Normal color
-            }
-            tft.print(modules[i]);
-        }
-    }
-    else
-    {
-        int messageWidth = strlen("No modules are connected.") * 12; // Approximate width calculation
-        tft.setCursor((tft.width() - messageWidth) / 2, tft.height() / 2);
-        tft.print("No modules are connected.");
-    }
-}
-
 void displayClockSubmenu(void *parameters)
 {
-    tft.fillScreen(ILI9341_BLACK);
-    tft.setTextColor(ILI9341_WHITE);
+    tft.fillScreen(0x10A2); // Clear the screen with a background color
+
     tft.setTextSize(2);
+    tft.setTextColor(0xFFFF); // White color
+    tft.setCursor(10, 30);
+    tft.print("Set Time");
 
-    // Centered title
-    int titleWidth = strlen("Clock Settings") * 12; // Approximate width calculation
-    tft.setCursor((tft.width() - titleWidth) / 2, 10);
-    tft.print("Clock Settings");
-
-    // Display current time
-    tft.setCursor(10, 50);
+    tft.setTextSize(3);
+    tft.setCursor(10, 70);
     tft.print("Hours: ");
     tft.print(hours);
 
-    tft.setCursor(10, 90);
+    tft.setCursor(10, 110);
     tft.print("Minutes: ");
     tft.print(minutes);
 
-    tft.setCursor(10, 130);
+    tft.setCursor(10, 150);
     tft.print("Seconds: ");
     tft.print(seconds);
 
     // Highlight the selected option
-    switch (settingsSelectedOption)
-    {
-    case 0:
-        tft.setCursor(10, 50);
-        tft.setTextColor(ILI9341_RED);
-        tft.print("Hours: ");
-        tft.print(hours);
-        break;
-    case 1:
-        tft.setCursor(10, 90);
-        tft.setTextColor(ILI9341_RED);
-        tft.print("Minutes: ");
-        tft.print(minutes);
-        break;
-    case 2:
-        tft.setCursor(10, 130);
-        tft.setTextColor(ILI9341_RED);
-        tft.print("Seconds: ");
-        tft.print(seconds);
-        break;
-    }
+    tft.drawRect(5, 65 + settingsSelectedOption * 40, 230, 40, 0xFD40);
 }

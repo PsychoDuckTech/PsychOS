@@ -3,22 +3,13 @@
  */
 #include "main.h"
 
-int moduleCount = 2; // Initialize with the actual number of connected modules
-
-// GPIO assignment
-const int MULTIPLEXER_S0 = 5;
-const int MULTIPLEXER_S1 = 6;
-const int MULTIPLEXER_S2 = 7;
-const int MULTIPLEXER_S3 = 15;
-const int MULTIPLEXER_SIG = 35;
-
-Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, MULTIPLEXER_S3, MULTIPLEXER_SIG);
-
 // Matrix Configuration
-const int totalRows = 6;
-const int totalCols = 16;
-const int usesMultiplexer = true;
+const int totalRows = 6, totalCols = 16;
 const int rowPins[totalRows] = {21, 4, 14, 10, 11, 9};
+
+const int usesMultiplexer = true;
+const int MULTIPLEXER_S0 = 5, MULTIPLEXER_S1 = 6, MULTIPLEXER_S2 = 7, MULTIPLEXER_S3 = 15, MULTIPLEXER_SIG = 35;
+Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, MULTIPLEXER_S3, MULTIPLEXER_SIG);
 
 // Key Mapping (Layer 0)
 const uint8_t keyMapL0[totalRows][totalCols] = {
@@ -39,7 +30,7 @@ const char *keyNameL0[totalRows][totalCols] = {
 
 void setup()
 {
-    delay(1000); // Wait for Serial to initialize
+    delay(0); // Wait for Serial to initialize
 
     const int serialBaudRate = 115200;
     Serial.begin(serialBaudRate);
@@ -57,12 +48,7 @@ void setup()
     startKnobHandlerTask();
     startBleTask();
     startSerialTask();
-
-#ifdef BLE_MASTER
     startHostCommTask();
-#elif BLE_SLAVE
-    nullptr;
-#endif
 }
 
 void loop() {} // FreeRTOS handles tasks

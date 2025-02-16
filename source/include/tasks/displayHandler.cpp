@@ -50,18 +50,15 @@ void switchScreen(ScreenType newScreen)
         updateMainScreen = false; // Set flag to false when switching away from main screen
         displaySettingsScreen(nullptr);
         break;
-    case RGBSubmenu:
+    case RGBLightingSubmenu:
         updateMainScreen = false;
         rgbState.needsRefresh = true; // Force full redraw
-        break;
-    case ModulesSubmenu:
-        updateMainScreen = false;
-        displayModulesSubmenu(nullptr);
         break;
     case ClockSubmenu:
         updateMainScreen = false;
         displayClockSubmenu(nullptr);
         break;
+
         // Add cases for submenus here
     }
 
@@ -107,7 +104,7 @@ void displayHandler(void *parameters)
             // Screen is updated through knob interactions
             break;
 
-        case RGBSubmenu:
+        case RGBLightingSubmenu:
             displayRGBSubmenu(parameters);
             break;
 
@@ -134,107 +131,4 @@ void startDisplayTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseTyp
         &displayHandle,    // Task handle
         core               // Core where the task should run
     );
-}
-
-void handleRotation(int rotation)
-{
-    if (currentScreen == SettingsScreen)
-    {
-        settingsSelectedOption = (settingsSelectedOption + (rotation > 0 ? 1 : -1)) % 4;
-        if (settingsSelectedOption < 0)
-            settingsSelectedOption = 3;
-        displaySettingsScreen(nullptr); // Refresh display
-    }
-    else if (currentScreen == RGBSubmenu)
-    {
-        int8_t delta = rotation > 0 ? 1 : -1;
-        if (rgbState.currentSelection == 3)
-        { // Brightness
-            rgbState.values[3] = constrain(rgbState.values[3] + delta, 0, 100);
-        }
-        else
-        { // RGB channels
-            rgbState.values[rgbState.currentSelection] =
-                constrain(rgbState.values[rgbState.currentSelection] + delta, 0, 255);
-        }
-        rgbState.needsRefresh = true;
-        displayRGBSubmenu(nullptr); // Refresh display
-    }
-    else if (currentScreen == ModulesSubmenu)
-    {
-        settingsSelectedOption = (settingsSelectedOption + (rotation > 0 ? 1 : -1)) % moduleCount;
-        if (settingsSelectedOption < 0)
-            settingsSelectedOption = moduleCount - 1;
-        displayModulesSubmenu(nullptr); // Refresh display
-    }
-    else if (currentScreen == ClockSubmenu)
-    {
-        int8_t delta = rotation > 0 ? 1 : -1;
-        switch (settingsSelectedOption)
-        {
-        case 0:
-            hours = (hours + delta + 24) % 24;
-            break;
-        case 1:
-            minutes = (minutes + delta + 60) % 60;
-            break;
-        case 2:
-            seconds = (seconds + delta + 60) % 60;
-            break;
-        }
-        displayClockSubmenu(nullptr); // Refresh display
-    }
-}
-
-void handleShortPress()
-{
-    if (currentScreen == SettingsScreen)
-    {
-        switch (settingsSelectedOption)
-        {
-        case 0:
-            switchScreen(ModulesSubmenu);
-            break;
-        case 1:
-            switchScreen(KeybindsSubmenu);
-            break;
-        case 2:
-            switchScreen(IntegrationsSubmenu);
-            break;
-        case 3:
-            switchScreen(ClockSubmenu);
-            break;
-        }
-    }
-    else if (currentScreen == RGBSubmenu)
-    {
-        rgbState.currentSelection = (rgbState.currentSelection + 1) % 4;
-        rgbState.needsRefresh = true;
-        displayRGBSubmenu(nullptr); // Refresh display
-    }
-    else if (currentScreen == ClockSubmenu)
-    {
-        settingsSelectedOption = (settingsSelectedOption + 1) % 3;
-        displayClockSubmenu(nullptr); // Refresh display
-    }
-}
-
-void handleLongPress()
-{
-    if (currentScreen == MainScreen)
-    {
-        switchScreen(SettingsScreen);
-    }
-    else
-    {
-        switchScreen(MainScreen);
-    }
-}
-
-void handleDoublePress()
-{
-    if (currentScreen == MainScreen)
-    {
-        capsLockStatus = !capsLockStatus;
-    }
 }
