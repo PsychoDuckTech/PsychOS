@@ -49,7 +49,7 @@ void knobHandler(void *parameters)
             // Handle settings navigation
             if (rotation != 0)
             {
-                settingsSelectedOption = (settingsSelectedOption + (rotation > 0 ? 1 : -1)) % 4;
+                settingsSelectedOption = (settingsSelectedOption + (rotation > 0 ? -1 : 1)) % 4;
                 if (settingsSelectedOption < 0)
                     settingsSelectedOption = 3;
                 displaySettingsScreen(nullptr); // Refresh display

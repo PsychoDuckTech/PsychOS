@@ -106,7 +106,7 @@ void displaySettingsScreen(void *parameters)
     tft.setCursor((tft.width() - titleWidth) / 2, 40);
     tft.print("Settings");
 
-    const char *menuItems[] = {"Modules", "Lighting", "Clock", "Iot"};
+    const char *menuItems[] = {"Modules", "RGB Glow", "Clock", "IoT link"};
 
     // Draw menu items
     tft.setTextSize(2);

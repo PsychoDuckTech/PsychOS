@@ -13,6 +13,7 @@ extern bool moduleConnectionStatus;
 extern bool capsLockStatus;
 extern int hours;
 extern int minutes;
+extern int seconds;
 
 extern int settingsSelectedOption;
 extern bool inSettingsSubmenu;
