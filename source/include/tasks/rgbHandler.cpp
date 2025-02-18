@@ -13,6 +13,11 @@ CRGBPalette16 currentPalette;
 TBlendType currentBlending;
 unsigned long effectTimeout = 0;
 
+RGBState rgbState = {
+    .currentSelection = 0,
+    .values = {255, 255, 255, 25}, // Default values
+    .needsRefresh = true};
+
 // Base Effects
 void dynamicRainbow()
 {

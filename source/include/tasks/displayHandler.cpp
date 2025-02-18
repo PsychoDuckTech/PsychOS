@@ -13,11 +13,6 @@
 
 int firstDraw = 1;
 
-RGBState rgbState = {
-    .currentSelection = 0,
-    .values = {255, 255, 255, 100}, // Default values
-    .needsRefresh = true};
-
 extern bool updatedMinutes; // Declaration of external variable
 
 // Declare global variables
