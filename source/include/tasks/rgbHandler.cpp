@@ -2,8 +2,8 @@
 #include "rgbHandler.h"
 #include "commandProcessor.h"
 
-#define LED_DATA_PIN 38
-#define LED_CLK_PIN 39
+#define LED_DATA_PIN 3
+#define LED_CLK_PIN 46
 #define NUM_LEDS 60
 
 CRGB leds[NUM_LEDS];
@@ -221,12 +221,12 @@ void triggerSpecialEffect(uint8_t effectType)
     effectInterrupted = false;
 }
 
-void startLEDTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
+void startRgbHandlerTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
     TaskHandle_t ledTaskHandle;
     xTaskCreatePinnedToCore(
         ledTask,
-        "LED Handler",
+        "RGB Glow Handler",
         stackDepth,
         NULL,
         priority,

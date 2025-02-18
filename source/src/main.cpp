@@ -49,6 +49,7 @@ void setup()
     startBleTask();
     startSerialTask();
     startHostCommTask();
+    startRgbHandlerTask();
 }
 
 void loop() {} // FreeRTOS handles tasks

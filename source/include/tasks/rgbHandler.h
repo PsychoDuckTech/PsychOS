@@ -5,7 +5,7 @@
 
 void ledTask(void *parameters);
 void triggerSpecialEffect(uint8_t effectType);
-void startLEDTask(UBaseType_t core = 0, uint32_t stackDepth = 4096, UBaseType_t priority = 1);
+void startRgbHandlerTask(UBaseType_t core = 0, uint32_t stackDepth = 4096, UBaseType_t priority = 1);
 
 enum LEDEffects
 {

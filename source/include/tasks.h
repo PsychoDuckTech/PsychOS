@@ -36,3 +36,7 @@
 
 // serialHandler
 #include "tasks/serialHandler.cpp"
+
+// rgbHandler
+#include "tasks/rgbHandler.h"
+#include "tasks/rgbHandler.cpp"
