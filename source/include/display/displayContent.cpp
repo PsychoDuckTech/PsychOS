@@ -137,38 +137,58 @@ void displaySettingsScreen(void *parameters)
 
 void displayRGBSubmenu(void *parameters)
 {
-    static bool firstDraw = true;
     const char *rgbOptions[] = {"Red", "Green", "Blue", "Brightness"};
+    const int valueRanges[] = {255, 255, 255, 100};
 
-    if (firstDraw)
+    if (rgbState.needsRefresh)
     {
-        tft.fillScreen(0x10A2);
-        tft.setTextSize(1);
-        tft.setFont(&FreeSansBold9pt7b);
+        tft.fillScreen(BG_COLOR);
 
-        // Draw permanent labels
+        // Title
+        tft.setTextSize(2);
+        tft.setFont(&FreeSansBold9pt7b);
+        tft.setTextColor(TEXT_COLOR);
+        tft.setCursor(25, 30);
+        tft.print("RGB Glow");
+
+        // Draw all elements
         for (int i = 0; i < 4; i++)
         {
-            tft.setCursor(30, 60 + (i * 30));
-            tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
+            const int yPos = 70 + (i * 50);
+
+            // Option label
+            tft.setTextSize(1);
+            tft.setFont(&FreeSansBold9pt7b);
+            tft.setTextColor((i == rgbState.currentSelection) ? HIGHLIGHT_COLOR : TEXT_COLOR);
+            tft.setCursor(20, yPos - 5);
             tft.print(rgbOptions[i]);
+
+            // Value bar
+            const float fillWidth = map(rgbState.values[i], 0, valueRanges[i], 0, 160);
+            tft.fillRoundRect(20, yPos, 160, 20, 5, BG_COLOR);
+            tft.fillRoundRect(20, yPos, fillWidth, 20, 5, (i == rgbState.currentSelection) ? HIGHLIGHT_COLOR : SELECTED_COLOR);
+
+            // Value text
+            tft.setTextSize(1);
+            tft.setFont(&FreeMonoBold9pt7b);
+            tft.setCursor(190, yPos + 15);
+            tft.print(rgbState.values[i]);
+            if (i == 3)
+                tft.print("%");
         }
-        firstDraw = false;
-    }
 
-    // Update only dynamic elements
-    for (int i = 0; i < 4; i++)
-    {
-        // Selection highlight
-        tft.fillRect(25, 45 + (i * 30), 170, 25,
-                     (i == rgbState.currentSelection) ? 0x2945 : 0x10A2);
+        // Help text
+        tft.setTextSize(1);
+        tft.setFont();
+        tft.setTextColor(0x7BEF);
+        tft.setCursor(15, 250);
+        tft.print("Rotate: Adjust Value");
+        tft.setCursor(15, 258);
+        tft.print("Press: Next Parameter");
+        tft.setCursor(15, 266);
+        tft.print("Long Press: Quit to Menu");
 
-        // Value display
-        tft.setCursor(150, 60 + (i * 30));
-        tft.setTextColor((i == rgbState.currentSelection) ? 0xFD40 : 0xDED9,
-                         (i == rgbState.currentSelection) ? 0x2945 : 0x10A2);
-        tft.print(rgbState.values[i]);
-        tft.print(i == 3 ? "%" : "   "); // Add spaces to clear previous values
+        rgbState.needsRefresh = false;
     }
 }
 

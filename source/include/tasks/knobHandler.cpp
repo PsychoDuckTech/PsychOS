@@ -7,7 +7,7 @@
 #define CLK_PIN 2
 #define DT_PIN 36
 #define SW_PIN 0
-#define POLLING_RATE_MS 1 // 1 = 1000Hz, 2 = 500Hz
+#define POLLING_RATE_MS 1
 
 KY040 knob(CLK_PIN, DT_PIN, SW_PIN);
 
@@ -27,7 +27,6 @@ void knobHandler(void *parameters)
 
         if (currentScreen == MainScreen)
         {
-            // Original volume handling
             if (rotation != 0)
             {
                 HostMessage msg;
@@ -44,20 +43,19 @@ void knobHandler(void *parameters)
                 xQueueSend(hostMessageQueue, &msg, 0);
             }
         }
+
         if (currentScreen == SettingsScreen)
         {
-            // Handle settings navigation
             if (rotation != 0)
             {
                 settingsSelectedOption = (settingsSelectedOption + (rotation > 0 ? -1 : 1)) % 4;
                 if (settingsSelectedOption < 0)
                     settingsSelectedOption = 3;
-                displaySettingsScreen(nullptr); // Refresh display
+                displaySettingsScreen(nullptr);
             }
 
             if (shortPress)
             {
-                // Handle submenu entry
                 switch (settingsSelectedOption)
                 {
                 case 0:
@@ -75,39 +73,30 @@ void knobHandler(void *parameters)
                 }
             }
         }
+
         if (currentScreen == RGBLightingSubmenu)
         {
-            // Handle value changes
-            int rotation = knob.readEncoder();
             if (rotation != 0)
             {
                 int8_t delta = rotation > 0 ? 1 : -1;
-                if (rgbState.currentSelection == 3)
-                { // Brightness
-                    rgbState.values[3] = constrain(rgbState.values[3] + delta, 0, 100);
-                }
-                else
-                { // RGB channels
-                    rgbState.values[rgbState.currentSelection] =
-                        constrain(rgbState.values[rgbState.currentSelection] + delta, 0, 255);
-                }
+                uint8_t *currentValue = &rgbState.values[rgbState.currentSelection];
+                *currentValue = constrain(*currentValue + delta, 0, (rgbState.currentSelection == 3) ? 100 : 255);
                 rgbState.needsRefresh = true;
             }
 
-            // Handle selection change
             if (shortPress)
             {
                 rgbState.currentSelection = (rgbState.currentSelection + 1) % 4;
                 rgbState.needsRefresh = true;
             }
 
-            // Exit on long press
             if (longPress)
             {
                 switchScreen(SettingsScreen);
-                firstDraw = true; // Reset for next entry
+                firstDraw = true;
             }
         }
+
         if (currentScreen == ClockSubmenu)
         {
             if (rotation != 0)
@@ -125,18 +114,16 @@ void knobHandler(void *parameters)
                     seconds = (seconds + delta + 60) % 60;
                     break;
                 }
-
-                displayClockSubmenu(nullptr); // Refresh display
+                displayClockSubmenu(nullptr);
             }
 
             if (shortPress)
             {
                 settingsSelectedOption = (settingsSelectedOption + 1) % 3;
-                displayClockSubmenu(nullptr); // Refresh display
+                displayClockSubmenu(nullptr);
             }
         }
 
-        // Long press handling
         if (longPress)
         {
             if (currentScreen == MainScreen)
@@ -151,7 +138,6 @@ void knobHandler(void *parameters)
 
         if (doublePress)
         {
-            // Handle double press
             if (currentScreen == MainScreen)
             {
                 capsLockStatus = !capsLockStatus;

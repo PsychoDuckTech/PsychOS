@@ -1,6 +1,7 @@
 // Update ledHandler.cpp
 #include "rgbHandler.h"
 #include "commandProcessor.h"
+#include "globals.h"
 
 #define LED_DATA_PIN 3
 #define LED_CLK_PIN 46
@@ -14,9 +15,10 @@ TBlendType currentBlending;
 unsigned long effectTimeout = 0;
 
 RGBState rgbState = {
-    .currentSelection = 0,
-    .values = {255, 255, 255, 25}, // Default values
-    .needsRefresh = true};
+    0,                   // currentSelection
+    {127, 127, 127, 50}, // values
+    true                 // needsRefresh
+};
 
 // Base Effects
 void dynamicRainbow()
