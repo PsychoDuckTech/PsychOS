@@ -1,8 +1,6 @@
 #include "matrixScan.h"
 #include "BLEHandler.h"
 
-extern BLECharacteristic psychoCharacteristic;
-
 #define keyMap keyMapL0
 #define keyName keyNameL0
 
