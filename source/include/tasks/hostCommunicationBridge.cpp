@@ -10,7 +10,7 @@ USBHIDConsumerControl ConsumerControl;
 
 void hostCommunicationBridge(void *parameters)
 {
-    hostMessageQueue = xQueueCreate(10, sizeof(HostMessage));
+    hostMessageQueue = xQueueCreate(50, sizeof(HostMessage)); // Increased to 50
     HostMessage receivedMessage;
     Keyboard.begin();
     ConsumerControl.begin();
@@ -41,9 +41,13 @@ void hostCommunicationBridge(void *parameters)
                 break;
             case KEY_PRESS:
                 WPMCounter::recordKeyPress();
-                Keyboard.press(receivedMessage.data);
+                Serial.print("Sending KEY_PRESS to host: code=");
+                Serial.println(receivedMessage.data);
+                Keyboard.press(receivedMessage.data); // Using standard press
                 break;
             case KEY_RELEASE:
+                Serial.print("Sending KEY_RELEASE to host: code=");
+                Serial.println(receivedMessage.data);
                 Keyboard.release(receivedMessage.data);
                 break;
             }
@@ -55,12 +59,5 @@ void startHostCommTask(UBaseType_t core = 0, uint32_t stackDepth = 4096, UBaseTy
 {
     TaskHandle_t hostCommHandle;
     xTaskCreatePinnedToCore(
-        hostCommunicationBridge,     // Function to be called
-        "Host Communication Bridge", // Name of the task
-        stackDepth,                  // Stack size in words
-        NULL,                        // Task input parameter
-        priority,                    // Priority of the task
-        &hostCommHandle,             // Task handle
-        core                         // Core where the task should run
-    );
+        hostCommunicationBridge, "Host Communication Bridge", 8192, NULL, priority, &hostCommHandle, core); // Increased stack size
 }
