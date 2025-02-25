@@ -77,18 +77,45 @@ void starfieldEffect()
 void bleConnectedEffect()
 {
     static uint8_t center = NUM_LEDS / 2;
-    static uint8_t spread = 0;
+    static uint8_t wavePos = 0;
 
+    // Gentle fade for smooth transitions
     fadeToBlackBy(leds, NUM_LEDS, 20);
-    leds[center] = CHSV(160, 255, 255);
-    for (int i = 0; i < spread; i++)
+
+    // Ripple outward with a color gradient
+    for (int i = 0; i < NUM_LEDS; i++)
     {
-        if (center + i < NUM_LEDS)
-            leds[center + i].nscale8(200);
-        if (center - i >= 0)
-            leds[center - i].nscale8(200);
+        int distance = abs(i - center);
+        uint8_t brightness = sin8(wavePos + distance * 4);
+        brightness = scale8(brightness, 200);             // Subtle max brightness
+        uint8_t hue = map(distance, 0, center, 160, 180); // Blue to cyan
+        leds[i] = CHSV(hue, 255, brightness);
     }
-    spread = (spread + 1) % 8;
+
+    wavePos += 2; // Slow wave movement
+    FastLED.show();
+}
+
+void bleDisconnectedEffect()
+{
+    static uint8_t center = NUM_LEDS / 2;
+    static uint8_t wavePos = 0;
+
+    // Gentle fade for smooth transitions
+    fadeToBlackBy(leds, NUM_LEDS, 15);
+
+    // Ripple inward with a warm gradient
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+        int distance = abs(i - center);
+        // Inverse sine wave to pull light inward
+        uint8_t brightness = sin8(wavePos - distance * 3);
+        brightness = scale8(brightness, 180);           // Slightly dimmer max brightness
+        uint8_t hue = map(distance, 0, center, 30, 60); // Orange to yellow
+        leds[i] = CHSV(hue, 255, brightness);
+    }
+
+    wavePos += 2; // Slow wave movement
     FastLED.show();
 }
 
@@ -159,7 +186,6 @@ void ledTask(void *parameters)
                 if (currentBrightness > targetBrightness)
                     currentBrightness = targetBrightness;
                 FastLED.setBrightness(currentBrightness);
-                vTaskDelay(1 / portTICK_PERIOD_MS);
             }
             else
             {
@@ -216,7 +242,7 @@ void ledTask(void *parameters)
 void triggerSpecialEffect(uint8_t effectType)
 {
     effectInterrupted = true;
-    effectTimeout = millis() + 2000; // Show effect for 2 seconds
+    effectTimeout = millis() + 4000; // 4-second duration for both effects
 
     switch (effectType)
     {
@@ -229,19 +255,67 @@ void triggerSpecialEffect(uint8_t effectType)
         break;
 
     case EFFECT_BLE_CONNECTED:
+        // Outward ripple for ~2.5 seconds
         for (int i = 0; i < 50; i++)
         {
             bleConnectedEffect();
-            vTaskDelay(30 / portTICK_PERIOD_MS);
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+        // Contract back to center with a lingering glow
+        for (int i = 0; i < 30; i++)
+        {
+            fadeToBlackBy(leds, NUM_LEDS, 25);
+            uint8_t center = NUM_LEDS / 2;
+            for (int j = 0; j < NUM_LEDS; j++)
+            {
+                int distance = abs(j - center);
+                uint8_t brightness = sin8(255 - (i * 8 + distance * 4)); // Reverse wave
+                brightness = scale8(brightness, 180);                    // Softer glow
+                uint8_t hue = map(distance, 0, center, 160, 180);
+                leds[j] = CHSV(hue, 255, brightness);
+            }
+            FastLED.show();
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+        // Final fade to dark
+        for (int i = 180; i >= 0; i -= 6)
+        {
+            FastLED.setBrightness(i);
+            FastLED.show();
+            vTaskDelay(20 / portTICK_PERIOD_MS);
         }
         break;
 
     case EFFECT_BLE_DISCONNECTED:
-        fill_solid(leds, NUM_LEDS, CRGB::Red);
-        FastLED.show();
-        vTaskDelay(500);
-        FastLED.clear();
-        FastLED.show();
+        /* Inward ripple for ~2.5 seconds
+        for (int i = 0; i < 50; i++)
+        {
+            bleDisconnectedEffect();
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }*/
+        // Contract further with a dim glow
+        for (int i = 0; i < 30; i++)
+        {
+            fadeToBlackBy(leds, NUM_LEDS, 20);
+            uint8_t center = NUM_LEDS / 2;
+            for (int j = 0; j < NUM_LEDS; j++)
+            {
+                int distance = abs(j - center);
+                uint8_t brightness = sin8(255 - (i * 6 + distance * 3)); // Reverse wave
+                brightness = scale8(brightness, 150);                    // Dimmer glow
+                uint8_t hue = map(distance, 0, center, 30, 60);
+                leds[j] = CHSV(hue, 255, brightness);
+            }
+            FastLED.show();
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+        // Final fade to dark
+        for (int i = 150; i >= 0; i -= 5)
+        {
+            FastLED.setBrightness(i);
+            FastLED.show();
+            vTaskDelay(20 / portTICK_PERIOD_MS);
+        }
         break;
     }
     effectInterrupted = false;
