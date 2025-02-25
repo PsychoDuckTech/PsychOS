@@ -1,4 +1,3 @@
-// Update ledHandler.cpp
 #include "rgbHandler.h"
 #include "commandProcessor.h"
 #include "globals.h"
@@ -16,7 +15,7 @@ unsigned long effectTimeout = 0;
 
 RGBState rgbState = {
     0,                   // currentSelection
-    {127, 127, 127, 50}, // values
+    {127, 127, 127, 25}, // values
     true                 // needsRefresh
 };
 
@@ -136,26 +135,46 @@ void ledTask(void *parameters)
     FastLED.setCorrection(TypicalLEDStrip);
     FastLED.clear(true);
 
-    // Initial fade-in sequence
-    for (int bright = 0; bright <= rgbState.values[3]; bright++)
-    {
-        fill_solid(leds, NUM_LEDS, CRGB(rgbState.values[0], rgbState.values[1], rgbState.values[2]));
-        FastLED.setBrightness(map(bright, 0, 100, 0, 255));
-        FastLED.show();
-        vTaskDelay(30 / portTICK_PERIOD_MS);
-    }
+    // Set initial brightness to 0 for fade-in effect
+    FastLED.setBrightness(0);
+
+    // Start the base effect immediately
+    currentBaseEffect = EFFECT_DYNAMIC_RAINBOW; // Or any default effect you prefer
 
     for (;;)
     {
-        static uint8_t lastBrightness = rgbState.values[3];
+        static uint8_t lastBrightness = 0; // Track the last set brightness
+        static bool fadingIn = true;       // Flag to indicate if we are in fade-in phase
         static bool lastCaps = capsLockStatus;
         static bool lastBLEState = moduleConnectionStatus;
 
-        // Handle brightness changes
-        if (lastBrightness != rgbState.values[3])
+        // Handle fade-in effect
+        if (fadingIn)
         {
-            FastLED.setBrightness(map(rgbState.values[3], 0, 100, 0, 255));
-            lastBrightness = rgbState.values[3];
+            uint8_t targetBrightness = map(rgbState.values[3], 0, 100, 0, 255);
+            uint8_t currentBrightness = FastLED.getBrightness();
+            if (currentBrightness < targetBrightness)
+            {
+                currentBrightness += 1; // Increment brightness gradually
+                if (currentBrightness > targetBrightness)
+                    currentBrightness = targetBrightness;
+                FastLED.setBrightness(currentBrightness);
+                vTaskDelay(1 / portTICK_PERIOD_MS);
+            }
+            else
+            {
+                fadingIn = false; // Fade-in complete
+            }
+        }
+        else
+        {
+            // Handle brightness changes after fade-in
+            uint8_t targetBrightness = map(rgbState.values[3], 0, 100, 0, 255);
+            if (lastBrightness != targetBrightness)
+            {
+                FastLED.setBrightness(targetBrightness);
+                lastBrightness = targetBrightness;
+            }
         }
 
         // Handle effect interruptions
