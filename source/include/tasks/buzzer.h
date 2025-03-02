@@ -40,8 +40,8 @@ extern QueueHandle_t buzzerQueue;
 
 enum PredefinedSounds
 {
-    SOUND_CONNECT = 1,
-    SOUND_DISCONNECT = 2,
+    SOUND_CONNECT = 0,
+    SOUND_DISCONNECT = 1,
 };
 
 void buzzerTask(void *parameters);
