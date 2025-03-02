@@ -11,7 +11,7 @@
 QueueHandle_t buzzerQueue = NULL;
 
 const Melody predefinedMelodies[] = {
-    {{{1000, 200}, {1500, 200}}, 2}, // ID 1: Connect sound
+    {{{500, 500}, {1500, 200}}, 1},  // ID 1: Connect sound
     {{{1500, 200}, {1000, 200}}, 2}, // ID 2: Disconnect sound
 };
 

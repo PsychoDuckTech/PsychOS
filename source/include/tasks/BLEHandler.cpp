@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "utils/initializeBLE.h"
 #include "tasks/matrixScan.h"
+#include "tasks/buzzer.h"
 
 /*
 Target data flow: Slave Matrix -> BLE -> Master BLE -> Host Bridge -> USB HID
@@ -48,6 +49,7 @@ void handleMasterBLE()
             moduleConnectionStatus = false;
             wasConnected = false;
             Serial.println("Disconnected from slave");
+            buzzerPlayPredefined(SOUND_DISCONNECT);
         }
         BLE.scanForName("Tenki one");
         peripheral = BLE.available();
@@ -60,6 +62,7 @@ void handleMasterBLE()
                 moduleConnectionStatus = true;
                 wasConnected = true;
                 Serial.println("Connected to slave");
+                buzzerPlayPredefined(SOUND_CONNECT);
             }
         }
     }
