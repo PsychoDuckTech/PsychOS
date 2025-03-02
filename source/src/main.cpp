@@ -50,6 +50,10 @@ void setup()
     startSerialTask();
     startHostCommTask();
     startRgbHandlerTask();
+    startBuzzerTask();
+
+    buzzerPlayPredefined(2);
+    buzzerPlayPredefined(1);
 }
 
 void loop() {} // FreeRTOS handles tasks

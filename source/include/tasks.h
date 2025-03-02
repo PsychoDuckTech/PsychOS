@@ -40,3 +40,7 @@
 // rgbHandler
 #include "tasks/rgbHandler.h"
 #include "tasks/rgbHandler.cpp"
+
+// buzzer
+#include "tasks/buzzer.h"
+#include "tasks/buzzer.cpp"
