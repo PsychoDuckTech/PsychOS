@@ -52,8 +52,8 @@ void setup()
     startRgbHandlerTask();
     startBuzzerTask();
 
-    buzzerPlayPredefined(2);
-    buzzerPlayPredefined(1);
+    buzzerPlayPredefined(SOUND_DISCONNECT);
+    buzzerPlayPredefined(SOUND_CONNECT);
 }
 
 void loop() {} // FreeRTOS handles tasks

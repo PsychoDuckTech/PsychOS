@@ -38,6 +38,12 @@ typedef struct
 
 extern QueueHandle_t buzzerQueue;
 
+enum PredefinedSounds
+{
+    SOUND_CONNECT = 1,
+    SOUND_DISCONNECT = 2,
+};
+
 void buzzerTask(void *parameters);
 void startBuzzerTask(UBaseType_t core = 1, uint32_t stackDepth = 2048, UBaseType_t priority = 1);
 void buzzerPlayTone(uint16_t frequency, uint16_t duration);
