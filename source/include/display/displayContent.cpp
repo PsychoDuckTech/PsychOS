@@ -18,6 +18,7 @@ void displayMainScreen(void *parameters)
     displayTime(parameters);
     displayWPM(parameters);
     displayDemo(parameters);
+    displayLAYER(parameters);
 }
 
 void displayTopBar(void *parameters)
@@ -25,8 +26,8 @@ void displayTopBar(void *parameters)
     //.drawBitmap(11, 9, image_menu_settings_sliders_bits, 14, 16, 0xDED9);
     // tft.drawBitmap(157, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? 0x9C1F, BG_COLOR : 0xF22B, BG_COLOR);
     // tft.drawBitmap(182, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? 0x9C1F : 0xF22B);
-    tft.drawBitmap(11, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? 0x9C1F, BG_COLOR : 0xF22B, BG_COLOR);
-    tft.drawBitmap(36, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? 0x9C1F, BG_COLOR : 0xF22B, BG_COLOR);
+    tft.drawBitmap(11, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? SUCCESS_COLOR, BG_COLOR : ERROR_COLOR, BG_COLOR);
+    tft.drawBitmap(36, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR : BG_COLOR);
 
     tft.setTextSize(1);
     tft.setTextColor(0xDED9);
@@ -67,11 +68,15 @@ void clearTime(void *parameters)
 void displayWPM(void *parameters)
 {
     clearWPM(parameters);
-    tft.setTextColor(0xDED9);
-    tft.setTextSize(1);
+    tft.setTextColor(TEXT_COLOR);
+    tft.setTextSize(2);
     tft.setFont();
-    tft.setCursor(11, 304);
-    tft.print("WPM:" + String(WPMCounter::wpm));
+    tft.setCursor(11, 297);
+    tft.print(String(WPMCounter::wpm));
+    tft.setTextColor(MUTED_COLOR);
+    tft.setTextSize(1);
+    tft.setCursor(36, 304);
+    tft.print("WPM");
 }
 
 void clearWPM(void *parameters)
@@ -79,9 +84,28 @@ void clearWPM(void *parameters)
     tft.fillRect(11, 304, 50, 16, 0x10A2);
 }
 
+void displayLAYER(void *parameters)
+{
+    tft.setTextColor(MUTED_COLOR);
+    tft.setTextSize(1);
+    tft.setFont();
+    tft.setCursor(186, 304);
+    tft.print("LAYER");
+    tft.setTextColor(TEXT_COLOR);
+    tft.setTextSize(2);
+    tft.setCursor(219, 297);
+    tft.print("3");
+}
+
+void clearLAYER(void *parameters)
+{
+    tft.fillRect(11, 297, 50, 16, 0x10A2);
+}
+
 void displayDemo(void *parameters)
 {
     tft.setTextSize(1);
+    tft.setTextColor(TEXT_COLOR);
     tft.setFont(&FreeMonoBold12pt7b);
     tft.setCursor(18, 250);
     tft.print("Now Playing");
@@ -91,11 +115,6 @@ void displayDemo(void *parameters)
     tft.print("Bury you - Ari.");
 
     tft.drawBitmap(198, 263, image_music_play_bits, 15, 16, 0xDED9);
-
-    tft.setFont();
-    tft.setTextColor(0xFD40);
-    tft.setCursor(90, 304);
-    tft.print("3D Modeling");
 }
 
 void displaySettingsScreen(void *parameters)

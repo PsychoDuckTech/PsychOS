@@ -19,6 +19,9 @@ RGBState rgbState = {
     true                 // needsRefresh
 };
 
+// Declare lastBrightness at file scope to make it accessible across functions
+static uint8_t lastBrightness = 0;
+
 // Base Effects
 void dynamicRainbow()
 {
@@ -170,8 +173,7 @@ void ledTask(void *parameters)
 
     for (;;)
     {
-        static uint8_t lastBrightness = 0; // Track the last set brightness
-        static bool fadingIn = true;       // Flag to indicate if we are in fade-in phase
+        static bool fadingIn = true; // Flag to indicate if we are in fade-in phase
         static bool lastCaps = capsLockStatus;
         static bool lastBLEState = moduleConnectionStatus;
 
@@ -235,6 +237,7 @@ void ledTask(void *parameters)
         }
 
         updateBaseEffect();
+        FastLED.show(); // Ensure the LEDs are updated
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
@@ -255,12 +258,12 @@ void triggerSpecialEffect(uint8_t effectType)
         break;
 
     case EFFECT_BLE_CONNECTED:
-        // Outward ripple for ~2.5 seconds
+        /* Outward ripple for ~2.5 seconds
         for (int i = 0; i < 50; i++)
         {
             bleConnectedEffect();
             vTaskDelay(50 / portTICK_PERIOD_MS);
-        }
+        }*/
         // Contract back to center with a lingering glow
         for (int i = 0; i < 30; i++)
         {
@@ -277,13 +280,13 @@ void triggerSpecialEffect(uint8_t effectType)
             FastLED.show();
             vTaskDelay(50 / portTICK_PERIOD_MS);
         }
-        // Final fade to dark
+        /* Final fade to dark
         for (int i = 180; i >= 0; i -= 6)
         {
             FastLED.setBrightness(i);
             FastLED.show();
             vTaskDelay(20 / portTICK_PERIOD_MS);
-        }
+        }*/
         break;
 
     case EFFECT_BLE_DISCONNECTED:
@@ -309,15 +312,21 @@ void triggerSpecialEffect(uint8_t effectType)
             FastLED.show();
             vTaskDelay(50 / portTICK_PERIOD_MS);
         }
-        // Final fade to dark
+        /* Final fade to dark
         for (int i = 150; i >= 0; i -= 5)
         {
             FastLED.setBrightness(i);
             FastLED.show();
             vTaskDelay(20 / portTICK_PERIOD_MS);
-        }
+        }*/
         break;
     }
+
+    // Restore target brightness after the effect
+    uint8_t targetBrightness = map(rgbState.values[3], 0, 100, 0, 255);
+    FastLED.setBrightness(targetBrightness);
+    lastBrightness = targetBrightness; // Now accessible due to file-scope declaration
+    FastLED.show();
     effectInterrupted = false;
 }
 
