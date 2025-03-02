@@ -4,7 +4,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
-#define MAX_MELODY_NOTES 10
+#define MAX_MELODY_NOTES 20
 
 typedef enum
 {
@@ -42,6 +42,7 @@ enum PredefinedSounds
 {
     SOUND_CONNECT = 0,
     SOUND_DISCONNECT = 1,
+    SOUND_COOL_MELODY = 2,
 };
 
 void buzzerTask(void *parameters);
