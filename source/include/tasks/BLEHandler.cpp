@@ -123,13 +123,17 @@ void BLEHandler(void *parameter)
                     uint8_t data[2];
                     if (moduleChar.readValue(data, 2))
                     {
-                        uint8_t keyCode = data[0]; // HID usage ID from BLE
+                        uint8_t keyCode = data[0];
                         bool isPressed = data[1] == 1;
+                        Serial.print("Received key event: code=");
+                        Serial.print(keyCode);
+                        Serial.print(", state=");
+                        Serial.println(isPressed ? "pressed" : "released");
 
-                        HostMessage msg;
-                        msg.type = isPressed ? KEY_PRESS : KEY_RELEASE;
-                        msg.data = keyCode; // Directly pass HID code
-                        xQueueSend(hostMessageQueue, &msg, 0);
+                        // Interpret the received key code as HID
+                        handleReceivedKeypress(data, 2);
+
+                        lastKeyTime = currentTime;
                     }
                 }
             }
@@ -145,6 +149,48 @@ void BLEHandler(void *parameter)
         }
         vTaskDelay(10 / portTICK_PERIOD_MS); // Reverted to 10ms
     }
+}
+
+void handleReceivedKeypress(uint8_t *data, int length)
+{
+    uint8_t keyCode = data[0];
+    bool isPressed = data[1] == 1;
+
+    // Conversion table for number pad keys
+    switch (keyCode)
+    {
+        case 0x53: keyCode = KEY_F5; break;
+        case 0x54: keyCode = HID_KEY_KEYPAD_DIVIDE; break;
+        case 0x55: keyCode = HID_KEY_KEYPAD_MULTIPLY; break;
+        case 0x56: keyCode = HID_KEY_KEYPAD_SUBTRACT; break;
+        case 0x57: keyCode = HID_KEY_KEYPAD_ADD; break;
+        case 0x58: keyCode = HID_KEY_KEYPAD_ENTER; break;
+        case 0x59: keyCode = 0x31; break;
+        case 0x5A: keyCode = 0x32; break;
+        case 0x5B: keyCode = 0x33; break;
+        case 0x5C: keyCode = 0x34; break;
+        case 0x5D: keyCode = 0x35; break;
+        case 0x5E: keyCode = 0x36; break;
+        case 0x5F: keyCode = 0x37; break;
+        case 0x60: keyCode = 0x38; break;
+        case 0x61: keyCode = 0x39; break;
+        case 0x62: keyCode = 0x30; break;
+        case 0x63: keyCode = HID_KEY_KEYPAD_DECIMAL; break;
+        default:
+            break;
+    }
+
+    HostMessage msg;
+    msg.type = isPressed ? KEY_PRESS : KEY_RELEASE;
+    msg.data = keyCode;
+
+    // Send the HID key code to the host message queue
+    xQueueSend(hostMessageQueue, &msg, 0);
+
+    Serial.print("Handled HID key event: code=");
+    Serial.print(keyCode);
+    Serial.print(", state=");
+    Serial.println(isPressed ? "pressed" : "released");
 }
 
 void startBleTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
