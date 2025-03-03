@@ -42,7 +42,7 @@ enum PredefinedSounds
 {
     SOUND_CONNECT = 0,
     SOUND_DISCONNECT = 1,
-    SOUND_COOL_MELODY = 2,
+    SOUND_ERROR = 2,
 };
 
 void buzzerTask(void *parameters);

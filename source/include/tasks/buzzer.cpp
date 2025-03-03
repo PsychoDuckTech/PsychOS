@@ -11,8 +11,9 @@
 QueueHandle_t buzzerQueue = NULL;
 
 const Melody predefinedMelodies[] = {
-    {{{1000, 100}, {1254, 100}}, 2}, // ID 1: Connect sound
-    {{{500, 200}}, 1},               // ID 2: Disconnect sound
+    {{{304, 50}, {402, 50}}, 2},                          // ID 1: Connect sound
+    {{{100, 140}}, 1},                                    // ID 2: Disconnect sound
+    {{{69, 69}, {0, 25}, {69, 69}, {0, 25}, {69, 69}}, 5} // SOUND_ERROR
 };
 
 void setupBuzzerPWM()

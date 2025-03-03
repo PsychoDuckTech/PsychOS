@@ -19,7 +19,9 @@
 			"unordered_set": "cpp",
 			"vector": "cpp",
 			"initializer_list": "cpp",
-			"sstream": "cpp"
+			"sstream": "cpp",
+			"typeinfo": "cpp",
+			"chrono": "cpp"
 		},
 		"mcu-debug.rtos-views.showRTOS": false,
 		"liveServer.settings.multiRootWorkspaceName": "source"

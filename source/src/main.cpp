@@ -51,8 +51,6 @@ void setup()
     startHostCommTask();
     startRgbHandlerTask();
     startBuzzerTask();
-
-    buzzerPlayPredefined(SOUND_COOL_MELODY);
 }
 
 void loop() {} // FreeRTOS handles tasks

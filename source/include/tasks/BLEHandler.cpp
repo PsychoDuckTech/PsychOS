@@ -123,47 +123,13 @@ void BLEHandler(void *parameter)
                     uint8_t data[2];
                     if (moduleChar.readValue(data, 2))
                     {
-                        uint8_t keyCode = data[0];
+                        uint8_t keyCode = data[0]; // HID usage ID from BLE
                         bool isPressed = data[1] == 1;
-                        Serial.print("Received key event: code=");
-                        Serial.print(keyCode);
-                        Serial.print(", state=");
-                        Serial.println(isPressed ? "pressed" : "released");
 
                         HostMessage msg;
                         msg.type = isPressed ? KEY_PRESS : KEY_RELEASE;
-                        msg.data = keyCode;
-
-                        if (isPressed)
-                        {
-                            bool alreadyActive = false;
-                            for (int i = 0; i < activeKeyCount; i++)
-                            {
-                                if (activeModuleKeys[i] == keyCode)
-                                {
-                                    alreadyActive = true;
-                                    break;
-                                }
-                            }
-                            if (!alreadyActive && activeKeyCount < 6)
-                            {
-                                activeModuleKeys[activeKeyCount++] = keyCode;
-                            }
-                        }
-                        else
-                        {
-                            for (int i = 0; i < activeKeyCount; i++)
-                            {
-                                if (activeModuleKeys[i] == keyCode)
-                                {
-                                    activeModuleKeys[i] = activeModuleKeys[--activeKeyCount];
-                                    activeModuleKeys[activeKeyCount] = 0;
-                                    break;
-                                }
-                            }
-                        }
+                        msg.data = keyCode; // Directly pass HID code
                         xQueueSend(hostMessageQueue, &msg, 0);
-                        lastKeyTime = currentTime;
                     }
                 }
             }
