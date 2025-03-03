@@ -8,7 +8,7 @@
 // Global Constants
 extern const char *OS_version;
 extern const char *byCompany;
-const char *PRODUCT_NAME = "Kibodo one";
+const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "キーボード" (kiiboodo)
 
 // Matrix Configuration
 extern const int totalRows;
