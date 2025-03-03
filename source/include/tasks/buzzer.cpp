@@ -11,22 +11,8 @@
 QueueHandle_t buzzerQueue = NULL;
 
 const Melody predefinedMelodies[] = {
-    {{{500, 200}, {1000, 200}}, 2}, // ID 1: Connect sound
-    {{{500, 500}}, 1},              // ID 2: Disconnect sound
-    {{
-         {110, 100}, // 808 kick (A2)
-         {0, 50},    // Sidechain pause
-         {110, 50},  // 808 tail
-         {0, 100},   // Groove space
-         {220, 150}, // Hi-hat (A3)
-         {0, 50},    // Syncopation
-         {165, 200}, // Bass slide start (E3)
-         {139, 150}, // Bass slide down (C#3)
-         {0, 100},   // Drop anticipation
-         {440, 300}, // "Flute" lead (A4)
-     },
-     12}
-
+    {{{1000, 100}, {1254, 100}}, 2}, // ID 1: Connect sound
+    {{{500, 200}}, 1},               // ID 2: Disconnect sound
 };
 
 void setupBuzzerPWM()

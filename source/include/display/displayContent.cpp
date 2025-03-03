@@ -81,7 +81,7 @@ void displayWPM(void *parameters)
 
 void clearWPM(void *parameters)
 {
-    tft.fillRect(11, 304, 50, 16, 0x10A2);
+    tft.fillRect(11, 297, 50, 16, 0x10A2);
 }
 
 void displayLAYER(void *parameters)

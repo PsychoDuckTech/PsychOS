@@ -19,9 +19,6 @@ BLECharacteristic psychoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite |
 void BLEHandler(void *parameter)
 {
     initializeBLE();
-
-    bool wasConnected = false;
-
     BLE.setLocalName("Kibodo one");
     BLE.setDeviceName("Kibodo one");
     psychoService.addCharacteristic(psychoCharacteristic);
@@ -29,88 +26,164 @@ void BLEHandler(void *parameter)
     BLE.advertise();
     Serial.println("BLE Master: Advertising for modules");
 
+    static BLEDevice peripheral;
+    static BLECharacteristic moduleChar;
+    static bool wasConnected = false;
+    static uint8_t activeModuleKeys[6] = {0};
+    static int activeKeyCount = 0;
+    static unsigned long lastKeyTime = 0; // Debounce for rapid keys
+
     for (;;)
     {
-        handleMasterBLE();
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }
-}
+        unsigned long currentTime = millis();
 
-void handleMasterBLE()
-{
-    static BLEDevice peripheral;
-    static bool wasConnected = false;
-
-    if (!BLE.connected())
-    {
-        if (wasConnected)
+        if (!BLE.connected() || !peripheral.connected())
         {
-            // Connection lost
-            moduleConnectionStatus = false;
-            wasConnected = false;
-            Serial.println("Disconnected from slave");
-            buzzerPlayPredefined(SOUND_DISCONNECT);
-        }
-        BLE.scanForName("Tenki one");
-        peripheral = BLE.available();
-        if (peripheral)
-        {
-            BLE.stopScan();
-            if (peripheral.connect())
+            if (wasConnected)
             {
-                psychoCharacteristic.subscribe();
-                moduleConnectionStatus = true;
-                wasConnected = true;
-                Serial.println("Connected to slave");
-                buzzerPlayPredefined(SOUND_CONNECT);
+                for (int i = 0; i < activeKeyCount; i++)
+                {
+                    HostMessage msg;
+                    msg.type = KEY_RELEASE;
+                    msg.data = activeModuleKeys[i];
+                    xQueueSend(hostMessageQueue, &msg, 0);
+                    Serial.print("Released stuck key on disconnect: ");
+                    Serial.println(activeModuleKeys[i]);
+                }
+                activeKeyCount = 0;
+                memset(activeModuleKeys, 0, sizeof(activeModuleKeys));
+
+                moduleConnectionStatus = false;
+                wasConnected = false;
+                Serial.println("Disconnected from slave");
+                peripheral = BLEDevice();
+                moduleChar = BLECharacteristic();
+                BLE.disconnect();
+                BLE.stopScan();
+                BLE.advertise();
+                buzzerPlayPredefined(SOUND_DISCONNECT);
             }
-        }
-    }
-    else
-    {
-        // Check if still connected
-        if (!peripheral.connected())
-        {
-            // Disconnected
-            moduleConnectionStatus = false;
-            wasConnected = false;
-            Serial.println("Disconnected from slave");
-            BLE.disconnect(); // Ensure clean disconnect
+
+            BLE.scanForName("Tenki one");
+            peripheral = BLE.available();
+            if (peripheral)
+            {
+                BLE.stopScan();
+                if (peripheral.connect())
+                {
+                    if (peripheral.discoverAttributes())
+                    {
+                        BLEService service = peripheral.service(SERVICE_UUID);
+                        if (service)
+                        {
+                            moduleChar = service.characteristic(CHARACTERISTIC_UUID);
+                            if (moduleChar)
+                            {
+                                if (moduleChar.subscribe())
+                                {
+                                    moduleConnectionStatus = true;
+                                    wasConnected = true;
+                                    Serial.println("Connected to slave and subscribed to characteristic");
+                                    buzzerPlayPredefined(SOUND_CONNECT);
+                                }
+                                else
+                                {
+                                    Serial.println("Failed to subscribe to characteristic");
+                                    peripheral.disconnect();
+                                }
+                            }
+                            else
+                            {
+                                Serial.println("Characteristic not found");
+                                peripheral.disconnect();
+                            }
+                        }
+                        else
+                        {
+                            Serial.println("Service not found");
+                            peripheral.disconnect();
+                        }
+                    }
+                    else
+                    {
+                        Serial.println("Failed to discover attributes");
+                        peripheral.disconnect();
+                    }
+                }
+            }
         }
         else
         {
-            // Send CapsLock status
+            BLE.poll();
+            if (moduleChar && moduleChar.valueUpdated())
+            {
+                // Rate limit to prevent overflow
+                if (currentTime - lastKeyTime > 20)
+                { // 20ms debounce
+                    uint8_t data[2];
+                    if (moduleChar.readValue(data, 2))
+                    {
+                        uint8_t keyCode = data[0];
+                        bool isPressed = data[1] == 1;
+                        Serial.print("Received key event: code=");
+                        Serial.print(keyCode);
+                        Serial.print(", state=");
+                        Serial.println(isPressed ? "pressed" : "released");
+
+                        HostMessage msg;
+                        msg.type = isPressed ? KEY_PRESS : KEY_RELEASE;
+                        msg.data = keyCode;
+
+                        if (isPressed)
+                        {
+                            bool alreadyActive = false;
+                            for (int i = 0; i < activeKeyCount; i++)
+                            {
+                                if (activeModuleKeys[i] == keyCode)
+                                {
+                                    alreadyActive = true;
+                                    break;
+                                }
+                            }
+                            if (!alreadyActive && activeKeyCount < 6)
+                            {
+                                activeModuleKeys[activeKeyCount++] = keyCode;
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 0; i < activeKeyCount; i++)
+                            {
+                                if (activeModuleKeys[i] == keyCode)
+                                {
+                                    activeModuleKeys[i] = activeModuleKeys[--activeKeyCount];
+                                    activeModuleKeys[activeKeyCount] = 0;
+                                    break;
+                                }
+                            }
+                        }
+                        xQueueSend(hostMessageQueue, &msg, 0);
+                        lastKeyTime = currentTime;
+                    }
+                }
+            }
+
             static bool lastCaps = false;
-            if (capsLockStatus != lastCaps)
+            if (capsLockStatus != lastCaps && moduleChar.canWrite())
             {
                 uint8_t capsData[1] = {static_cast<uint8_t>(capsLockStatus ? 1 : 0)};
-                psychoCharacteristic.writeValue(capsData, 1);
+                moduleChar.writeValue(capsData, 1);
                 lastCaps = capsLockStatus;
+                Serial.println("Sent CapsLock status to module");
             }
         }
+        vTaskDelay(10 / portTICK_PERIOD_MS); // Reverted to 10ms
     }
-}
-
-// Common function to handle received keypresses
-void handleReceivedKeypress(uint8_t *data, int length)
-{
-    // Convert BLE data to keypress (to be handled in HostCommunicationBridge)
-    HostMessage msg;
-    msg.type = KEY_PRESS;
-    msg.data = data[0]; // First byte is keycode
-    xQueueSend(hostMessageQueue, &msg, 0);
 }
 
 void startBleTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
     TaskHandle_t bleTaskHandle;
     xTaskCreatePinnedToCore(
-        BLEHandler,     // Function to be called
-        "BLE Handler",  // Name of the task
-        stackDepth,     // Stack size in words
-        NULL,           // Task input parameter
-        priority,       // Priority of the task
-        &bleTaskHandle, // Task handle
-        core            // Core where the task should run
-    );
+        BLEHandler, "BLE Handler", 20480, NULL, priority, &bleTaskHandle, core); // Increased stack size
 }
