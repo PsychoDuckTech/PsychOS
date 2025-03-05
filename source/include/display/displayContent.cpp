@@ -215,62 +215,58 @@ void displayRGBSubmenu(void *parameters)
 
 void displayClockSubmenu(void *parameters)
 {
-    static int lastHours = -1;
-    static int lastMinutes = -1;
-    static int lastSeconds = -1;
     static int lastSelectedOption = -1;
+    static int lastValues[3] = {-1, -1, -1}; // Track last values to detect changes
 
-    // Clear the screen when entering the submenu
-    if (lastHours == -1 && lastMinutes == -1 && lastSeconds == -1)
-    {
-        tft.fillScreen(0x10A2);
-    }
+    if (lastSelectedOption == -1)
+        tft.fillScreen(BG_COLOR); // Initial draw
 
+    tft.setFont(&FreeSansBold9pt7b);
     tft.setTextSize(2);
-    tft.setTextColor(0xDED9);
-    tft.setCursor(10, 30);
+    tft.setTextColor(TEXT_COLOR);
+    tft.setCursor(40, 30);
     tft.print("Set Time");
 
-    // Update only if values have changed
-    if (hours != lastHours)
+    const char *labels[] = {"Hours", "Minutes", "Seconds"};
+    int values[] = {hours, minutes, seconds};
+    for (int i = 0; i < 3; i++)
     {
-        tft.setTextSize(3);
-        tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
-        tft.setCursor(10, 70);
-        tft.print("Hours: ");
-        tft.setTextColor(0xFD40, 0x10A2);
-        tft.print(hours < 10 ? "0" : ""); // Append 0 for single digit
-        tft.print(hours);
-        lastHours = hours;
+        int yPos = 80 + (i * 50);
+
+        // Clear the area of the previously selected option or if the value has changed
+        if (i == lastSelectedOption || values[i] != lastValues[i])
+        {
+            tft.fillRect(10, yPos - 15, 220, 40, BG_COLOR);
+        }
+
+        if (i == settingsSelectedOption)
+        {
+            tft.fillRect(10, yPos - 15, 220, 40, SELECTED_COLOR);
+        }
+
+        tft.setFont(&FreeSansBold9pt7b);
+        tft.setTextSize(1);
+        tft.setTextColor(TEXT_COLOR);
+        tft.setCursor(20, yPos);
+        tft.print(labels[i]);
+        tft.setCursor(120, yPos);
+        tft.setTextColor(i == settingsSelectedOption ? HIGHLIGHT_COLOR : TEXT_COLOR);
+        char valStr[3];
+        sprintf(valStr, "%02d", values[i]);
+        tft.print(valStr);
     }
 
-    if (minutes != lastMinutes)
-    {
-        tft.setTextSize(3);
-        tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
-        tft.setCursor(10, 110);
-        tft.print("Minutes: ");
-        tft.setTextColor(0xFD40, 0x10A2);
-        tft.print(minutes < 10 ? "0" : ""); // Append 0 for single digit
-        tft.print(minutes);
-        lastMinutes = minutes;
-    }
+    // Hint text
+    tft.setFont();
+    tft.setTextSize(1);
+    tft.setTextColor(MUTED_COLOR);
+    tft.setCursor(20, 280);
+    tft.print("Rotate: Adjust | Press: Next");
 
-    tft.setTextSize(3);
-    tft.setTextColor(0xDED9, 0x10A2); // Text color, background color
-    tft.setCursor(10, 150);
-    tft.print("Seconds: ");
-    tft.setTextColor(0xFD40, 0x10A2);
-    tft.print(seconds < 10 ? "0" : ""); // Append 0 for single digit
-    tft.print(seconds);
-    lastSeconds = seconds;
-
-    // Highlight the selected option only if it has changed
-    if (settingsSelectedOption != lastSelectedOption)
+    lastSelectedOption = settingsSelectedOption; // Track for partial updates
+    for (int i = 0; i < 3; i++)
     {
-        tft.drawRect(5, 65 + lastSelectedOption * 40, 230, 40, 0x10A2);     // Clear previous highlight
-        tft.drawRect(5, 65 + settingsSelectedOption * 40, 230, 40, 0xFD40); // Draw new highlight
-        lastSelectedOption = settingsSelectedOption;
+        lastValues[i] = values[i]; // Update last values
     }
 }
 
