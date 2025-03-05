@@ -1,344 +1,151 @@
 #include "rgbHandler.h"
-#include "commandProcessor.h"
-#include "globals.h"
 
-#define LED_DATA_PIN 3
-#define LED_CLK_PIN 46
-#define NUM_LEDS 60
+// Changed definition to default initialization to match the extern declaration in globals.h
+RGBState rgbState;
 
+QueueHandle_t rgbCommandQueue = NULL;
 CRGB leds[NUM_LEDS];
-uint8_t currentBaseEffect = EFFECT_DYNAMIC_RAINBOW;
-bool effectInterrupted = false;
-CRGBPalette16 currentPalette;
-TBlendType currentBlending;
-unsigned long effectTimeout = 0;
+RGBEffectConfig currentEffect = {RGB_EFFECT_STATIC, 128, 255};
+RGBEffectConfig previousEffect;
+CRGB effectColors[MAX_COLORS];
+uint8_t numColors = 1;
+uint8_t currentBrightness = 255;
+bool inTemporaryEffect = false;
+unsigned long temporaryEffectEnd = 0;
 
-RGBState rgbState = {
-    0,                   // currentSelection
-    {127, 127, 127, 25}, // values
-    true                 // needsRefresh
-};
-
-// Declare lastBrightness at file scope to make it accessible across functions
-static uint8_t lastBrightness = 0;
-
-// Base Effects
-void dynamicRainbow()
+CRGB hexToCRGB(const char *hexColor)
 {
-    static uint8_t hue = 0;
-    fill_rainbow(leds, NUM_LEDS, hue++, 7);
-    FastLED.show();
+    long number = strtol(&hexColor[1], NULL, 16);
+    return CRGB((number >> 16) & 0xFF, (number >> 8) & 0xFF, number & 0xFF);
 }
 
-void colorWave()
+void applyConnectionEffect()
 {
-    static uint8_t hue = 0;
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
-        leds[i] = CHSV(hue + (i * 10), 255, rgbState.values[3] * 2.55);
-    }
-    hue += 2;
-    FastLED.show();
+    RGBCommand cmd;
+    cmd.type = RGB_CMD_SET_EFFECT;
+    cmd.data.effect.config = {RGB_EFFECT_SCROLL, 50, 255};
+    strncpy(cmd.data.effect.colors[0], "#0000FF", HEX_COLOR_LENGTH);
+    strncpy(cmd.data.effect.colors[1], "#000000", HEX_COLOR_LENGTH);
+    cmd.data.effect.num_colors = 2;
+    cmd.data.effect.temporary = true;
+    cmd.data.effect.duration_ms = 2000;
+    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
 }
 
-void fireEffect()
+void applyDisconnectionEffect()
 {
-    static uint8_t heat[NUM_LEDS];
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
-        heat[i] = qsub8(heat[i], random8(0, 35));
-    }
-
-    for (int j = NUM_LEDS - 1; j >= 2; j--)
-    {
-        heat[j] = (heat[j - 1] + heat[j - 2] + heat[j - 2]) / 3;
-    }
-
-    if (random8() < 40)
-    {
-        heat[random8(4)] = random8(160, 255);
-    }
-
-    for (int k = 0; k < NUM_LEDS; k++)
-    {
-        leds[k] = ColorFromPalette(HeatColors_p, heat[k]);
-    }
-    FastLED.show();
+    RGBCommand cmd;
+    cmd.type = RGB_CMD_SET_EFFECT;
+    cmd.data.effect.config = {RGB_EFFECT_FLASH, 100, 255};
+    strncpy(cmd.data.effect.colors[0], "#FF0000", HEX_COLOR_LENGTH);
+    strncpy(cmd.data.effect.colors[1], "#000000", HEX_COLOR_LENGTH);
+    cmd.data.effect.num_colors = 2;
+    cmd.data.effect.temporary = true;
+    cmd.data.effect.duration_ms = 1000;
+    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
 }
 
-void starfieldEffect()
+void restorePreviousEffect()
 {
-    fadeToBlackBy(leds, NUM_LEDS, 10);
-    if (random8() < 30)
+    if (inTemporaryEffect)
     {
-        leds[random16(NUM_LEDS)] = CRGB::White;
-    }
-    FastLED.show();
-}
-
-// Special Effects
-void bleConnectedEffect()
-{
-    static uint8_t center = NUM_LEDS / 2;
-    static uint8_t wavePos = 0;
-
-    // Gentle fade for smooth transitions
-    fadeToBlackBy(leds, NUM_LEDS, 20);
-
-    // Ripple outward with a color gradient
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
-        int distance = abs(i - center);
-        uint8_t brightness = sin8(wavePos + distance * 4);
-        brightness = scale8(brightness, 200);             // Subtle max brightness
-        uint8_t hue = map(distance, 0, center, 160, 180); // Blue to cyan
-        leds[i] = CHSV(hue, 255, brightness);
-    }
-
-    wavePos += 2; // Slow wave movement
-    FastLED.show();
-}
-
-void bleDisconnectedEffect()
-{
-    static uint8_t center = NUM_LEDS / 2;
-    static uint8_t wavePos = 0;
-
-    // Gentle fade for smooth transitions
-    fadeToBlackBy(leds, NUM_LEDS, 15);
-
-    // Ripple inward with a warm gradient
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
-        int distance = abs(i - center);
-        // Inverse sine wave to pull light inward
-        uint8_t brightness = sin8(wavePos - distance * 3);
-        brightness = scale8(brightness, 180);           // Slightly dimmer max brightness
-        uint8_t hue = map(distance, 0, center, 30, 60); // Orange to yellow
-        leds[i] = CHSV(hue, 255, brightness);
-    }
-
-    wavePos += 2; // Slow wave movement
-    FastLED.show();
-}
-
-void capsWarningEffect()
-{
-    static uint8_t pulseVal = 0;
-    static int8_t direction = 1;
-
-    pulseVal += direction;
-    if (pulseVal >= 100 || pulseVal <= 0)
-        direction *= -1;
-
-    fill_gradient_RGB(leds, NUM_LEDS,
-                      CHSV(40, 255, map(pulseVal, 0, 100, 50, 255)),
-                      CHSV(40, 255, map(pulseVal, 0, 100, 20, 150)));
-    FastLED.show();
-}
-
-void updateBaseEffect()
-{
-    switch (currentBaseEffect)
-    {
-    case EFFECT_DYNAMIC_RAINBOW:
-        dynamicRainbow();
-        break;
-    case EFFECT_COLOR_WAVE:
-        colorWave();
-        break;
-    case EFFECT_FIRE:
-        fireEffect();
-        break;
-    case EFFECT_STARFIELD:
-        starfieldEffect();
-        break;
-    case EFFECT_OFF:
-        FastLED.clear(true);
-        break;
+        RGBCommand cmd;
+        cmd.type = RGB_CMD_SET_EFFECT;
+        cmd.data.effect.config = previousEffect;
+        cmd.data.effect.num_colors = numColors;
+        cmd.data.effect.temporary = false;
+        xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
     }
 }
 
-void ledTask(void *parameters)
+void rgbTask(void *parameters)
 {
-    FastLED.addLeds<APA102, LED_DATA_PIN, LED_CLK_PIN, BGR>(leds, NUM_LEDS);
+    FastLED.addLeds<APA102, 3, 46, BGR>(leds, NUM_LEDS);
     FastLED.setCorrection(TypicalLEDStrip);
     FastLED.clear(true);
+    FastLED.setBrightness(currentBrightness);
+    FastLED.show();
 
-    // Set initial brightness to 0 for fade-in effect
-    FastLED.setBrightness(0);
-
-    // Start the base effect immediately
-    currentBaseEffect = EFFECT_DYNAMIC_RAINBOW; // Or any default effect you prefer
+    RGBCommand cmd;
+    effectColors[0] = CRGB::White; // Default color
 
     for (;;)
     {
-        static bool fadingIn = true; // Flag to indicate if we are in fade-in phase
-        static bool lastCaps = capsLockStatus;
-        static bool lastBLEState = moduleConnectionStatus;
-
-        // Handle fade-in effect
-        if (fadingIn)
+        // Check temporary effect timeout
+        if (inTemporaryEffect && millis() > temporaryEffectEnd)
         {
-            uint8_t targetBrightness = map(rgbState.values[3], 0, 100, 0, 255);
-            uint8_t currentBrightness = FastLED.getBrightness();
-            if (currentBrightness < targetBrightness)
+            restorePreviousEffect();
+        }
+
+        // Process commands
+        while (xQueueReceive(rgbCommandQueue, &cmd, 0) == pdTRUE)
+        {
+            switch (cmd.type)
             {
-                currentBrightness += 1; // Increment brightness gradually
-                if (currentBrightness > targetBrightness)
-                    currentBrightness = targetBrightness;
+            case RGB_CMD_SET_EFFECT:
+            {
+                if (cmd.data.effect.temporary)
+                {
+                    previousEffect = currentEffect;
+                    inTemporaryEffect = true;
+                    temporaryEffectEnd = millis() + cmd.data.effect.duration_ms;
+                }
+
+                currentEffect = cmd.data.effect.config;
+                numColors = cmd.data.effect.num_colors;
+
+                for (int i = 0; i < numColors; i++)
+                {
+                    effectColors[i] = hexToCRGB(cmd.data.effect.colors[i]);
+                }
+                break;
+            }
+
+            case RGB_CMD_SET_BRIGHTNESS:
+                currentBrightness = cmd.data.brightness.brightness;
                 FastLED.setBrightness(currentBrightness);
+                break;
+
+            case RGB_CMD_TRIGGER_EVENT:
+                switch (cmd.data.trigger.event_type)
+                {
+                case RGB_EVENT_CONNECT:
+                    applyConnectionEffect();
+                    break;
+                case RGB_EVENT_DISCONNECT:
+                    applyDisconnectionEffect();
+                    break;
+                case RGB_EVENT_CAPS_WARNING:
+                    // Implement caps warning effect
+                    break;
+                }
+                break;
             }
-            else
-            {
-                fadingIn = false; // Fade-in complete
-            }
-        }
-        else
-        {
-            // Handle brightness changes after fade-in
-            uint8_t targetBrightness = map(rgbState.values[3], 0, 100, 0, 255);
-            if (lastBrightness != targetBrightness)
-            {
-                FastLED.setBrightness(targetBrightness);
-                lastBrightness = targetBrightness;
-            }
         }
 
-        // Handle effect interruptions
-        if (effectInterrupted)
+        // Apply current effect
+        switch (currentEffect.effect)
         {
-            if (millis() > effectTimeout)
-            {
-                effectInterrupted = false;
-            }
-            continue;
+        case RGB_EFFECT_STATIC:
+            fill_solid(leds, NUM_LEDS, effectColors[0]);
+            break;
+            // Add other effect implementations
         }
 
-        // Handle automatic effect changes
-        if (!moduleConnectionStatus && currentBaseEffect == EFFECT_STARFIELD)
-        {
-            currentBaseEffect = EFFECT_DYNAMIC_RAINBOW;
-        }
-
-        // Handle BLE connection events
-        if (moduleConnectionStatus != lastBLEState)
-        {
-            triggerSpecialEffect(moduleConnectionStatus ? EFFECT_BLE_CONNECTED : EFFECT_BLE_DISCONNECTED);
-            lastBLEState = moduleConnectionStatus;
-        }
-
-        // Handle caps lock state changes
-        if (capsLockStatus != lastCaps)
-        {
-            if (capsLockStatus)
-                triggerSpecialEffect(EFFECT_CAPS_WARNING);
-            lastCaps = capsLockStatus;
-        }
-
-        updateBaseEffect();
-        FastLED.show(); // Ensure the LEDs are updated
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        FastLED.show();
+        vTaskDelay(pdMS_TO_TICKS(currentEffect.speed / 16));
     }
 }
 
-void triggerSpecialEffect(uint8_t effectType)
+void startRgbTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
-    effectInterrupted = true;
-    effectTimeout = millis() + 4000; // 4-second duration for both effects
-
-    switch (effectType)
-    {
-    case EFFECT_CAPS_WARNING:
-        for (int i = 0; i < 50; i++)
-        {
-            capsWarningEffect();
-            vTaskDelay(30 / portTICK_PERIOD_MS);
-        }
-        break;
-
-    case EFFECT_BLE_CONNECTED:
-        /* Outward ripple for ~2.5 seconds
-        for (int i = 0; i < 50; i++)
-        {
-            bleConnectedEffect();
-            vTaskDelay(50 / portTICK_PERIOD_MS);
-        }*/
-        // Contract back to center with a lingering glow
-        for (int i = 0; i < 30; i++)
-        {
-            fadeToBlackBy(leds, NUM_LEDS, 25);
-            uint8_t center = NUM_LEDS / 2;
-            for (int j = 0; j < NUM_LEDS; j++)
-            {
-                int distance = abs(j - center);
-                uint8_t brightness = sin8(255 - (i * 8 + distance * 4)); // Reverse wave
-                brightness = scale8(brightness, 180);                    // Softer glow
-                uint8_t hue = map(distance, 0, center, 160, 180);
-                leds[j] = CHSV(hue, 255, brightness);
-            }
-            FastLED.show();
-            vTaskDelay(50 / portTICK_PERIOD_MS);
-        }
-        /* Final fade to dark
-        for (int i = 180; i >= 0; i -= 6)
-        {
-            FastLED.setBrightness(i);
-            FastLED.show();
-            vTaskDelay(20 / portTICK_PERIOD_MS);
-        }*/
-        break;
-
-    case EFFECT_BLE_DISCONNECTED:
-        /* Inward ripple for ~2.5 seconds
-        for (int i = 0; i < 50; i++)
-        {
-            bleDisconnectedEffect();
-            vTaskDelay(50 / portTICK_PERIOD_MS);
-        }*/
-        // Contract further with a dim glow
-        for (int i = 0; i < 30; i++)
-        {
-            fadeToBlackBy(leds, NUM_LEDS, 20);
-            uint8_t center = NUM_LEDS / 2;
-            for (int j = 0; j < NUM_LEDS; j++)
-            {
-                int distance = abs(j - center);
-                uint8_t brightness = sin8(255 - (i * 6 + distance * 3)); // Reverse wave
-                brightness = scale8(brightness, 150);                    // Dimmer glow
-                uint8_t hue = map(distance, 0, center, 30, 60);
-                leds[j] = CHSV(hue, 255, brightness);
-            }
-            FastLED.show();
-            vTaskDelay(50 / portTICK_PERIOD_MS);
-        }
-        /* Final fade to dark
-        for (int i = 150; i >= 0; i -= 5)
-        {
-            FastLED.setBrightness(i);
-            FastLED.show();
-            vTaskDelay(20 / portTICK_PERIOD_MS);
-        }*/
-        break;
-    }
-
-    // Restore target brightness after the effect
-    uint8_t targetBrightness = map(rgbState.values[3], 0, 100, 0, 255);
-    FastLED.setBrightness(targetBrightness);
-    lastBrightness = targetBrightness; // Now accessible due to file-scope declaration
-    FastLED.show();
-    effectInterrupted = false;
-}
-
-void startRgbHandlerTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
-{
-    TaskHandle_t ledTaskHandle;
+    rgbCommandQueue = xQueueCreate(10, sizeof(RGBCommand));
     xTaskCreatePinnedToCore(
-        ledTask,
-        "RGB Glow Handler",
+        rgbTask,
+        "RGB Handler",
         stackDepth,
         NULL,
         priority,
-        &ledTaskHandle,
+        NULL,
         core);
 }

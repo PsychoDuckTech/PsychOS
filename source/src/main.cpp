@@ -49,8 +49,19 @@ void setup()
     startBleTask(1, 32000, 1);
     startSerialTask();
     startHostCommTask();
-    startRgbHandlerTask();
+    startRgbTask();
     startBuzzerTask();
+
+    // Updated staticCmd initialization using strncpy
+    RGBCommand staticCmd;
+    staticCmd.type = RGB_CMD_SET_EFFECT;
+    staticCmd.data.effect.config = {RGB_EFFECT_STATIC, 255, 255};
+    strncpy(staticCmd.data.effect.colors[0], "#0000FF", HEX_COLOR_LENGTH);
+    staticCmd.data.effect.colors[0][HEX_COLOR_LENGTH - 1] = '\0';
+    staticCmd.data.effect.num_colors = 1;
+    staticCmd.data.effect.temporary = false;
+
+    xQueueSend(rgbCommandQueue, &staticCmd, portMAX_DELAY);
 }
 
 void loop() {} // FreeRTOS handles tasks
