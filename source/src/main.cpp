@@ -59,15 +59,14 @@ void setup()
     startRgbTask();
     startBuzzerTask();
 
-    RGBCommand breatheCmd;
-    breatheCmd.type = RGB_CMD_SET_EFFECT;
-    breatheCmd.data.effect.config.effect = RGB_EFFECT_BREATHE;
-    breatheCmd.data.effect.config.speed = 80;                               // Breathing speed
-    strncpy(breatheCmd.data.effect.colors[0], "#FFA500", HEX_COLOR_LENGTH); // Orange
-    breatheCmd.data.effect.num_colors = 1;
-    breatheCmd.data.effect.temporary = false;
-
-    xQueueSend(rgbCommandQueue, &breatheCmd, portMAX_DELAY);
+    // Example RGB configuration
+    uRGB.setMaxBrightness(50);      // Limit max brightness to 50%
+    uRGB.color1("#9983FF");         // Orange
+    uRGB.color2("#FFAB07");         // Purple
+    uRGB.color3("remove");          // Remove colors beyond index 2
+    uRGB.effect(RGB_EFFECT_SCROLL); // Set scrolling effect
+    uRGB.brightness(100);           // Set brightness to 35%
+    // uRGB.event(RGB_EVENT_MODULE_CONNECT); // Trigger connect event (commented out)
 }
 
 void loop() {} // FreeRTOS handles tasks

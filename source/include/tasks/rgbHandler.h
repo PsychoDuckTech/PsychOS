@@ -1,48 +1,45 @@
 #pragma once
 #include <FastLED.h>
-#include "globals.h"
+#include "globals.h" // Assumes this defines shared variables like currentBrightness
 
-#define NUM_LEDS 60
-#define MAX_COLORS 7
-#define MAX_EFFECT_PARAMS 3
-#define HEX_COLOR_LENGTH 7 // #RRGGBB
+extern RGBState rgbState;
 
-extern uint8_t currentBrightness;
+#define NUM_LEDS 60        // Number of LEDs in the strip
+#define MAX_COLORS 7       // Maximum number of colors supported
+#define HEX_COLOR_LENGTH 7 // Length of hex color string "#RRGGBB"
 
+// Enumerations
 typedef enum
 {
     RGB_EFFECT_STATIC,
     RGB_EFFECT_SCROLL,
-    RGB_EFFECT_BREATHE,
     RGB_EFFECT_FLASH,
-    RGB_EFFECT_RAINBOW,
-    RGB_EFFECT_FIRE,
-    RGB_EFFECT_STARFIELD,
-    RGB_EFFECT_TEMPORARY // For connection/disconnection effects
+    // Add other effects as needed
 } RGBEffectType;
 
 typedef enum
 {
+    RGB_EVENT_MODULE_CONNECT,
+    RGB_EVENT_MODULE_DISCONNECT
+} RGBEventType;
+
+typedef enum
+{
+    RGB_CMD_SET_COLOR,
     RGB_CMD_SET_EFFECT,
     RGB_CMD_SET_BRIGHTNESS,
     RGB_CMD_TRIGGER_EVENT
 } RGBCommandType;
 
-typedef enum
-{
-    RGB_EVENT_CONNECT,
-    RGB_EVENT_DISCONNECT,
-    RGB_EVENT_CAPS_WARNING
-} RGBEventType;
-
+// Effect configuration structure
 typedef struct
 {
     RGBEffectType effect;
-    uint8_t speed;     // 0-255
-    uint8_t intensity; // 0-255
-    uint8_t params[MAX_EFFECT_PARAMS];
+    uint8_t speed;
+    uint8_t intensity;
 } RGBEffectConfig;
 
+// Command structure for queue
 typedef struct
 {
     RGBCommandType type;
@@ -50,28 +47,52 @@ typedef struct
     {
         struct
         {
+            uint8_t index;
+            char hex[HEX_COLOR_LENGTH];
+            bool remove;
+        } color;
+        struct
+        {
             RGBEffectConfig config;
-            char colors[MAX_COLORS][HEX_COLOR_LENGTH];
+            char colors[MAX_COLORS][HEX_COLOR_LENGTH]; // Array of hex color strings
             uint8_t num_colors;
+            bool set_colors; // Whether to update colors
             bool temporary;
             uint16_t duration_ms;
         } effect;
-        struct
-        {
-            uint8_t brightness;
-        } brightness;
-        struct
-        {
-            RGBEventType event_type;
-            uint16_t duration_ms;
-        } trigger;
+        uint8_t brightness;
+        RGBEventType event;
     } data;
 } RGBCommand;
 
+// External variables
 extern QueueHandle_t rgbCommandQueue;
+extern CRGB leds[NUM_LEDS];
+extern uint8_t currentBrightness;
+extern uint8_t globalMaxBrightnessPercent;
 
-// Conversion function for hex colors
-CRGB hexToCRGB(const char *hexColor);
+// Class definition
+class uRGBClass
+{
+public:
+    uRGBClass();
+    void color1(const char *hex);
+    void color2(const char *hex);
+    void color3(const char *hex);
+    void color4(const char *hex);
+    void color5(const char *hex);
+    void color6(const char *hex);
+    void color7(const char *hex);
+    void effect(RGBEffectType type);
+    void brightness(uint8_t percent);
+    void event(RGBEventType event);
+    void setMaxBrightness(uint8_t percent);
+
+private:
+    void setColor(uint8_t index, const char *hex, bool remove = false);
+};
+
+extern uRGBClass uRGB;
 
 void rgbTask(void *parameters);
 void startRgbTask(UBaseType_t core = 0, uint32_t stackDepth = 4096, UBaseType_t priority = 1);
