@@ -2,13 +2,15 @@
 
 #include <Arduino.h>
 #include <USBHIDKeyboard.h>
-#include "translations/enUS.h"
+
+#include "translations.h"
+
 #include "drivers/multiplexer/CD74HC4067.h"
 
 // Global Constants
 extern const char *OS_version;
 extern const char *byCompany;
-const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "キーボード" (kiiboodo)
+extern const char *PRODUCT_NAME;
 
 // Matrix Configuration
 extern const int totalRows;
@@ -23,7 +25,7 @@ extern const uint8_t keyMapL0[][16];
 extern const char *keyNameL0[][16];
 
 // ===== Task Includes (AFTER declarations) =====
-#include "../include/tasks.h"
+#include "tasks.h"
 
 // Task Functions
 

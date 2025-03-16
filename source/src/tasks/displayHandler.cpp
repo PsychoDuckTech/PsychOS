@@ -1,7 +1,7 @@
 #include <Arduino.h>
 // #include <Adafruit_ILI9341.h>
-#include "displayHandler.h"
-#include "display/displayContent.cpp"
+#include "tasks/displayHandler.h"
+#include "display/screens.h"
 #include "globals.h"
 
 // Define constants
@@ -33,7 +33,7 @@ void switchScreen(ScreenType newScreen)
         inSettingsSubmenu = false;
     }
     currentScreen = newScreen;
-    tft.fillScreen(0x10A2);
+    tft.fillScreen(BG_COLOR);
 
     switch (currentScreen)
     {
@@ -65,7 +65,7 @@ void displayHandler(void *parameters)
     SPI.begin(SPI_SCK, -1, SPI_MOSI);
     tft.begin();
     tft.invertDisplay(true);
-    tft.fillScreen(0x10A2);
+    tft.fillScreen(BG_COLOR);
     tft.setRotation(2);
     Serial.println("Display Handler started.");
 
@@ -114,7 +114,7 @@ void displayHandler(void *parameters)
     }
 }
 
-void startDisplayTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseType_t priority = 1)
+void startDisplayTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
     TaskHandle_t displayHandle;
     xTaskCreatePinnedToCore(

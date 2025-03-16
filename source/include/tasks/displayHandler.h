@@ -1,7 +1,4 @@
-// screen_manager.h
-#ifndef SCREEN_MANAGER_H
-#define SCREEN_MANAGER_H
-
+#pragma once
 #include "globals.h"
 
 enum ScreenType
@@ -35,4 +32,4 @@ void displayClockSubmenu(void *parameters);
 void displayHandler(void *parameters);
 void switchScreen(ScreenType newScreen);
 
-#endif // SCREEN_MANAGER_H
+void startDisplayTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseType_t priority = 1);

@@ -1,7 +1,6 @@
 #pragma once
 #include <FastLED.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/queue.h>
+#include "globals.h"
 
 #define NUM_LEDS 60
 #define MAX_COLORS 7

@@ -1,7 +1,7 @@
-#include "hostCommunicationBridge.h"
-#include "commandProcessor.h"
+#include "tasks/hostCommunicationBridge.h"
+#include "tasks/commandProcessor.h"
 #include <USBHIDKeyboard.h>
-#include "wpmCounter.h"
+#include "tasks/wpmCounter.h"
 
 USBHIDKeyboard Keyboard;
 
@@ -55,7 +55,7 @@ void hostCommunicationBridge(void *parameters)
     }
 }
 
-void startHostCommTask(UBaseType_t core = 0, uint32_t stackDepth = 4096, UBaseType_t priority = 2)
+void startHostCommTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
     TaskHandle_t hostCommHandle;
     xTaskCreatePinnedToCore(

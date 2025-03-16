@@ -1,6 +1,4 @@
-#ifndef WPM_COUNTER_H
-#define WPM_COUNTER_H
-
+#pragma once
 #include <Arduino.h>
 
 namespace WPMCounter
@@ -23,5 +21,3 @@ namespace WPMCounter
     // Start the WPM update task.
     void startWPMTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseType_t priority = 1);
 }
-
-#endif // WPM_COUNTER_H

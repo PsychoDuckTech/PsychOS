@@ -1,4 +1,4 @@
-#include "rgbHandler.h"
+#include "tasks/rgbHandler.h"
 
 // Changed definition to default initialization to match the extern declaration in globals.h
 RGBState rgbState;

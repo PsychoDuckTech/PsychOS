@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <ArduinoBLE.h>
+#include "main.h"
 
 // Function declarations
 void BLEHandler(void *parameter);

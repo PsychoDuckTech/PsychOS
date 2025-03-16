@@ -3,9 +3,16 @@
  */
 #include "main.h"
 
+// Define the global constants
+const char *OS_version = "0.3.0b ";
+const char *byCompany = "by PsychoDuck Tech ";
+const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "キーボード" (kiiboodo)
+#define USE_PT_PT
+
 // Matrix Configuration
 const int totalRows = 6, totalCols = 16;
 const int rowPins[totalRows] = {21, 4, 14, 10, 11, 9};
+const int colPins[] = {/* Add the actual pin numbers here */};
 
 const int usesMultiplexer = true;
 const int MULTIPLEXER_S0 = 5, MULTIPLEXER_S1 = 6, MULTIPLEXER_S2 = 7, MULTIPLEXER_S3 = 15, MULTIPLEXER_SIG = 35;
@@ -52,16 +59,15 @@ void setup()
     startRgbTask();
     startBuzzerTask();
 
-    // Updated staticCmd initialization using strncpy
-    RGBCommand staticCmd;
-    staticCmd.type = RGB_CMD_SET_EFFECT;
-    staticCmd.data.effect.config = {RGB_EFFECT_STATIC, 255, 255};
-    strncpy(staticCmd.data.effect.colors[0], "#0000FF", HEX_COLOR_LENGTH);
-    staticCmd.data.effect.colors[0][HEX_COLOR_LENGTH - 1] = '\0';
-    staticCmd.data.effect.num_colors = 1;
-    staticCmd.data.effect.temporary = false;
+    RGBCommand breatheCmd;
+    breatheCmd.type = RGB_CMD_SET_EFFECT;
+    breatheCmd.data.effect.config.effect = RGB_EFFECT_BREATHE;
+    breatheCmd.data.effect.config.speed = 80;                               // Breathing speed
+    strncpy(breatheCmd.data.effect.colors[0], "#FFA500", HEX_COLOR_LENGTH); // Orange
+    breatheCmd.data.effect.num_colors = 1;
+    breatheCmd.data.effect.temporary = false;
 
-    xQueueSend(rgbCommandQueue, &staticCmd, portMAX_DELAY);
+    xQueueSend(rgbCommandQueue, &breatheCmd, portMAX_DELAY);
 }
 
 void loop() {} // FreeRTOS handles tasks

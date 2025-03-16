@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include "knobHandler.h"
+#include "tasks/knobHandler.h"
 #include "drivers/rotaryEncoder/KY-040.h"
-#include "hostCommunicationBridge.h"
-#include "displayHandler.h"
+#include "tasks/hostCommunicationBridge.h"
+#include "tasks/displayHandler.h"
 
 #define CLK_PIN 2
 #define DT_PIN 36

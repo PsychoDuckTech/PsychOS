@@ -1,5 +1,4 @@
-#include "clock.h"
-#include "main.h"
+#include "tasks/clock.h"
 
 int hours = 0;
 int minutes = 0;

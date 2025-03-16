@@ -1,10 +1,11 @@
 #include <Arduino.h>
 #include <ArduinoBLE.h>
-#include "BLEHandler.h"
+#include "tasks/BLEHandler.h"
 #include "globals.h"
 #include "utils/initializeBLE.h"
 #include "tasks/matrixScan.h"
 #include "tasks/buzzer.h"
+#include "utils/benchmark.h"
 
 /*
 Target data flow: Slave Matrix -> BLE -> Master BLE -> Host Bridge -> USB HID
@@ -159,25 +160,59 @@ void handleReceivedKeypress(uint8_t *data, int length)
     // Conversion table for number pad keys
     switch (keyCode)
     {
-        case 0x53: keyCode = KEY_F5; break;
-        case 0x54: keyCode = 0x38; break;
-        case 0x55: keyCode = 0x25; break;
-        case 0x56: keyCode = 0x2D; break;
-        case 0x57: keyCode = 0X2E; break;
-        case 0x58: keyCode = 0x28; break;
-        case 0x59: keyCode = 0x31; break;
-        case 0x5A: keyCode = 0x32; break;
-        case 0x5B: keyCode = 0x33; break;
-        case 0x5C: keyCode = 0x34; break;
-        case 0x5D: keyCode = 0x35; break;
-        case 0x5E: keyCode = 0x36; break;
-        case 0x5F: keyCode = 0x37; break;
-        case 0x60: keyCode = 0x38; break;
-        case 0x61: keyCode = 0x39; break;
-        case 0x62: keyCode = 0x30; break;
-        case 0x63: keyCode = 0x24; break;
-        default:
-            break;
+    case 0x53:
+        keyCode = KEY_F5;
+        break;
+    case 0x54:
+        keyCode = 0x38;
+        break;
+    case 0x55:
+        keyCode = 0x25;
+        break;
+    case 0x56:
+        keyCode = 0x2D;
+        break;
+    case 0x57:
+        keyCode = 0X2E;
+        break;
+    case 0x58:
+        keyCode = 0x28;
+        break;
+    case 0x59:
+        keyCode = 0x31;
+        break;
+    case 0x5A:
+        keyCode = 0x32;
+        break;
+    case 0x5B:
+        keyCode = 0x33;
+        break;
+    case 0x5C:
+        keyCode = 0x34;
+        break;
+    case 0x5D:
+        keyCode = 0x35;
+        break;
+    case 0x5E:
+        keyCode = 0x36;
+        break;
+    case 0x5F:
+        keyCode = 0x37;
+        break;
+    case 0x60:
+        keyCode = 0x38;
+        break;
+    case 0x61:
+        keyCode = 0x39;
+        break;
+    case 0x62:
+        keyCode = 0x30;
+        break;
+    case 0x63:
+        keyCode = 0x24;
+        break;
+    default:
+        break;
     }
 
     HostMessage msg;

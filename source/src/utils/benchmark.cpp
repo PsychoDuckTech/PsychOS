@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "utils/benchmark.h"
 
 void printKeyPollingRates(int totalRows, int totalCols, unsigned long **pollCount, unsigned long &lastTime)
 {

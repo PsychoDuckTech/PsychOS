@@ -1,5 +1,5 @@
-#include <Arduino.h>
-#include "tasks/clock.h"
+#include "tasks/serialHandler.h"
+#include "utils/benchmark.h"
 
 void serialHandler(void *parameters)
 {
@@ -26,7 +26,7 @@ void serialHandler(void *parameters)
     }
 }
 
-void startSerialTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseType_t priority = 1)
+void startSerialTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
     TaskHandle_t serialHandle;
     xTaskCreatePinnedToCore(

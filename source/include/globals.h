@@ -1,6 +1,6 @@
 #pragma once
 
-#define BG_COLOR 0x10A2
+#define BG_COLOR 0x0
 #define TEXT_COLOR 0xDED9
 #define SUCCESS_COLOR 0x9C1F
 #define ERROR_COLOR 0xF22B

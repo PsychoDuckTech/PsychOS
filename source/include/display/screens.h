@@ -2,6 +2,7 @@
 #include "displayContent.h"
 #include "globals.h"
 #include "icons.h"
+#include "main.h"
 
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
@@ -62,7 +63,7 @@ void displayTime(void *parameters)
 
 void clearTime(void *parameters)
 {
-    tft.fillRect(75, 51, 90, 130, 0x10A2);
+    tft.fillRect(75, 51, 90, 130, BG_COLOR);
 }
 
 void displayWPM(void *parameters)
@@ -81,7 +82,7 @@ void displayWPM(void *parameters)
 
 void clearWPM(void *parameters)
 {
-    tft.fillRect(11, 297, 50, 16, 0x10A2);
+    tft.fillRect(11, 297, 50, 16, BG_COLOR);
 }
 
 void displayLAYER(void *parameters)
@@ -99,7 +100,7 @@ void displayLAYER(void *parameters)
 
 void clearLAYER(void *parameters)
 {
-    tft.fillRect(11, 297, 50, 16, 0x10A2);
+    tft.fillRect(11, 297, 50, 16, BG_COLOR);
 }
 
 void displayDemo(void *parameters)
@@ -149,11 +150,11 @@ void displaySettingsScreen(void *parameters)
     // Footer text
     tft.setTextSize(1);
     tft.setFont();
-    tft.setTextColor(0x7BEF);
+    tft.setTextColor(MUTED_COLOR);
     tft.setCursor(65, 296);
     tft.print("Powered by PsychOS");
     tft.setCursor(79, 305);
-    tft.print("build 0.1.4a");
+    tft.print(String("build ") + String(OS_version));
 }
 
 void displayRGBSubmenu(void *parameters)
@@ -201,7 +202,7 @@ void displayRGBSubmenu(void *parameters)
         // Help text
         tft.setTextSize(1);
         tft.setFont();
-        tft.setTextColor(0x7BEF);
+        tft.setTextColor(MUTED_COLOR);
         tft.setCursor(15, 250);
         tft.print("Rotate: Adjust Value");
         tft.setCursor(15, 258);
@@ -278,7 +279,7 @@ void displayModulesSubmenu(void *parameters)
 
     if (firstDraw)
     {
-        tft.fillScreen(0x10A2);
+        tft.fillScreen(BG_COLOR);
         tft.setTextSize(2);
         tft.setFont(&FreeSansBold9pt7b);
         tft.setTextColor(0xDED9);
@@ -292,25 +293,25 @@ void displayModulesSubmenu(void *parameters)
     }
 
     // Clear previous module name or message
-    tft.fillRect(11, 85, 200, 35, 0x10A2);
+    tft.fillRect(11, 85, 200, 35, BG_COLOR);
 
     // Display message or module name
     tft.setCursor(11, 85);
     if (!moduleConnectionStatus)
     {
-        tft.setTextColor(0xF22B);
+        tft.setTextColor(ERROR_COLOR);
         tft.print(noModuleMessage);
     }
     else
     {
-        tft.setTextColor(0xDED9);
+        tft.setTextColor(TEXT_COLOR);
         tft.print(moduleName);
     }
 
     // Footer text
     tft.setTextSize(1);
     tft.setFont();
-    tft.setTextColor(0x7BEF);
+    tft.setTextColor(MUTED_COLOR);
     tft.setCursor(65, 296);
     tft.print("Powered by PsychOS");
     tft.setCursor(79, 305);
