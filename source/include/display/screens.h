@@ -31,23 +31,23 @@ void displayTopBar(void *parameters)
     tft.drawBitmap(36, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR : BG_COLOR);
 
     tft.setTextSize(1);
-    tft.setTextColor(0xDED9);
+    tft.setTextColor(TEXT_COLOR);
     tft.setFont();
     tft.setCursor(206, 8);
     tft.print("Caps");
 
     tft.setCursor(206, 18);
-    tft.setTextColor(0x10A2);
+    tft.setTextColor(BG_COLOR);
     tft.print(capsLockStatus ? "OFF" : "ON");
     tft.setCursor(206, 18);
-    tft.setTextColor(capsLockStatus ? 0xFD40 : 0x7BEF);
+    tft.setTextColor(capsLockStatus ? HIGHLIGHT_COLOR : MUTED_COLOR);
     tft.print(capsLockStatus ? "ON" : "OFF");
 }
 
 void displayTime(void *parameters)
 {
     clearTime(parameters);
-    tft.setTextColor(0xDED9);
+    tft.setTextColor(TEXT_COLOR);
     tft.setTextSize(4);
     tft.setFont(&FreeSansBold9pt7b);
 
@@ -115,14 +115,14 @@ void displayDemo(void *parameters)
     tft.setCursor(18, 274);
     tft.print("Bury you - Ari.");
 
-    tft.drawBitmap(198, 263, image_music_play_bits, 15, 16, 0xDED9);
+    tft.drawBitmap(198, 263, image_music_play_bits, 15, 16, TEXT_COLOR);
 }
 
 void displaySettingsScreen(void *parameters)
 {
     tft.setTextSize(2);
     tft.setFont(&FreeSansBold9pt7b);
-    tft.setTextColor(0xDED9);
+    tft.setTextColor(TEXT_COLOR);
     // Centered title
     int titleWidth = strlen("Settings") * 16; // Approximate width calculation
     tft.setCursor((tft.width() - titleWidth) / 2, 40);
@@ -138,11 +138,11 @@ void displaySettingsScreen(void *parameters)
         tft.setCursor(11, 85 + (i * 35));
         if (i == settingsSelectedOption)
         {
-            tft.setTextColor(0xFD40); // Highlight selected
+            tft.setTextColor(HIGHLIGHT_COLOR); // Highlight selected
         }
         else
         {
-            tft.setTextColor(0xDED9); // Normal color
+            tft.setTextColor(TEXT_COLOR); // Normal color
         }
         tft.print(menuItems[i]);
     }
@@ -282,7 +282,7 @@ void displayModulesSubmenu(void *parameters)
         tft.fillScreen(BG_COLOR);
         tft.setTextSize(2);
         tft.setFont(&FreeSansBold9pt7b);
-        tft.setTextColor(0xDED9);
+        tft.setTextColor(TEXT_COLOR);
 
         // Draw title
         int titleWidth = strlen("Modules") * 16; // Approximate width calculation
