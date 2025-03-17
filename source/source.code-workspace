@@ -21,7 +21,8 @@
 			"initializer_list": "cpp",
 			"sstream": "cpp",
 			"typeinfo": "cpp",
-			"chrono": "cpp"
+			"chrono": "cpp",
+			"cmath": "cpp"
 		},
 		"mcu-debug.rtos-views.showRTOS": false,
 		"liveServer.settings.multiRootWorkspaceName": "source"

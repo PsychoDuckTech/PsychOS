@@ -12,8 +12,10 @@ extern RGBState rgbState;
 typedef enum
 {
     RGB_EFFECT_STATIC,
+    RGB_EFFECT_RUNNER,
     RGB_EFFECT_SCROLL,
     RGB_EFFECT_FLASH,
+    RGB_EFFECT_BREATHE,
     // Add other effects as needed
 } RGBEffectType;
 
@@ -28,7 +30,8 @@ typedef enum
     RGB_CMD_SET_COLOR,
     RGB_CMD_SET_EFFECT,
     RGB_CMD_SET_BRIGHTNESS,
-    RGB_CMD_TRIGGER_EVENT
+    RGB_CMD_TRIGGER_EVENT,
+    RGB_CMD_SET_SPEED
 } RGBCommandType;
 
 // Effect configuration structure
@@ -54,14 +57,15 @@ typedef struct
         struct
         {
             RGBEffectConfig config;
-            char colors[MAX_COLORS][HEX_COLOR_LENGTH]; // Array of hex color strings
+            char colors[MAX_COLORS][HEX_COLOR_LENGTH];
             uint8_t num_colors;
-            bool set_colors; // Whether to update colors
+            bool set_colors;
             bool temporary;
             uint16_t duration_ms;
         } effect;
         uint8_t brightness;
         RGBEventType event;
+        uint8_t speed; // Speed value for RGB_CMD_SET_SPEED
     } data;
 } RGBCommand;
 
@@ -87,6 +91,7 @@ public:
     void brightness(uint8_t percent);
     void event(RGBEventType event);
     void setMaxBrightness(uint8_t percent);
+    void speed(uint8_t level);
 
 private:
     void setColor(uint8_t index, const char *hex, bool remove = false);

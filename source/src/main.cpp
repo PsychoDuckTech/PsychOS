@@ -59,13 +59,14 @@ void setup()
     startRgbTask();
     startBuzzerTask();
 
-    // Example RGB configuration
-    uRGB.setMaxBrightness(50);      // Limit max brightness to 50%
-    uRGB.color1("#9983FF");         // Orange
-    uRGB.color2("#FFAB07");         // Purple
-    uRGB.color3("remove");          // Remove colors beyond index 2
-    uRGB.effect(RGB_EFFECT_SCROLL); // Set scrolling effect
-    uRGB.brightness(100);           // Set brightness to 35%
+    // RGB configuration
+    uRGB.setMaxBrightness(50);
+    uRGB.color1("#1e130c");
+    uRGB.color2("#9a8478");
+    uRGB.color3("remove");
+    uRGB.effect(RGB_EFFECT_SCROLL);
+    uRGB.speed(15);
+    uRGB.brightness(60);
     // uRGB.event(RGB_EVENT_MODULE_CONNECT); // Trigger connect event (commented out)
 }
 
