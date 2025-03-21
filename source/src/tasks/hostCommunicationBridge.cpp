@@ -12,8 +12,8 @@ void hostCommunicationBridge(void *parameters)
 {
     hostMessageQueue = xQueueCreate(50, sizeof(HostMessage)); // Increased to 50
     HostMessage receivedMessage;
-    Keyboard.begin();
-    ConsumerControl.begin();
+    // Keyboard.begin();
+    // ConsumerControl.begin();
 
     Serial.println("Host Communication Bridge started.");
 

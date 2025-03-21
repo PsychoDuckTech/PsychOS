@@ -1,7 +1,7 @@
 #pragma once
 
 #define BG_COLOR 0x0
-#define TEXT_COLOR 0xDED9
+#define TEXT_COLOR 0xD5F1 // 0x95E5,0xBD6C (old 0xDED9)
 #define SUCCESS_COLOR 0x9C1F
 #define ERROR_COLOR 0xF22B
 #define MUTED_COLOR 0x7BEF

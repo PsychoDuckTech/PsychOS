@@ -27,9 +27,9 @@ void displayTopBar(void *parameters)
     //.drawBitmap(11, 9, image_menu_settings_sliders_bits, 14, 16, 0xDED9);
     // tft.drawBitmap(157, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? 0x9C1F, BG_COLOR : 0xF22B, BG_COLOR);
     // tft.drawBitmap(182, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? 0x9C1F : 0xF22B);
-    tft.drawBitmap(11, 9, connectionStatus ? iconDisc : iconDiscMuted, 17, 16, connectionStatus ? SUCCESS_COLOR, BG_COLOR : ERROR_COLOR, BG_COLOR);
+    tft.drawBitmap(11, 9, connectionStatus ? iconDisc : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
     // tft.drawBitmap(36, 9, iconBleConnected, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR : BG_COLOR);
-    tft.drawBitmap(36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR, BG_COLOR : MUTED_COLOR, BG_COLOR);
+    tft.drawBitmap(36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, moduleConnectionStatus ? SUCCESS_COLOR : MUTED_COLOR, BG_COLOR);
 
     tft.setTextSize(1);
     tft.setTextColor(TEXT_COLOR);
@@ -37,28 +37,24 @@ void displayTopBar(void *parameters)
     tft.setCursor(206, 8);
     tft.print("Caps");
 
-    tft.setCursor(206, 18);
-    tft.setTextColor(BG_COLOR);
-    tft.print(capsLockStatus ? "OFF" : "ON");
-    tft.setCursor(206, 18);
-    tft.setTextColor(capsLockStatus ? HIGHLIGHT_COLOR : MUTED_COLOR);
-    tft.print(capsLockStatus ? "ON" : "OFF");
+    tft.drawBitmap(206, 18, capsLockStatus ? textOff : textOn, capsLockStatus ? 14 : 9, 5, capsLockStatus ? BG_COLOR : BG_COLOR, BG_COLOR);
+    tft.drawBitmap(206, 18, capsLockStatus ? textOn : textOff, capsLockStatus ? 9 : 14, 5, capsLockStatus ? HIGHLIGHT_COLOR : MUTED_COLOR, BG_COLOR);
 }
 
 void displayTime(void *parameters)
 {
     clearTime(parameters);
     tft.setTextColor(TEXT_COLOR);
-    tft.setTextSize(4);
-    tft.setFont(&FreeSansBold9pt7b);
+    tft.setTextSize(8);
+    tft.setFont();
 
     char timeString[3];
     sprintf(timeString, "%02d", hours);
-    tft.setCursor(79, 100);
+    tft.setCursor(75, 60);
     tft.print(timeString);
 
     sprintf(timeString, "%02d", minutes);
-    tft.setCursor(79, 175);
+    tft.setCursor(75, 122);
     tft.print(timeString);
 }
 
@@ -75,15 +71,20 @@ void displayWPM(void *parameters)
     tft.setFont();
     tft.setCursor(11, 297);
     tft.print(String(WPMCounter::wpm));
+
+    // Adjust the position of "WPM" based on the number of digits in WPM
+    int wpmLength = String(WPMCounter::wpm).length();
+    int wpmOffset = 24 + (wpmLength - 1) * 12; // Adjust offset dynamically
+
     tft.setTextColor(MUTED_COLOR);
     tft.setTextSize(1);
-    tft.setCursor(36, 304);
+    tft.setCursor(wpmOffset, 304);
     tft.print("WPM");
 }
 
 void clearWPM(void *parameters)
 {
-    tft.fillRect(11, 297, 50, 16, BG_COLOR);
+    tft.fillRect(11, 297, 55, 16, BG_COLOR);
 }
 
 void displayLAYER(void *parameters)
@@ -93,7 +94,7 @@ void displayLAYER(void *parameters)
     tft.setFont();
     tft.setCursor(186, 304);
     tft.print("LAYER");
-    tft.setTextColor(TEXT_COLOR);
+    tft.setTextColor(HIGHLIGHT_COLOR);
     tft.setTextSize(2);
     tft.setCursor(219, 297);
     tft.print("3");
@@ -106,17 +107,20 @@ void clearLAYER(void *parameters)
 
 void displayDemo(void *parameters)
 {
-    tft.setTextSize(1);
+    tft.drawBitmap(9, 221, MusicPlayerBorder, 222, 58, TEXT_COLOR);
+    tft.drawBitmap(13, 262, MusicPlayerShadow1, 214, 17, 0x18C3);
+    tft.drawBitmap(13, 252, MusicPlayerShadow2, 214, 11, 0x861);
+
+    tft.setTextSize(2);
     tft.setTextColor(TEXT_COLOR);
-    tft.setFont(&FreeMonoBold12pt7b);
-    tft.setCursor(18, 250);
+    tft.setFont();
+    tft.setCursor(21, 233);
     tft.print("Now Playing");
 
-    tft.setFont(&FreeMonoBold9pt7b);
-    tft.setCursor(18, 274);
-    tft.print("Bury you - Ari.");
+    tft.setCursor(21, 253);
+    tft.print("Bury you");
 
-    tft.drawBitmap(198, 263, image_music_play_bits, 15, 16, TEXT_COLOR);
+    tft.drawBitmap(200, 241, iconMusicPlay, 20, 18, TEXT_COLOR);
 }
 
 void displaySettingsScreen(void *parameters)
