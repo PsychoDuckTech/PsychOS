@@ -66,6 +66,39 @@ static void updateBrightness()
     FastLED.setBrightness(actualBrightness);
 }
 
+// Set brightness with optional fade effect
+static void setBrightnessWithFade(uint8_t targetBrightness, uint32_t fadeDurationMs = 0)
+{
+    if (fadeDurationMs == 0)
+    {
+        // Immediate brightness change
+        currentBrightness = constrain(targetBrightness, 0, 100);
+        updateBrightness();
+        FastLED.show();
+        return;
+    }
+
+    // Fade from current brightness to target brightness
+    const int fadeSteps = 100; // High step count for smoothness
+    const int fadeDelay = fadeDurationMs / fadeSteps;
+    int startBrightness = currentBrightness;
+    int brightnessDelta = targetBrightness - startBrightness;
+
+    for (int i = 0; i <= fadeSteps; i++)
+    {
+        currentBrightness = startBrightness + (brightnessDelta * i) / fadeSteps;
+        updateBrightness();
+        applyCurrentEffect(); // Ensure the current effect is applied at each step
+        FastLED.show();
+        vTaskDelay(pdMS_TO_TICKS(fadeDelay));
+    }
+
+    // Ensure final brightness is exact
+    currentBrightness = constrain(targetBrightness, 0, 100);
+    updateBrightness();
+    FastLED.show();
+}
+
 // Simplified effect implementation (expand as needed)
 static void applyCurrentEffect()
 {
@@ -127,10 +160,6 @@ static void applyCurrentEffect()
         if (phase >= 1.0f)
             phase -= 1.0f;
     }
-    if (currentEffect.effect == RGB_EFFECT_STATIC)
-    {
-        fill_solid(leds, NUM_LEDS, effectColors[0]);
-    }
     else if (currentEffect.effect == RGB_EFFECT_SCROLL)
     {
         static float phase = 0.0f;
@@ -185,11 +214,22 @@ void rgbTask(void *parameters)
 {
     FastLED.addLeds<APA102, 3, 46, BGR>(leds, NUM_LEDS);
     FastLED.setCorrection(TypicalLEDStrip);
-    FastLED.clear();
-    effectColors[0] = CRGB::White; // Default color
+
+    // Set default effect and colors
+    currentEffect = {RGB_EFFECT_STATIC, 128, 255};
+    effectColors[0] = CRGB::White;
+    numColors = 1;
+
+    // Start with brightness 0 and fade to initial value
+    currentBrightness = 0;
+    applyCurrentEffect();
     updateBrightness();
     FastLED.show();
 
+    // Fade in to the initial brightness (100) over 1000ms
+    setBrightnessWithFade(100, 1000);
+
+    // Proceed to the main loop
     RGBCommand cmd;
     while (true)
     {
@@ -246,8 +286,7 @@ void rgbTask(void *parameters)
                 break;
 
             case RGB_CMD_SET_BRIGHTNESS:
-                currentBrightness = constrain(cmd.data.brightness, 0, 100);
-                updateBrightness();
+                setBrightnessWithFade(cmd.data.brightness, 500); // Fade over 500ms for command-based changes
                 break;
 
             case RGB_CMD_TRIGGER_EVENT:
@@ -261,6 +300,7 @@ void rgbTask(void *parameters)
                     break;
                 }
                 break;
+
             case RGB_CMD_SET_SPEED:
                 currentEffect.speed = cmd.data.speed;
                 break;
@@ -303,9 +343,9 @@ void uRGBClass::color1(const char *hex) { setColor(0, hex, false); }
 void uRGBClass::color2(const char *hex) { setColor(1, hex, false); }
 void uRGBClass::color3(const char *hex) { setColor(2, hex, false); }
 void uRGBClass::color4(const char *hex) { setColor(3, hex, false); }
-void uRGBClass::color5(const char *hex) { setColor(4, hex, false); }
-void uRGBClass::color6(const char *hex) { setColor(5, hex, false); }
-void uRGBClass::color7(const char *hex) { setColor(6, hex, false); }
+void uRGBClass::color5(const char *hex) { setColor(5, hex, false); }
+void uRGBClass::color6(const char *hex) { setColor(6, hex, false); }
+void uRGBClass::color7(const char *hex) { setColor(7, hex, false); }
 
 void uRGBClass::effect(RGBEffectType type)
 {

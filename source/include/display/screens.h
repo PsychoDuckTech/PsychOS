@@ -27,8 +27,9 @@ void displayTopBar(void *parameters)
     //.drawBitmap(11, 9, image_menu_settings_sliders_bits, 14, 16, 0xDED9);
     // tft.drawBitmap(157, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? 0x9C1F, BG_COLOR : 0xF22B, BG_COLOR);
     // tft.drawBitmap(182, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? 0x9C1F : 0xF22B);
-    tft.drawBitmap(11, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? SUCCESS_COLOR, BG_COLOR : ERROR_COLOR, BG_COLOR);
-    tft.drawBitmap(36, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR : BG_COLOR);
+    tft.drawBitmap(11, 9, connectionStatus ? iconDisc : iconDiscMuted, 17, 16, connectionStatus ? SUCCESS_COLOR, BG_COLOR : ERROR_COLOR, BG_COLOR);
+    // tft.drawBitmap(36, 9, iconBleConnected, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR : BG_COLOR);
+    tft.drawBitmap(36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR, BG_COLOR : MUTED_COLOR, BG_COLOR);
 
     tft.setTextSize(1);
     tft.setTextColor(TEXT_COLOR);

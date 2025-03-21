@@ -101,3 +101,4 @@ extern uRGBClass uRGB;
 
 void rgbTask(void *parameters);
 void startRgbTask(UBaseType_t core = 0, uint32_t stackDepth = 4096, UBaseType_t priority = 1);
+static void applyCurrentEffect();

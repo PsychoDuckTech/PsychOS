@@ -43,7 +43,7 @@ void hostCommunicationBridge(void *parameters)
                 WPMCounter::recordKeyPress();
                 Serial.print("Sending KEY_PRESS to host: code=");
                 Serial.println(receivedMessage.data);
-                Keyboard.press(receivedMessage.data); // Using standard press
+                Keyboard.press(receivedMessage.data);
                 break;
             case KEY_RELEASE:
                 Serial.print("Sending KEY_RELEASE to host: code=");
@@ -59,5 +59,5 @@ void startHostCommTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priori
 {
     TaskHandle_t hostCommHandle;
     xTaskCreatePinnedToCore(
-        hostCommunicationBridge, "Host Communication Bridge", 8192, NULL, priority, &hostCommHandle, core); // Increased stack size
+        hostCommunicationBridge, "Host Communication Bridge", 8192, NULL, priority, &hostCommHandle, core);
 }
