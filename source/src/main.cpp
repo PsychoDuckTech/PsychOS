@@ -53,7 +53,7 @@ void setup()
     startMatrixScanTask();                // Core 0, priority 3
     WPMCounter::startWPMTask(0, 2048, 1); // Adjust core, stackDepth, and priority as needed.
     startKnobHandlerTask();
-    startBleTask(1, 32000, 1);
+    startBleTask(1, 16384, 1);
     startSerialTask();
     startHostCommTask();
     startRgbTask();
