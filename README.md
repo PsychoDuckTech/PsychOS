@@ -34,7 +34,20 @@
   - Smooth increment/decrement
   - Mute function via encoder press
 - FreeRTOS Task Management
-- Matrix Scanning (in development)
+- Matrix Scanning
+- WPM counter
+- Serial Commands System
+- RGB underglow system
+- Buzzer tones
+- Clock
+- Builtin settings menus
+
+## Serial Commands and Syntax
+- connectionStatus [0/1/?]
+- caps [0/1/?]
+- time.seconds [time 0 to 60]
+- time.minutes [time 0 to 60]
+- time.hours [time 0 to 23]
 
 ## Flashing the Firmware
 Once the compilation finishes, go to the releases tab and find the latest release. Download the `firmware.bin` file.
