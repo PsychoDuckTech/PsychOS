@@ -32,7 +32,7 @@ void BLEHandler(void *parameter)
     static bool wasConnected = false;
     static uint8_t activeModuleKeys[6] = {0};
     static int activeKeyCount = 0;
-    static unsigned long lastKeyTime = 0; // Debounce for rapid keys
+    static unsigned long lastKeyTime = 0;
 
     for (;;)
     {
@@ -118,9 +118,8 @@ void BLEHandler(void *parameter)
             BLE.poll();
             if (moduleChar && moduleChar.valueUpdated())
             {
-                // Rate limit to prevent overflow
                 if (currentTime - lastKeyTime > 20)
-                { // 20ms debounce
+                {
                     uint8_t data[2];
                     if (moduleChar.readValue(data, 2))
                     {
@@ -131,7 +130,6 @@ void BLEHandler(void *parameter)
                         Serial.print(", state=");
                         Serial.println(isPressed ? "pressed" : "released");
 
-                        // Interpret the received key code as HID
                         handleReceivedKeypress(data, 2);
 
                         lastKeyTime = currentTime;
@@ -148,7 +146,7 @@ void BLEHandler(void *parameter)
                 Serial.println("Sent CapsLock status to module");
             }
         }
-        vTaskDelay(10 / portTICK_PERIOD_MS); // Reverted to 10ms
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -219,7 +217,6 @@ void handleReceivedKeypress(uint8_t *data, int length)
     msg.type = isPressed ? KEY_PRESS : KEY_RELEASE;
     msg.data = keyCode;
 
-    // Send the HID key code to the host message queue
     xQueueSend(hostMessageQueue, &msg, 0);
 
     Serial.print("Handled HID key event: code=");
@@ -232,5 +229,5 @@ void startBleTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
     TaskHandle_t bleTaskHandle;
     xTaskCreatePinnedToCore(
-        BLEHandler, "BLE Handler", 20480, NULL, priority, &bleTaskHandle, core); // Increased stack size
+        BLEHandler, "BLE Handler", 20480, NULL, priority, &bleTaskHandle, core);
 }
