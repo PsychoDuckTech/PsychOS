@@ -125,41 +125,69 @@ void displayDemo(void *parameters)
 
 void displaySettingsScreen(void *parameters)
 {
-    tft.setTextSize(2);
-    tft.setFont(&FreeSansBold9pt7b);
+    tft.fillScreen(BG_COLOR);
+    // Draw title (keep original text rendering)
+    tft.setTextSize(3);
+    tft.setFont();
     tft.setTextColor(TEXT_COLOR);
-    // Centered title
-    int titleWidth = strlen("Settings") * 16; // Approximate width calculation
-    tft.setCursor((tft.width() - titleWidth) / 2, 40);
+    int titleWidth = strlen("Settings") * 18;
+    tft.setCursor((tft.width() - titleWidth) / 2, 24);
     tft.print("Settings");
 
-    const char *menuItems[] = {"Modules", "RGB Glow", "Clock", "IoT link"};
+    // Menu configuration
+    const int MENU_START_Y = 62;
+    const int ITEM_SPACING = 54;
+    const char *menuItems[] = {"Modules", "IoT Devices", "Clock", "RGB"};
+    const int UNSELECTED_H = 47;
+    const int SELECTED_H = 51;
+    const int UNSELECTED_W = 228;
+    const int SELECTED_W = 232;
 
-    // Draw menu items
-    tft.setTextSize(2);
-    tft.setFont(&FreeSansBold9pt7b);
+    // Draw menu items with sprites
     for (int i = 0; i < 4; i++)
     {
-        tft.setCursor(11, 85 + (i * 35));
-        if (i == settingsSelectedOption)
+        bool selected = (i == settingsSelectedOption);
+        int baseY = MENU_START_Y + (i * ITEM_SPACING);
+
+        // Calculate positions
+        int itemY = selected ? baseY - 2 : baseY;
+        int itemW = selected ? SELECTED_W : UNSELECTED_W;
+        int itemH = selected ? SELECTED_H : UNSELECTED_H;
+
+        // Draw border sprite
+        tft.drawBitmap((tft.width() - itemW) / 2, itemY, selected ? SettingsSelectedBorder : SettingsUnselectedBorder, itemW, itemH, TEXT_COLOR);
+
+        // Draw highlight sprite if selected
+        if (selected)
         {
-            tft.setTextColor(HIGHLIGHT_COLOR); // Highlight selected
+            tft.drawBitmap(10, itemY + 6, SettingsSelectedHighlight, 220, 23, HIGHLIGHT_COLOR);
+            tft.drawBitmap(10, itemY + 29, SettingsShadow1, 220, 8, 0xCC40);
+            tft.drawBitmap(14, itemY + 37, SettingsShadow2, 212, 8, 0x9B20);
         }
-        else
-        {
-            tft.setTextColor(TEXT_COLOR); // Normal color
-        }
+
+        // Draw text label
+        tft.setTextSize(2);
+        tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
+        tft.setCursor(46, itemY + (selected ? 19 : 17));
         tft.print(menuItems[i]);
+
+        // Draw arrow icon
+        int arrowYOffset = selected ? 16 : 14;
+        tft.drawBitmap(214, itemY + arrowYOffset, iconArrowRight, 12, 20, selected ? 0x0 : TEXT_COLOR);
     }
 
-    // Footer text
+    // Draw footer text (keep original implementation)
     tft.setTextSize(1);
     tft.setFont();
+    tft.setTextColor(ULTRA_MUTED_COLOR);
+    tft.setCursor(76, 287);
+    tft.print("Secured by Dux");
     tft.setTextColor(MUTED_COLOR);
     tft.setCursor(65, 296);
     tft.print("Powered by PsychOS");
     tft.setCursor(79, 305);
-    tft.print(String("build ") + String(OS_version));
+    tft.print("build ");
+    tft.print(OS_version);
 }
 
 void displayRGBSubmenu(void *parameters)
