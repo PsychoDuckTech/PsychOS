@@ -1,4 +1,5 @@
 #include <Adafruit_ILI9341.h>
+#include <Arduino.h> // Include for millis() function
 #include "displayContent.h"
 #include "globals.h"
 #include "icons.h"
@@ -14,6 +15,9 @@ bool needsFullRedraw = true;
 
 int rgbValues[4] = {255, 255, 255, 100};
 
+static unsigned long lastToggleTime = 0; // Track the last toggle time
+static bool toggleDiscIcon = false;      // State to toggle between icons
+
 void displayMainScreen(void *parameters)
 {
     needsFullRedraw = true;
@@ -27,8 +31,15 @@ void displayMainScreen(void *parameters)
 
 void displayTopBar(void *parameters)
 {
-    tft.drawBitmap(11, 9, connectionStatus ? iconDisc : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
-    tft.drawBitmap(36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, moduleConnectionStatus ? SUCCESS_COLOR : MUTED_COLOR, BG_COLOR);
+    // Check if 750ms have passed to toggle the icon
+    if (connectionStatus && millis() - lastToggleTime >= 750)
+    {
+        toggleDiscIcon = !toggleDiscIcon;
+        lastToggleTime = millis();
+    }
+
+    tft.drawBitmap(11, 9, connectionStatus ? (toggleDiscIcon ? iconDisc1 : iconDisc2) : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
+    tft.drawBitmap(moduleConnectionStatus ? 35 : 36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, moduleConnectionStatus ? SUCCESS_COLOR : MUTED_COLOR, BG_COLOR);
 
     tft.setTextSize(1);
     tft.setTextColor(TEXT_COLOR);
@@ -36,7 +47,16 @@ void displayTopBar(void *parameters)
     tft.setCursor(206, 8);
     tft.print("Caps");
 
-    tft.drawBitmap(206, 18, capsLockStatus ? textOff : textOn, capsLockStatus ? 14 : 9, 5, capsLockStatus ? BG_COLOR : BG_COLOR, BG_COLOR);
+    // Add a static variable to track the previous capsLockStatus
+    static bool previousCapsLockStatus = !capsLockStatus; // Initialize to a different value to ensure the first update
+
+    // Check if capsLockStatus has changed
+    if (capsLockStatus != previousCapsLockStatus)
+    {
+        tft.drawBitmap(206, 18, capsLockStatus ? textOff : textOn, capsLockStatus ? 14 : 9, 5, capsLockStatus ? BG_COLOR : BG_COLOR, BG_COLOR);
+        previousCapsLockStatus = capsLockStatus; // Update the previous status
+    }
+
     tft.drawBitmap(206, 18, capsLockStatus ? textOn : textOff, capsLockStatus ? 9 : 14, 5, capsLockStatus ? HIGHLIGHT_COLOR : MUTED_COLOR, BG_COLOR);
 }
 
