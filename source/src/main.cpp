@@ -49,13 +49,12 @@ void setup()
     initializeMatrix();
 
     startClockTask(0, 1024, 1);
-    startDisplayTask(1, 4096, 1); // Adjust core, stackDepth, and priority respectively.
-    startHostCommTask(1, 8192, 2);
+    startDisplayTask(1, 4096, 2); // Adjust core, stackDepth, and priority respectively.
+    startHostCommTask(1, 4096, 2);
     startMatrixScanTask(0, 8192, 3);
     startKnobHandlerTask(0, 2048, 1);
     WPMCounter::startWPMTask(0, 2048, 1);
     startBleTask(1, 8192, 2);
-    startSerialTask(1, 4096, 1);
     startRgbTask(1, 4096, 1);
     startBuzzerTask(1, 2048, 1);
 
