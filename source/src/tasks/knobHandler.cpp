@@ -92,7 +92,6 @@ void knobHandler(void *parameters)
 
             if (longPress)
             {
-                switchScreen(SettingsScreen);
                 firstDraw = true;
             }
         }

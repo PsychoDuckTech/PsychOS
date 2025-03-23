@@ -48,16 +48,16 @@ void setup()
 
     initializeMatrix();
 
-    startClockTask();
-    startDisplayTask();
-    startMatrixScanTask();                // Core 0, priority 3
-    WPMCounter::startWPMTask(0, 2048, 1); // Adjust core, stackDepth, and priority as needed.
-    startKnobHandlerTask();
-    startBleTask(1, 16384, 1);
-    startSerialTask();
-    startHostCommTask();
-    startRgbTask();
-    startBuzzerTask();
+    startClockTask(0, 1024, 1);
+    startDisplayTask(1, 4096, 1); // Adjust core, stackDepth, and priority respectively.
+    startHostCommTask(0, 4096, 2);
+    startMatrixScanTask(0, 4096, 3);
+    startKnobHandlerTask(1, 2048, 1);
+    WPMCounter::startWPMTask(0, 1024, 1);
+    startBleTask(1, 8192, 2);
+    startSerialTask(1, 4096, 1);
+    startRgbTask(1, 4096, 1);
+    startBuzzerTask(1, 2048, 1);
 
     // RGB configuration
     uRGB.setMaxBrightness(50);

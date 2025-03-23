@@ -10,25 +10,24 @@ extern bool moduleConnectionStatus;
 extern bool capsLockStatus;
 extern int hours;
 extern int minutes;
+bool needsFullRedraw = true;
 
 int rgbValues[4] = {255, 255, 255, 100};
 
 void displayMainScreen(void *parameters)
 {
+    needsFullRedraw = true;
+
     displayTopBar(parameters);
     displayTime(parameters);
     displayWPM(parameters);
-    displayDemo(parameters);
     displayLAYER(parameters);
+    displayDemo(parameters); // demo is the last thing being loaded as it takes the longest at loading.
 }
 
 void displayTopBar(void *parameters)
 {
-    //.drawBitmap(11, 9, image_menu_settings_sliders_bits, 14, 16, 0xDED9);
-    // tft.drawBitmap(157, 9, image_cloud_sync_bits, 17, 16, connectionStatus ? 0x9C1F, BG_COLOR : 0xF22B, BG_COLOR);
-    // tft.drawBitmap(182, 9, image_bluetooth_connected_bits, 14, 16, moduleConnectionStatus ? 0x9C1F : 0xF22B);
     tft.drawBitmap(11, 9, connectionStatus ? iconDisc : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
-    // tft.drawBitmap(36, 9, iconBleConnected, 14, 16, moduleConnectionStatus ? SUCCESS_COLOR : BG_COLOR);
     tft.drawBitmap(36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, moduleConnectionStatus ? SUCCESS_COLOR : MUTED_COLOR, BG_COLOR);
 
     tft.setTextSize(1);
@@ -123,16 +122,40 @@ void displayDemo(void *parameters)
     tft.drawBitmap(200, 241, iconMusicPlay, 20, 18, TEXT_COLOR);
 }
 
-void displaySettingsScreen(void *parameters)
+void drawSettingsStatic(void *parameters)
 {
     tft.fillScreen(BG_COLOR);
-    // Draw title (keep original text rendering)
+    // Draw title
     tft.setTextSize(3);
     tft.setFont();
     tft.setTextColor(TEXT_COLOR);
     int titleWidth = strlen("Settings") * 18;
     tft.setCursor((tft.width() - titleWidth) / 2, 24);
     tft.print("Settings");
+
+    // Draw footer text before options are loaded
+    tft.setTextSize(1);
+    tft.setFont();
+    tft.setTextColor(ULTRA_MUTED_COLOR);
+    tft.setCursor(76, 287);
+    tft.print("Secured by Dux");
+    tft.setTextColor(MUTED_COLOR);
+    tft.setCursor(65, 296);
+    tft.print("Powered by PsychOS");
+    tft.setCursor(79, 305);
+    tft.print("build ");
+    tft.print(OS_version);
+}
+
+void displaySettingsScreen(void *parameters)
+{
+    if (needsFullRedraw)
+    {
+        drawSettingsStatic(parameters);
+        needsFullRedraw = false;
+    }
+
+    tft.fillRect(4, 60, 232, 215, BG_COLOR);
 
     // Menu configuration
     const int MENU_START_Y = 62;
@@ -144,6 +167,7 @@ void displaySettingsScreen(void *parameters)
     const int SELECTED_W = 232;
 
     // Draw menu items with sprites
+    tft.setTextSize(2); // Set text size for menu items once instead of every loop
     for (int i = 0; i < 4; i++)
     {
         bool selected = (i == settingsSelectedOption);
@@ -166,7 +190,6 @@ void displaySettingsScreen(void *parameters)
         }
 
         // Draw text label
-        tft.setTextSize(2);
         tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
         tft.setCursor(46, itemY + (selected ? 19 : 17));
         tft.print(menuItems[i]);
@@ -175,25 +198,13 @@ void displaySettingsScreen(void *parameters)
         int arrowYOffset = selected ? 16 : 14;
         tft.drawBitmap(214, itemY + arrowYOffset, iconArrowRight, 12, 20, selected ? 0x0 : TEXT_COLOR);
     }
-
-    // Draw footer text (keep original implementation)
-    tft.setTextSize(1);
-    tft.setFont();
-    tft.setTextColor(ULTRA_MUTED_COLOR);
-    tft.setCursor(76, 287);
-    tft.print("Secured by Dux");
-    tft.setTextColor(MUTED_COLOR);
-    tft.setCursor(65, 296);
-    tft.print("Powered by PsychOS");
-    tft.setCursor(79, 305);
-    tft.print("build ");
-    tft.print(OS_version);
 }
 
 void displayRGBSubmenu(void *parameters)
 {
     const char *rgbOptions[] = {"Red", "Green", "Blue", "Brightness"};
     const int valueRanges[] = {255, 255, 255, 100};
+    needsFullRedraw = true;
 
     if (rgbState.needsRefresh)
     {
@@ -251,6 +262,7 @@ void displayClockSubmenu(void *parameters)
 {
     static int lastSelectedOption = -1;
     static int lastValues[3] = {-1, -1, -1}; // Track last values to detect changes
+    needsFullRedraw = true;
 
     if (lastSelectedOption == -1)
         tft.fillScreen(BG_COLOR); // Initial draw
@@ -309,6 +321,7 @@ void displayModulesSubmenu(void *parameters)
     static bool firstDraw = true;
     const char *noModuleMessage = "No module connected";
     const char *moduleName = "Connected Module"; // Replace with actual module name
+    needsFullRedraw = true;
 
     if (firstDraw)
     {

@@ -24,6 +24,7 @@ void serialHandler(void *parameters)
             }
         }
     }
+    vTaskDelay(100 / portTICK_PERIOD_MS);
 }
 
 void startSerialTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
