@@ -125,10 +125,11 @@ void BLEHandler(void *parameter)
                     {
                         uint8_t keyCode = data[0];
                         bool isPressed = data[1] == 1;
-                        Serial.print("Received key event: code=");
-                        Serial.print(keyCode);
-                        Serial.print(", state=");
-                        Serial.println(isPressed ? "pressed" : "released");
+                        // transmission debugging
+                        // Serial.print("Received key event: code=");
+                        // Serial.print(keyCode);
+                        // Serial.print(", state=");
+                        // Serial.println(isPressed ? "pressed" : "released");
 
                         handleReceivedKeypress(data, 2);
 
@@ -219,10 +220,10 @@ void handleReceivedKeypress(uint8_t *data, int length)
 
     xQueueSend(hostMessageQueue, &msg, 0);
 
-    Serial.print("Handled HID key event: code=");
-    Serial.print(keyCode);
-    Serial.print(", state=");
-    Serial.println(isPressed ? "pressed" : "released");
+    // Serial.print("Handled HID key event: code=");
+    // Serial.print(keyCode);
+    // Serial.print(", state=");
+    // Serial.println(isPressed ? "pressed" : "released");
 }
 
 void startBleTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)

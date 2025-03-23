@@ -41,13 +41,15 @@ void hostCommunicationBridge(void *parameters)
                 break;
             case KEY_PRESS:
                 WPMCounter::recordKeyPress();
-                Serial.print("Sending KEY_PRESS to host: code=");
-                Serial.println(receivedMessage.data);
+                // transmission debugging
+                // Serial.print("Sending KEY_PRESS to host: code=");
+                // Serial.println(receivedMessage.data);
                 Keyboard.press(receivedMessage.data);
                 break;
             case KEY_RELEASE:
-                Serial.print("Sending KEY_RELEASE to host: code=");
-                Serial.println(receivedMessage.data);
+                // transmission debugging
+                // Serial.print("Sending KEY_RELEASE to host: code=");
+                // Serial.println(receivedMessage.data);
                 Keyboard.release(receivedMessage.data);
                 break;
             }
