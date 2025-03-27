@@ -15,17 +15,17 @@
 ## Features
 |                                Feature                                |     Status      |                    Notes                    |
 | :-------------------------------------------------------------------: | :-------------: | :-----------------------------------------: |
-|                           Keystroke Handler                           |    Supported    |           TinyUSB library issues            |
+|                  Keystroke Handler & Matrix Scanning                  |    Supported    |        TinyUSB library issues fixed         |
 |                       Host Communication Bridge                       | Partial Support | Keyboard communication to the host machine. |
 |                       Modifiable Configuration                        |   Unsupported   |          On-the-fly configuration           |
 | [Web Configurator](https://github.com/PsychoDuckTech/WebConfigurator) |   Unsupported   |  Web-based configurator for the firmware.   |
 |                            Rotary Encoder                             |    Supported    |            Rotary Knob support.             |
 |                             Macro Support                             |   Unsupported   |  Macro support for the main board matrix.   |
-|                                Modules                                |       WIP       |      Bluetooth Numpad Modules support.      |
+|                                Modules                                |    Supported    |      Bluetooth Numpad Modules support.      |
 |                                Display                                |    Supported    |                  Functional                 |
 |                                Layers                                 |       WIP       |     Multiple toggle-able keymap layers.     |
-|                                  WPM|                                 |    Supported    |                  WPM counter                |
-|                                  RGB                                  |   Unsupported   |        Not a priority at the moment.        |
+|                                  WPM                                  |    Supported    |                  WPM counter                |
+|                                  RGB                                  |    Supported    |        RGB Underglow on the keyboard        |
 
 
 ## Current Features
