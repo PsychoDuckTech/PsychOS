@@ -5,7 +5,7 @@
 #define keyMap keyMapL0
 #define keyName keyNameL0
 
-#define benchmark true
+#define benchmark false
 #define DEBOUNCE_DELAY_MS 10
 
 void matrixScan(void *parameters)

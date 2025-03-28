@@ -40,7 +40,7 @@ NVSUtil nvs("psychos");
 
 void setup()
 {
-    delay(0); // Wait for Serial to initialize
+    delay(2000); // Wait for Serial to initialize
 
     const int serialBaudRate = 115200;
     Serial.begin(serialBaudRate);
