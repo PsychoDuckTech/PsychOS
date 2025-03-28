@@ -10,6 +10,7 @@
 #define SELECTED_COLOR 0x2945
 
 #include <Adafruit_ILI9341.h>
+#include "utils/nvs.h"
 
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
@@ -18,6 +19,8 @@ extern bool capsLockStatus;
 extern int hours;
 extern int minutes;
 extern int seconds;
+
+extern NVSUtil nvs;
 
 extern int settingsSelectedOption;
 extern bool inSettingsSubmenu;

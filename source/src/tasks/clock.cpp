@@ -5,6 +5,13 @@ int minutes = 0;
 int seconds = 0; // Add this line
 bool updatedMinutes = false;
 
+void saveTime()
+{
+    nvs.saveInt("hours", hours);
+    nvs.saveInt("minutes", minutes);
+    nvs.saveInt("seconds", seconds);
+}
+
 void clockTask(void *parameters)
 {
     bool refreshFlags[3] = {false, false, false}; // [capsLockStatus, hours, minutes]
@@ -27,6 +34,7 @@ void clockTask(void *parameters)
                 {
                     hours = 0;
                 }
+                saveTime();
             }
         }
     }

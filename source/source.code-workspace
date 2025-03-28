@@ -22,7 +22,10 @@
 			"sstream": "cpp",
 			"typeinfo": "cpp",
 			"chrono": "cpp",
-			"cmath": "cpp"
+			"cmath": "cpp",
+			"format": "cpp",
+			"span": "cpp",
+			"text_encoding": "cpp"
 		},
 		"mcu-debug.rtos-views.showRTOS": false,
 		"liveServer.settings.multiRootWorkspaceName": "source"

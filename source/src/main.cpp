@@ -2,6 +2,7 @@
  * Prototype 0 Keyboard Matrix Configuration Refresh
  */
 #include "main.h"
+#include "globals.h"
 
 // Define the global constants
 const char *OS_version = "0.4.1b ";
@@ -35,6 +36,8 @@ const char *keyNameL0[totalRows][totalCols] = {
     {"LEFTSHIFT", "LESS_GREATER", "Z", "X", "C", "V", "B", "N", "M", "COMMA", "DOT", "MINUS", "RIGHT_SHIFT", 0, "UP", "PAGEDOWN"},
     {"LEFTCTRL", "LEFTMETA", 0, "LEFTALT", 0, 0, "SPACE", 0, 0, 0, "RIGHTALT", 0, "RIGHTCTRL", "LEFT", "DOWN", "RIGHT"}};
 
+NVSUtil nvs("psychos");
+
 void setup()
 {
     delay(0); // Wait for Serial to initialize
@@ -66,7 +69,7 @@ void setup()
     uRGB.effect(RGB_EFFECT_SCROLL);
     uRGB.speed(15);
     uRGB.brightness(60);
-    // uRGB.event(RGB_EVENT_MODULE_CONNECT); // Trigger connect event (commented out)
+    uRGB.event(RGB_EVENT_MODULE_CONNECT); // Trigger connect event (commented out)
 }
 
 void loop() {} // FreeRTOS handles tasks

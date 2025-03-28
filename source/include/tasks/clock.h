@@ -1,8 +1,8 @@
-#ifndef CLOCK_TASK_H
-#define CLOCK_TASK_H
+#pragma once
 
 #include <Arduino.h>
 #include "main.h"
+#include "globals.h"
 
 // Declare variables as extern (no initialization)
 extern int hours;
@@ -14,5 +14,3 @@ extern bool updatedMinutes;
 void clockTask(void *parameters);
 void updateClock(int newHours = -1, int newMinutes = -1, int newSeconds = -1);
 void startClockTask(UBaseType_t core = 0, uint32_t stackDepth = 1024, UBaseType_t priority = 1);
-
-#endif // CLOCK_TASK_H
