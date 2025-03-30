@@ -14,9 +14,8 @@ const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "ã
 // Matrix Configuration
 const int totalRows = 6, totalCols = 16;
 const int rowPins[totalRows] = {21, 4, 14, 10, 11, 9};
-const int colPins[] = {/* not used due to multiplexer */};
 // Multiplexer Pins
-const int usesMultiplexer = true;
+#define USES_MULTIPLEXER true
 const int MULTIPLEXER_S0 = 5, MULTIPLEXER_S1 = 6, MULTIPLEXER_S2 = 7, MULTIPLEXER_S3 = 15, MULTIPLEXER_SIG = 35;
 Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, MULTIPLEXER_S3, MULTIPLEXER_SIG);
 // Display Pins
@@ -54,14 +53,10 @@ NVSUtil nvs("psychos");
 
 void setup()
 {
-    delay(0);
-
+    // Initialize serial communication
     const int serialBaudRate = 115200;
     Serial.begin(serialBaudRate);
-
-    char versionString[50];
-    snprintf(versionString, sizeof(versionString), "%s, %s", OS_version, byCompany);
-    Serial.println(versionString);
+    Serial.printf("%s, %s\n", OS_version, byCompany);
 
     initializeMatrix();
 
@@ -81,7 +76,7 @@ void setup()
     uRGB.color2("#9a8478");
     uRGB.color3("remove");
     uRGB.effect(RGB_EFFECT_SCROLL);
-    uRGB.speed(15);
+    uRGB.speed(100);
     uRGB.brightness(60);
 }
 

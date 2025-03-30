@@ -16,9 +16,7 @@ extern const char *PRODUCT_NAME;
 // Matrix pins
 extern const int totalRows;
 extern const int totalCols;
-extern const int usesMultiplexer;
 extern const int rowPins[];
-extern const int colPins[]; // Add this if using non-multiplexer mode
 
 // Multiplexer pins
 extern const int MULTIPLEXER_S0;
