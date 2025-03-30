@@ -2,7 +2,7 @@
 
 namespace WPMCounter
 {
-    const int MAX_EVENTS = 200;       // Maximum stored key events
+    const int MAX_EVENTS = 1000;      // Maximum stored key events
     unsigned long events[MAX_EVENTS]; // Circular buffer for key press timestamps
     int head = 0;                     // Index of the oldest event
     int count = 0;                    // Number of events in the buffer
