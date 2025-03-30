@@ -104,7 +104,7 @@ void displayHandler(void *parameters)
         }
 
         xSemaphoreGive(screenMutex); // Release the mutex after updating the screen
-        vTaskDelay(1 / portTICK_PERIOD_MS);
+        vTaskDelay(25 / portTICK_PERIOD_MS);
     }
 }
 

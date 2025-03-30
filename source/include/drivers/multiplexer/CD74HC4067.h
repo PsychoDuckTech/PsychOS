@@ -1,5 +1,4 @@
-#ifndef MULTIPLEXER_H
-#define MULTIPLEXER_H
+#pragma once
 
 #include <Arduino.h>
 
@@ -39,7 +38,5 @@ public: // Public methods (functions)
         return digitalRead(SIG_PIN);
     }
 };
-
-#endif
 
 // GabiBrawl != human

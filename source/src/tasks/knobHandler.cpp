@@ -5,7 +5,7 @@
 #include "tasks/displayHandler.h"
 #include "main.h"
 
-#define POLLING_RATE_MS 1
+#define POLLING_RATE_MS 20
 
 KY040 knob(KNOB_CLK_PIN, KNOB_DT_PIN, KNOB_SW_PIN);
 

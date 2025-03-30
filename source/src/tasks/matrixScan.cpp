@@ -15,9 +15,11 @@ void matrixScan(void *parameters)
     Serial.println(task_keyScanning_started);
     Serial.println("\n");
 
+#if BENCHMARK_ENABLED
     unsigned long lastTime = millis();
     unsigned long pollCount[totalRows][totalCols] = {0};
     unsigned long totalPollCount[totalRows][totalCols] = {0};
+#endif
 
     // Arrays to store key states and debounce information.
     bool keyStates[totalRows][totalCols];
@@ -31,7 +33,7 @@ void matrixScan(void *parameters)
         for (int col = 0; col < totalCols; col++) // Scan the column combination with the current row
         {
             colPinsMultiplexer.fastSelect(col);
-            ets_delay_us(2); // Reduced delay for electrical stability
+            ets_delay_us(1); // Reduced delay for electrical stability
 
             bool reading = (colPinsMultiplexer.readChannel() == LOW);
             keyStates[row][col] = reading;
@@ -51,7 +53,7 @@ void matrixScan(void *parameters)
             for (int col = 0; col < totalCols; col++)
             {
                 colPinsMultiplexer.fastSelect(col);
-                ets_delay_us(2); // Reduced delay for electrical stability
+                ets_delay_us(1); // Reduced delay for electrical stability
 
                 bool reading = (colPinsMultiplexer.readChannel() == LOW);
 
@@ -98,8 +100,10 @@ void matrixScan(void *parameters)
                 }
 
                 lastReading[row][col] = reading;
+#if BENCHMARK_ENABLED
                 pollCount[row][col]++;
                 totalPollCount[row][col]++;
+#endif
             }
             GPIO.out_w1ts = (1ULL << rowPins[row]); // Reset the row pin
         }
