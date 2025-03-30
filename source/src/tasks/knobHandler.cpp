@@ -16,12 +16,17 @@ void knobHandler(void *parameters)
     knob.begin();
     Serial.println("Knob Handler started");
 
+    // Add variables for debouncing rapid rotations
+    unsigned long lastRotationTime = 0;
+    const unsigned long ROTATION_DEBOUNCE_MS = 50; // Minimum time between processing rotations
+
     for (;;)
     {
         int rotation = knob.readEncoder();
         bool longPress = knob.checkLongPress();
         bool shortPress = knob.checkButtonPress();
         bool doublePress = knob.checkButtonDoublePress();
+        unsigned long currentTime = millis();
 
         if (currentScreen == MainScreen)
         {
@@ -44,9 +49,17 @@ void knobHandler(void *parameters)
 
         if (currentScreen == SettingsScreen)
         {
-            if (rotation != 0)
+            if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
             {
-                settingsSelectedOption = (settingsSelectedOption + (rotation > 0 ? -1 : 1)) % 4;
+                // Only process one step at a time with debouncing
+                lastRotationTime = currentTime;
+
+                // Get the direction of rotation (-1 for clockwise, 1 for counter-clockwise)
+                // regardless of the magnitude
+                int direction = rotation > 0 ? -1 : 1;
+
+                // Move one step in the appropriate direction
+                settingsSelectedOption = (settingsSelectedOption + direction) % 4;
                 if (settingsSelectedOption < 0)
                     settingsSelectedOption = 3;
                 displaySettingsScreen(nullptr);
@@ -74,8 +87,9 @@ void knobHandler(void *parameters)
 
         if (currentScreen == RGBLightingSubmenu)
         {
-            if (rotation != 0)
+            if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
             {
+                lastRotationTime = currentTime;
                 int8_t delta = rotation > 0 ? 1 : -1;
                 uint8_t *currentValue = &rgbState.values[rgbState.currentSelection];
                 *currentValue = constrain(*currentValue + delta, 0, (rgbState.currentSelection == 3) ? 100 : 255);
@@ -96,8 +110,9 @@ void knobHandler(void *parameters)
 
         if (currentScreen == ClockSubmenu)
         {
-            if (rotation != 0)
+            if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
             {
+                lastRotationTime = currentTime;
                 int8_t delta = rotation > 0 ? 1 : -1;
                 switch (settingsSelectedOption)
                 {
