@@ -71,7 +71,7 @@ namespace WPMCounter
                 updated = false;
             }
             // Update more frequently for a quicker response.
-            vTaskDelay(500 / portTICK_PERIOD_MS);
+            vTaskDelay(750 / portTICK_PERIOD_MS);
         }
     }
 

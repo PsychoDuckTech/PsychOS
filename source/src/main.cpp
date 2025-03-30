@@ -40,7 +40,7 @@ NVSUtil nvs("psychos");
 
 void setup()
 {
-    delay(2000); // Wait for Serial to initialize
+    delay(0);
 
     const int serialBaudRate = 115200;
     Serial.begin(serialBaudRate);
@@ -56,7 +56,7 @@ void setup()
     startHostCommTask(1, 4096, 2);
     startMatrixScanTask(0, 8192, 3);
     startKnobHandlerTask(0, 2048, 1);
-    WPMCounter::startWPMTask(0, 2048, 1);
+    WPMCounter::startWPMTask(1, 2048, 1);
     startBleTask(1, 8192, 2);
     startRgbTask(1, 4096, 1);
     startBuzzerTask(1, 2048, 1);
@@ -69,7 +69,6 @@ void setup()
     uRGB.effect(RGB_EFFECT_SCROLL);
     uRGB.speed(15);
     uRGB.brightness(60);
-    uRGB.event(RGB_EVENT_MODULE_CONNECT); // Trigger connect event (commented out)
 }
 
-void loop() {} // FreeRTOS handles tasks
+void loop() {}

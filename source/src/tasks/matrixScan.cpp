@@ -5,7 +5,9 @@
 #define keyMap keyMapL0
 #define keyName keyNameL0
 
-#define benchmark false
+#define BENCHMARK_ENABLED false  // Set to false to disable benchmarking entirely
+#define BENCHMARK_WINDOW_MS 3000 // Benchmarking window in milliseconds
+
 #define DEBOUNCE_DELAY_MS 10
 
 void matrixScan(void *parameters)
@@ -15,6 +17,7 @@ void matrixScan(void *parameters)
 
     unsigned long lastTime = millis();
     unsigned long pollCount[totalRows][totalCols] = {0};
+    unsigned long totalPollCount[totalRows][totalCols] = {0};
 
     // Arrays to store key states and debounce information.
     bool keyStates[totalRows][totalCols];
@@ -40,7 +43,7 @@ void matrixScan(void *parameters)
 
     for (;;)
     {
-        unsigned long currentTime = millis(); // Cache the current time
+        unsigned long currentTime = millis();
         for (int row = 0; row < totalRows; row++)
         {
             GPIO.out_w1tc = (1ULL << rowPins[row]); // Activate current row pin
@@ -71,7 +74,7 @@ void matrixScan(void *parameters)
                             Serial.printf("Empty key %s\n", (reading ? "pressed" : "released"));
                             break;
                         default:
-                            if (benchmark)
+                            if (BENCHMARK_ENABLED)
                             {
                                 Serial.printf("Key %s %s\n", keyName[row][col], (reading ? "pressed" : "released"));
                             }
@@ -96,20 +99,37 @@ void matrixScan(void *parameters)
 
                 lastReading[row][col] = reading;
                 pollCount[row][col]++;
+                totalPollCount[row][col]++;
             }
             GPIO.out_w1ts = (1ULL << rowPins[row]); // Reset the row pin
         }
 
-        if (benchmark)
+#if BENCHMARK_ENABLED
+        if (currentTime - lastTime >= BENCHMARK_WINDOW_MS)
         {
-            unsigned long **pollCountPtr = new unsigned long *[totalRows];
-            for (int i = 0; i < totalRows; i++)
+            unsigned long *pollRates = new unsigned long[totalRows * totalCols];
+            int index = 0;
+            for (int row = 0; row < totalRows; row++)
             {
-                pollCountPtr[i] = pollCount[i];
+                for (int col = 0; col < totalCols; col++)
+                {
+                    pollRates[index++] = totalPollCount[row][col] / (BENCHMARK_WINDOW_MS / 1000.0);
+                    totalPollCount[row][col] = 0; // Reset total poll count for the next window
+                }
             }
-            printKeyPollingRates(totalRows, totalCols, pollCountPtr, lastTime);
-            delete[] pollCountPtr;
+
+            // Find the median without full sorting
+            int mid = (totalRows * totalCols) / 2;
+            std::nth_element(pollRates, pollRates + mid, pollRates + (totalRows * totalCols));
+            unsigned long medianRate = pollRates[mid];
+
+            Serial.print("Benchmark (polls per second per key): ");
+            Serial.println(medianRate);
+
+            delete[] pollRates;     // Free allocated memory
+            lastTime = currentTime; // Reset the timer
         }
+#endif
         vTaskDelay(1); // allow other tasks to run, 1ms delay
     }
 }
