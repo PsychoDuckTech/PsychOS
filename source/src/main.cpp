@@ -67,7 +67,7 @@ void setup()
     startKnobHandlerTask(0, 2048, 1);
     WPMCounter::startWPMTask(1, 2048, 1);
     startBleTask(1, 8192, 2);
-    startRgbTask(1, 4096, 1);
+    startRgbTask(0, 4096, 2);
     startBuzzerTask(1, 2048, 1);
 
     // RGB configuration
@@ -76,7 +76,7 @@ void setup()
     uRGB.color2("#9a8478");
     uRGB.color3("remove");
     uRGB.effect(RGB_EFFECT_SCROLL);
-    uRGB.speed(100);
+    uRGB.speed(15); // from 1 to 20
     uRGB.brightness(60);
 }
 

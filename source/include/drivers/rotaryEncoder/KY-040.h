@@ -45,7 +45,7 @@ public:
         if (currentClk != _lastClk)
         {
             int dtValue = digitalRead(_dtPin);
-            int direction = (currentClk == dtValue) ? -1 : 1;
+            int direction = (currentClk == dtValue) ? 1 : -1;
             unsigned long currentTime = millis();
 
             // If direction changed, check lock
