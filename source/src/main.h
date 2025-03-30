@@ -12,13 +12,40 @@ extern const char *OS_version;
 extern const char *byCompany;
 extern const char *PRODUCT_NAME;
 
-// Matrix Configuration
+// Pin Definitions
+// Matrix pins
 extern const int totalRows;
 extern const int totalCols;
 extern const int usesMultiplexer;
 extern const int rowPins[];
 extern const int colPins[]; // Add this if using non-multiplexer mode
+
+// Multiplexer pins
+extern const int MULTIPLEXER_S0;
+extern const int MULTIPLEXER_S1;
+extern const int MULTIPLEXER_S2;
+extern const int MULTIPLEXER_S3;
+extern const int MULTIPLEXER_SIG;
 extern Multiplexer colPinsMultiplexer;
+
+// Display pins
+extern const int LCD_CS;
+extern const int LCD_RST;
+extern const int LCD_RS;
+extern const int SPI_MOSI;
+extern const int SPI_SCK;
+
+// Rotary Encoder pins
+extern const int KNOB_CLK_PIN;
+extern const int KNOB_DT_PIN;
+extern const int KNOB_SW_PIN;
+
+// Buzzer pin
+extern const int BUZZER_PIN;
+
+// RGB LED pins - defined as macros for compile-time constants
+#define RGB_DATA_PIN 3
+#define RGB_CLOCK_PIN 46
 
 // Key Maps & Names
 extern const uint8_t keyMapL0[][16];

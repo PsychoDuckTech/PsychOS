@@ -3,21 +3,35 @@
  */
 #include "main.h"
 #include "globals.h"
+#define USE_PT_PT
 
 // Define the global constants
 const char *OS_version = "0.4.1b ";
 const char *byCompany = "by PsychoDuck Tech ";
 const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "キーボード" (kiiboodo)
-#define USE_PT_PT
 
+// ===== PIN DEFINITIONS =====
 // Matrix Configuration
 const int totalRows = 6, totalCols = 16;
 const int rowPins[totalRows] = {21, 4, 14, 10, 11, 9};
-const int colPins[] = {/* Add the actual pin numbers here */};
-
+const int colPins[] = {/* not used due to multiplexer */};
+// Multiplexer Pins
 const int usesMultiplexer = true;
 const int MULTIPLEXER_S0 = 5, MULTIPLEXER_S1 = 6, MULTIPLEXER_S2 = 7, MULTIPLEXER_S3 = 15, MULTIPLEXER_SIG = 35;
 Multiplexer colPinsMultiplexer(MULTIPLEXER_S0, MULTIPLEXER_S1, MULTIPLEXER_S2, MULTIPLEXER_S3, MULTIPLEXER_SIG);
+// Display Pins
+const int LCD_CS = 13;
+const int LCD_RST = 17;
+const int LCD_RS = 16;
+const int SPI_MOSI = 12;
+const int SPI_SCK = 18;
+// Rotary Encoder Pins
+const int KNOB_CLK_PIN = 2;
+const int KNOB_DT_PIN = 36;
+const int KNOB_SW_PIN = 0;
+// Buzzer Pin
+const int BUZZER_PIN = 8;
+// ===== END PIN DEFINITIONS =====
 
 // Key Mapping (Layer 0)
 const uint8_t keyMapL0[totalRows][totalCols] = {

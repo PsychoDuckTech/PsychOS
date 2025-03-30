@@ -1,4 +1,5 @@
 #include "tasks/rgbHandler.h"
+#include "main.h" // Add main.h include to get pin definitions
 
 // Global variables
 QueueHandle_t rgbCommandQueue = NULL;
@@ -212,7 +213,7 @@ static void triggerModuleDisconnect()
 void rgbTask(void *parameters)
 {
     // Initialize FastLED
-    FastLED.addLeds<APA102, 3, 46, BGR>(leds, NUM_LEDS);
+    FastLED.addLeds<APA102, RGB_DATA_PIN, RGB_CLOCK_PIN, BGR>(leds, NUM_LEDS);
     FastLED.setCorrection(TypicalLEDStrip);
 
     // Set initial default values
@@ -267,7 +268,6 @@ void rgbTask(void *parameters)
     // Main loop to handle ongoing commands
     while (true)
     {
-        // ... (rest of the existing loop remains unchanged)
         applyCurrentEffect();
         FastLED.show();
         vTaskDelay(pdMS_TO_TICKS(10));

@@ -1,7 +1,8 @@
 #include "tasks/buzzer.h"
 #include "driver/ledc.h"
+#include "main.h" // Add main.h include to get pin definitions
 
-#define BUZZER_PIN 8
+// Use the pin defined in main.h
 #define LEDC_CHANNEL LEDC_CHANNEL_0
 #define LEDC_TIMER LEDC_TIMER_0
 #define LEDC_MODE LEDC_LOW_SPEED_MODE // Changed to LOW_SPEED_MODE

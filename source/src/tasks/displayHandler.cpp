@@ -3,20 +3,14 @@
 #include "tasks/displayHandler.h"
 #include "display/screens.h"
 #include "globals.h"
-
-// Define constants
-#define LCD_CS 13
-#define LCD_RST 17
-#define LCD_RS 16
-#define SPI_MOSI 12
-#define SPI_SCK 18
+#include "main.h" // Add main.h include to get pin definitions
 
 int firstDraw = 1;
 
 extern bool updatedMinutes; // Declaration of external variable
 
 // Declare global variables
-Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
+Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST); // Use the pins defined in main.h
 ScreenType currentScreen = MainScreen;
 int settingsSelectedOption = 0;
 bool inSettingsSubmenu = false;

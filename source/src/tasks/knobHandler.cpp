@@ -3,13 +3,11 @@
 #include "drivers/rotaryEncoder/KY-040.h"
 #include "tasks/hostCommunicationBridge.h"
 #include "tasks/displayHandler.h"
+#include "main.h"
 
-#define CLK_PIN 2
-#define DT_PIN 36
-#define SW_PIN 0
 #define POLLING_RATE_MS 1
 
-KY040 knob(CLK_PIN, DT_PIN, SW_PIN);
+KY040 knob(KNOB_CLK_PIN, KNOB_DT_PIN, KNOB_SW_PIN);
 
 void displayRGBSubmenu(void *parameters);
 
