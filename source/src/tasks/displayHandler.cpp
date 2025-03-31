@@ -1,22 +1,26 @@
 #include <Arduino.h>
-// #include <Adafruit_ILI9341.h>
 #include "tasks/displayHandler.h"
 #include "display/screens.h"
 #include "globals.h"
-#include "main.h" // Add main.h include to get pin definitions
+#include "main.h"
 
 int firstDraw = 1;
 QueueHandle_t settingsRotationQueue = NULL;
 
-extern bool updatedMinutes; // Declaration of external variable
+extern bool updatedMinutes;
 
 // Declare global variables
-Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST); // Use the pins defined in main.h
+Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
 ScreenType currentScreen = MainScreen;
 int settingsSelectedOption = 0;
 bool inSettingsSubmenu = false;
-bool updateMainScreen = true;  // Add this flag
-SemaphoreHandle_t screenMutex; // Add a mutex
+bool updateMainScreen = true;
+SemaphoreHandle_t screenMutex;
+
+void clearWPM(void *parameters)
+{
+    tft.fillRect(11, 297, 55, 16, BG_COLOR);
+}
 
 void switchScreen(ScreenType newScreen)
 {

@@ -1,9 +1,10 @@
 #include <Adafruit_ILI9341.h>
-#include <Arduino.h> // Include for millis() function
+#include <Arduino.h>
 #include "displayContent.h"
 #include "globals.h"
 #include "icons.h"
 #include "main.h"
+#include "translations.h"
 
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
@@ -15,8 +16,8 @@ bool needsFullRedraw = true;
 
 int rgbValues[4] = {255, 255, 255, 100};
 
-static unsigned long lastToggleTime = 0; // Track the last toggle time
-static bool toggleDiscIcon = false;      // State to toggle between icons
+static unsigned long lastToggleTime = 0;
+static bool toggleDiscIcon = false;
 
 // Universal title rendering function
 void renderScreenTitle(const char *title, int yPos = 24, int textSize = 3, uint16_t textColor = TEXT_COLOR, const GFXfont *font = nullptr)
@@ -68,7 +69,7 @@ void displayTopBar(void *parameters)
     tft.setTextColor(TEXT_COLOR);
     tft.setFont();
     tft.setCursor(206, 8);
-    tft.print("Caps");
+    tft.print(ui_caps);
 
     // Add a static variable to track the previous capsLockStatus
     static bool previousCapsLockStatus = !capsLockStatus; // Initialize to a different value to ensure the first update
@@ -121,12 +122,7 @@ void displayWPM(void *parameters)
     tft.setTextColor(MUTED_COLOR);
     tft.setTextSize(1);
     tft.setCursor(wpmOffset, 304);
-    tft.print("WPM");
-}
-
-void clearWPM(void *parameters)
-{
-    tft.fillRect(11, 297, 55, 16, BG_COLOR);
+    tft.print(ui_wpm);
 }
 
 void displayLAYER(void *parameters)
@@ -135,16 +131,11 @@ void displayLAYER(void *parameters)
     tft.setTextSize(1);
     tft.setFont();
     tft.setCursor(186, 304);
-    tft.print("LAYER");
+    tft.print(ui_layer);
     tft.setTextColor(HIGHLIGHT_COLOR);
     tft.setTextSize(2);
     tft.setCursor(219, 297);
     tft.print("3");
-}
-
-void clearLAYER(void *parameters)
-{
-    tft.fillRect(11, 297, 50, 16, BG_COLOR);
 }
 
 void displayDemo(void *parameters)
@@ -157,10 +148,10 @@ void displayDemo(void *parameters)
     tft.setTextColor(TEXT_COLOR);
     tft.setFont();
     tft.setCursor(21, 233);
-    tft.print("Now Playing");
+    tft.print(ui_now_playing);
 
     tft.setCursor(21, 253);
-    tft.print("Bury you");
+    tft.print(ui_song_title);
 
     tft.drawBitmap(200, 241, iconMusicPlay, 20, 18, TEXT_COLOR);
 }
@@ -169,19 +160,20 @@ void drawSettingsStatic(void *parameters)
 {
     tft.fillScreen(BG_COLOR);
     // Draw title
-    renderScreenTitle("Settings");
+    renderScreenTitle(ui_settings);
 
     // Draw footer text before options are loaded
     tft.setTextSize(1);
     tft.setFont();
     tft.setTextColor(ULTRA_MUTED_COLOR);
     tft.setCursor(76, 287);
-    tft.print("Secured by Dux");
+    tft.print(ui_secured_by);
     tft.setTextColor(MUTED_COLOR);
     tft.setCursor(65, 296);
-    tft.print("Powered by PsychOS");
+    tft.print(ui_powered_by);
     tft.setCursor(79, 305);
-    tft.print("build ");
+    tft.print(ui_build);
+    tft.print(" ");
     tft.print(OS_version);
 }
 
@@ -198,7 +190,7 @@ void displaySettingsScreen(void *parameters)
     // Menu configuration
     const int MENU_START_Y = 62;
     const int ITEM_SPACING = 54;
-    const char *menuItems[] = {"Modules", "Underglow", "Clock", "IoT link"};
+    const char *menuItems[] = {ui_modules, ui_underglow, ui_clock, ui_iot_link};
     const int UNSELECTED_H = 47;
     const int SELECTED_H = 51;
     const int UNSELECTED_W = 228;
@@ -249,7 +241,7 @@ void displaySettingsScreen(void *parameters)
 
 void displayRGBSubmenu(void *parameters)
 {
-    const char *rgbOptions[] = {"Red", "Green", "Blue", "Brightness"};
+    const char *rgbOptions[] = {ui_red, ui_green, ui_blue, ui_brightness};
     const int valueRanges[] = {255, 255, 255, 100};
     needsFullRedraw = true;
 
@@ -258,7 +250,7 @@ void displayRGBSubmenu(void *parameters)
         tft.fillScreen(BG_COLOR);
 
         // Title using universal function
-        renderScreenTitle("Underglow", 30);
+        renderScreenTitle(ui_underglow, 30);
 
         // Draw all elements
         for (int i = 0; i < 4; i++)
@@ -291,11 +283,11 @@ void displayRGBSubmenu(void *parameters)
         tft.setFont();
         tft.setTextColor(MUTED_COLOR);
         tft.setCursor(15, 250);
-        tft.print("Rotate: Adjust Value");
+        tft.print(ui_rotate_adjust);
         tft.setCursor(15, 258);
-        tft.print("Press: Next Parameter");
+        tft.print(ui_press_next);
         tft.setCursor(15, 266);
-        tft.print("Long Press: Quit to Menu");
+        tft.print(ui_long_press_quit);
 
         rgbState.needsRefresh = false;
     }
@@ -304,95 +296,80 @@ void displayRGBSubmenu(void *parameters)
 void displayClockSubmenu(void *parameters)
 {
     static int lastSelectedOption = -1;
-    static int lastValues[3] = {-1, -1, -1}; // Track last values to detect changes
     needsFullRedraw = true;
 
-    if (lastSelectedOption == -1)
-        tft.fillScreen(BG_COLOR); // Initial draw
-
-    // Title using universal function
-    renderScreenTitle("Set Time", 30);
-
-    const char *labels[] = {"Hours", "Minutes", "Seconds"};
-    int values[] = {hours, minutes, seconds};
-    for (int i = 0; i < 3; i++)
-    {
-        int yPos = 80 + (i * 50);
-
-        // Clear the area of the previously selected option or if the value has changed
-        if (i == lastSelectedOption || values[i] != lastValues[i])
-        {
-            tft.fillRect(10, yPos - 15, 220, 40, BG_COLOR);
-        }
-
-        if (i == settingsSelectedOption)
-        {
-            tft.fillRect(10, yPos - 15, 220, 40, SELECTED_COLOR);
-        }
-
-        tft.setFont(&FreeSansBold9pt7b);
-        tft.setTextSize(1);
-        tft.setTextColor(TEXT_COLOR);
-        tft.setCursor(20, yPos);
-        tft.print(labels[i]);
-        tft.setCursor(120, yPos);
-        tft.setTextColor(i == settingsSelectedOption ? HIGHLIGHT_COLOR : TEXT_COLOR);
-        char valStr[3];
-        sprintf(valStr, "%02d", values[i]);
-        tft.print(valStr);
-    }
-
-    // Hint text
-    tft.setFont();
-    tft.setTextSize(1);
-    tft.setTextColor(MUTED_COLOR);
-    tft.setCursor(20, 280);
-    tft.print("Rotate: Adjust | Press: Next");
-
-    lastSelectedOption = settingsSelectedOption; // Track for partial updates
-    for (int i = 0; i < 3; i++)
-    {
-        lastValues[i] = values[i]; // Update last values
-    }
-}
-
-void displayModulesSubmenu(void *parameters)
-{
-    static bool firstDraw = true;
-    const char *noModuleMessage = "No module connected";
-    const char *moduleName = "Connected Module"; // Replace with actual module name
-    needsFullRedraw = true;
-
-    if (firstDraw)
+    if (needsFullRedraw)
     {
         tft.fillScreen(BG_COLOR);
-        // Draw title using universal function
-        renderScreenTitle("Modules", 40);
-        firstDraw = false;
+        needsFullRedraw = false;
     }
 
-    // Clear previous module name or message
-    tft.fillRect(11, 85, 200, 35, BG_COLOR);
+    // Draw title using same style as settings
+    renderScreenTitle(ui_clock);
 
-    // Display message or module name
-    tft.setCursor(11, 85);
-    if (!moduleConnectionStatus)
+    // Menu configuration similar to settings menu
+    const int MENU_START_Y = 62;
+    const int ITEM_SPACING = 54;
+    const char *labels[] = {ui_hours, ui_minutes, ui_seconds};
+    const int values[] = {hours, minutes, seconds};
+    const int UNSELECTED_H = 47;
+    const int SELECTED_H = 51;
+    const int UNSELECTED_W = 228;
+    const int SELECTED_W = 232;
+
+    // Draw menu items with consistent styling
+    for (int i = 0; i < 3; i++)
     {
-        tft.setTextColor(ERROR_COLOR);
-        tft.print(noModuleMessage);
-    }
-    else
-    {
-        tft.setTextColor(TEXT_COLOR);
-        tft.print(moduleName);
+        bool selected = (i == settingsSelectedOption);
+        int baseY = MENU_START_Y + (i * ITEM_SPACING);
+
+        // Calculate positions like in settings menu
+        int itemY = selected ? baseY - 2 : baseY;
+        int itemW = selected ? SELECTED_W : UNSELECTED_W;
+        int itemH = selected ? SELECTED_H : UNSELECTED_H;
+
+        // Draw border sprite
+        tft.drawBitmap((tft.width() - itemW) / 2, itemY,
+                       selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
+                       itemW, itemH, TEXT_COLOR);
+
+        // Draw highlight if selected
+        if (selected)
+        {
+            tft.drawBitmap(10, itemY + 6, SettingsSelectedHighlight, 220, 23, HIGHLIGHT_COLOR);
+            tft.drawBitmap(10, itemY + 29, SettingsShadow1, 220, 8, 0xCC40);
+            tft.drawBitmap(14, itemY + 37, SettingsShadow2, 212, 8, 0x9B20);
+        }
+
+        // Draw label and value
+        tft.setTextSize(2);
+        tft.setFont();
+        tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
+
+        // Draw label
+        tft.setCursor(46, itemY + (selected ? 19 : 17));
+        tft.print(labels[i]);
+
+        // Draw value
+        char valueStr[3];
+        sprintf(valueStr, "%02d", values[i]);
+        tft.setCursor(180, itemY + (selected ? 19 : 17));
+        tft.print(valueStr);
     }
 
-    // Footer text
+    // Footer text with settings-style formatting
     tft.setTextSize(1);
     tft.setFont();
+    tft.setTextColor(ULTRA_MUTED_COLOR);
+    tft.setCursor(76, 287);
+    tft.print(ui_secured_by);
     tft.setTextColor(MUTED_COLOR);
     tft.setCursor(65, 296);
-    tft.print("Powered by PsychOS");
+    tft.print(ui_powered_by);
     tft.setCursor(79, 305);
-    tft.print("build 0.1.4a");
+    tft.print(ui_build);
+    tft.print(" ");
+    tft.print(OS_version);
+
+    lastSelectedOption = settingsSelectedOption;
 }
