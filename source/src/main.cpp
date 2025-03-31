@@ -6,7 +6,7 @@
 #define USE_PT_PT
 
 // Define the global constants
-const char *OS_version = "0.4.1b ";
+const char *OS_version = "0.4.2b ";
 const char *byCompany = "by PsychoDuck Tech ";
 const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "キーボード" (kiiboodo)
 

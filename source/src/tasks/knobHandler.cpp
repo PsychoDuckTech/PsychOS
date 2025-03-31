@@ -1,66 +1,89 @@
 #include <Arduino.h>
 #include "tasks/knobHandler.h"
-#include "drivers/rotaryEncoder/KY-040.h"
+#include "drivers/rotaryEncoder/EncoderHandler.h"
 #include "tasks/hostCommunicationBridge.h"
 #include "tasks/displayHandler.h"
 #include "main.h"
 
 #define POLLING_RATE_MS 20
 
-KY040 knob(KNOB_CLK_PIN, KNOB_DT_PIN, KNOB_SW_PIN);
-
-void displayRGBSubmenu(void *parameters);
+EncoderHandler knob(KNOB_CLK_PIN, KNOB_DT_PIN, KNOB_SW_PIN);
 
 void knobHandler(void *parameters)
 {
     knob.begin();
     Serial.println("Knob Handler started");
 
-    // Add variables for debouncing rapid rotations
     unsigned long lastRotationTime = 0;
-    const unsigned long ROTATION_DEBOUNCE_MS = 20; // Minimum time between processing rotations
+    const unsigned long ROTATION_DEBOUNCE_MS = 50;
 
     for (;;)
     {
-        int rotation = knob.readEncoder();
+        knob.update();
+        int rotation = knob.getEncoderDelta();
         bool longPress = knob.checkLongPress();
-        bool shortPress = knob.checkButtonPress();
-        bool doublePress = knob.checkButtonDoublePress();
+        bool shortPress = knob.checkShortPress();
+        bool doublePress = knob.checkDoublePress();
         unsigned long currentTime = millis();
 
-        if (currentScreen == MainScreen)
+        if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
         {
-            if (rotation != 0)
-            {
-                HostMessage msg;
-                msg.type = VOLUME_CHANGE;
-                msg.data = rotation;
-                xQueueSend(hostMessageQueue, &msg, 0);
-            }
+            lastRotationTime = currentTime;
 
-            if (shortPress)
+            // Handle rotation based on current screen
+            switch (currentScreen)
+            {
+            case MainScreen:
+                if (rotation != 0)
+                {
+                    HostMessage msg;
+                    msg.type = VOLUME_CHANGE;
+                    msg.data = rotation; // Natural direction for volume
+                    xQueueSend(hostMessageQueue, &msg, 0);
+                }
+                break;
+
+            case SettingsScreen:
+            {
+                SettingsRotationEvent event;
+                event.totalSteps = rotation; // Natural direction
+                xQueueSend(settingsRotationQueue, &event, 0);
+            }
+            break;
+
+            case ClockSubmenu:
+            {
+                SettingsRotationEvent event;
+                event.totalSteps = rotation; // Natural direction
+                xQueueSend(settingsRotationQueue, &event, 0);
+            }
+            break;
+
+            case RGBLightingSubmenu:
+            {
+                uint8_t *currentValue = &rgbState.values[rgbState.currentSelection];
+                *currentValue = constrain(*currentValue + rotation, 0,
+                                          (rgbState.currentSelection == 3) ? 100 : 255);
+                rgbState.needsRefresh = true;
+            }
+            break;
+            }
+        }
+
+        // Handle button presses
+        if (shortPress)
+        {
+            switch (currentScreen)
+            {
+            case MainScreen:
             {
                 HostMessage msg;
                 msg.type = VOLUME_MUTE;
                 msg.data = 0;
                 xQueueSend(hostMessageQueue, &msg, 0);
+                break;
             }
-        }
-
-        if (currentScreen == SettingsScreen)
-        {
-            if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
-            {
-                lastRotationTime = currentTime;
-
-                // Create and send rotation event to queue
-                SettingsRotationEvent event;
-                event.totalSteps = rotation; // Pass the actual number of steps
-                xQueueSend(settingsRotationQueue, &event, 0);
-            }
-
-            if (shortPress)
-            {
+            case SettingsScreen:
                 switch (settingsSelectedOption)
                 {
                 case 0:
@@ -76,57 +99,15 @@ void knobHandler(void *parameters)
                     switchScreen(IotSubmenu);
                     break;
                 }
-            }
-        }
-
-        if (currentScreen == RGBLightingSubmenu)
-        {
-            if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
-            {
-                lastRotationTime = currentTime;
-                int8_t delta = rotation > 0 ? 1 : -1;
-                uint8_t *currentValue = &rgbState.values[rgbState.currentSelection];
-                *currentValue = constrain(*currentValue + delta, 0, (rgbState.currentSelection == 3) ? 100 : 255);
-                rgbState.needsRefresh = true;
-            }
-
-            if (shortPress)
-            {
+                break;
+            case RGBLightingSubmenu:
                 rgbState.currentSelection = (rgbState.currentSelection + 1) % 4;
                 rgbState.needsRefresh = true;
-            }
-
-            if (longPress)
-            {
-                firstDraw = true;
-            }
-        }
-
-        if (currentScreen == ClockSubmenu)
-        {
-            if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
-            {
-                lastRotationTime = currentTime;
-                int8_t delta = rotation > 0 ? 1 : -1;
-                switch (settingsSelectedOption)
-                {
-                case 0:
-                    hours = (hours + delta + 24) % 24;
-                    break;
-                case 1:
-                    minutes = (minutes + delta + 60) % 60;
-                    break;
-                case 2:
-                    seconds = (seconds + delta + 60) % 60;
-                    break;
-                }
-                displayClockSubmenu(nullptr);
-            }
-
-            if (shortPress)
-            {
+                break;
+            case ClockSubmenu:
                 settingsSelectedOption = (settingsSelectedOption + 1) % 3;
                 displayClockSubmenu(nullptr);
+                break;
             }
         }
 
@@ -142,12 +123,9 @@ void knobHandler(void *parameters)
             }
         }
 
-        if (doublePress)
+        if (doublePress && currentScreen == MainScreen)
         {
-            if (currentScreen == MainScreen)
-            {
-                capsLockStatus = !capsLockStatus;
-            }
+            capsLockStatus = !capsLockStatus;
         }
 
         vTaskDelay(pdMS_TO_TICKS(POLLING_RATE_MS));

@@ -72,8 +72,8 @@ void displayHandler(void *parameters)
     {
         xSemaphoreTake(screenMutex, portMAX_DELAY);
 
-        // Process any pending rotation events for settings screen
-        if (currentScreen == SettingsScreen)
+        // Process any pending rotation events for settings and clock screens
+        if (currentScreen == SettingsScreen || currentScreen == ClockSubmenu)
         {
             SettingsRotationEvent event;
             int totalRotation = 0;
@@ -87,19 +87,39 @@ void displayHandler(void *parameters)
             // Apply accumulated rotation if any
             if (totalRotation != 0)
             {
-                // Calculate new position considering total rotation
-                int newPosition = settingsSelectedOption - totalRotation; // Negative rotation means clockwise
-
-                // Clamp the position between 0 and 3 without wrapping
-                if (newPosition < 0)
-                    newPosition = 0;
-                if (newPosition > 3)
-                    newPosition = 3;
-
-                if (settingsSelectedOption != newPosition)
+                if (currentScreen == SettingsScreen)
                 {
-                    settingsSelectedOption = newPosition;
-                    displaySettingsScreen(nullptr);
+                    // Calculate new position considering total rotation
+                    int newPosition = settingsSelectedOption - totalRotation;
+
+                    // Clamp the position between 0 and 3 without wrapping
+                    if (newPosition < 0)
+                        newPosition = 0;
+                    if (newPosition > 3)
+                        newPosition = 3;
+
+                    if (settingsSelectedOption != newPosition)
+                    {
+                        settingsSelectedOption = newPosition;
+                        displaySettingsScreen(nullptr);
+                    }
+                }
+                else if (currentScreen == ClockSubmenu)
+                {
+                    // Handle clock value updates
+                    switch (settingsSelectedOption)
+                    {
+                    case 0: // Hours
+                        hours = (hours - totalRotation + 24) % 24;
+                        break;
+                    case 1: // Minutes
+                        minutes = (minutes - totalRotation + 60) % 60;
+                        break;
+                    case 2: // Seconds
+                        seconds = (seconds - totalRotation + 60) % 60;
+                        break;
+                    }
+                    displayClockSubmenu(nullptr);
                 }
             }
         }
