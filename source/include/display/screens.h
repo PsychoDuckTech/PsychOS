@@ -18,6 +18,29 @@ int rgbValues[4] = {255, 255, 255, 100};
 static unsigned long lastToggleTime = 0; // Track the last toggle time
 static bool toggleDiscIcon = false;      // State to toggle between icons
 
+// Universal title rendering function
+void renderScreenTitle(const char *title, int yPos = 24, int textSize = 3, uint16_t textColor = TEXT_COLOR, const GFXfont *font = nullptr)
+{
+    tft.setTextSize(textSize);
+    if (font)
+    {
+        tft.setFont(font);
+    }
+    else
+    {
+        tft.setFont();
+    }
+    tft.setTextColor(textColor);
+
+    // Calculate title width (multiplier 18 for default font size 3, adjust for custom fonts)
+    int charWidth = (textSize == 3 && font == nullptr) ? 18 : 16;
+    int titleWidth = strlen(title) * charWidth;
+
+    // Center the title
+    tft.setCursor((tft.width() - titleWidth) / 2, yPos);
+    tft.print(title);
+}
+
 void displayMainScreen(void *parameters)
 {
     needsFullRedraw = true;
@@ -146,12 +169,7 @@ void drawSettingsStatic(void *parameters)
 {
     tft.fillScreen(BG_COLOR);
     // Draw title
-    tft.setTextSize(3);
-    tft.setFont();
-    tft.setTextColor(TEXT_COLOR);
-    int titleWidth = strlen("Settings") * 18;
-    tft.setCursor((tft.width() - titleWidth) / 2, 24);
-    tft.print("Settings");
+    renderScreenTitle("Settings");
 
     // Draw footer text before options are loaded
     tft.setTextSize(1);
@@ -239,12 +257,8 @@ void displayRGBSubmenu(void *parameters)
     {
         tft.fillScreen(BG_COLOR);
 
-        // Title
-        tft.setTextSize(2);
-        tft.setFont(&FreeSansBold9pt7b);
-        tft.setTextColor(TEXT_COLOR);
-        tft.setCursor(25, 30);
-        tft.print("RGB Glow");
+        // Title using universal function
+        renderScreenTitle("Underglow", 30);
 
         // Draw all elements
         for (int i = 0; i < 4; i++)
@@ -296,11 +310,8 @@ void displayClockSubmenu(void *parameters)
     if (lastSelectedOption == -1)
         tft.fillScreen(BG_COLOR); // Initial draw
 
-    tft.setFont(&FreeSansBold9pt7b);
-    tft.setTextSize(2);
-    tft.setTextColor(TEXT_COLOR);
-    tft.setCursor(40, 30);
-    tft.print("Set Time");
+    // Title using universal function
+    renderScreenTitle("Set Time", 30);
 
     const char *labels[] = {"Hours", "Minutes", "Seconds"};
     int values[] = {hours, minutes, seconds};
@@ -355,15 +366,8 @@ void displayModulesSubmenu(void *parameters)
     if (firstDraw)
     {
         tft.fillScreen(BG_COLOR);
-        tft.setTextSize(2);
-        tft.setFont(&FreeSansBold9pt7b);
-        tft.setTextColor(TEXT_COLOR);
-
-        // Draw title
-        int titleWidth = strlen("Modules") * 16; // Approximate width calculation
-        tft.setCursor((tft.width() - titleWidth) / 2, 40);
-        tft.print("Modules");
-
+        // Draw title using universal function
+        renderScreenTitle("Modules", 40);
         firstDraw = false;
     }
 
