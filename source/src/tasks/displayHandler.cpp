@@ -90,14 +90,17 @@ void displayHandler(void *parameters)
                 // Calculate new position considering total rotation
                 int newPosition = settingsSelectedOption - totalRotation; // Negative rotation means clockwise
 
-                // Handle wrapping
-                while (newPosition < 0)
-                    newPosition += 4;
-                while (newPosition >= 4)
-                    newPosition -= 4;
+                // Clamp the position between 0 and 3 without wrapping
+                if (newPosition < 0)
+                    newPosition = 0;
+                if (newPosition > 3)
+                    newPosition = 3;
 
-                settingsSelectedOption = newPosition;
-                displaySettingsScreen(nullptr);
+                if (settingsSelectedOption != newPosition)
+                {
+                    settingsSelectedOption = newPosition;
+                    displaySettingsScreen(nullptr);
+                }
             }
         }
 
