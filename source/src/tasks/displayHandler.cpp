@@ -6,6 +6,7 @@
 #include "main.h" // Add main.h include to get pin definitions
 
 int firstDraw = 1;
+QueueHandle_t settingsRotationQueue = NULL;
 
 extern bool updatedMinutes; // Declaration of external variable
 
@@ -63,12 +64,42 @@ void displayHandler(void *parameters)
     tft.setRotation(2);
     Serial.println("Display Handler started.");
 
-    screenMutex = xSemaphoreCreateMutex(); // Create the mutex
-    switchScreen(MainScreen);              // Initialize main screen
+    screenMutex = xSemaphoreCreateMutex();
+    settingsRotationQueue = xQueueCreate(10, sizeof(SettingsRotationEvent));
+    switchScreen(MainScreen);
 
     for (;;)
     {
-        xSemaphoreTake(screenMutex, portMAX_DELAY); // Take the mutex before updating the screen
+        xSemaphoreTake(screenMutex, portMAX_DELAY);
+
+        // Process any pending rotation events for settings screen
+        if (currentScreen == SettingsScreen)
+        {
+            SettingsRotationEvent event;
+            int totalRotation = 0;
+
+            // Collect all pending rotation events
+            while (xQueueReceive(settingsRotationQueue, &event, 0) == pdTRUE)
+            {
+                totalRotation += event.totalSteps;
+            }
+
+            // Apply accumulated rotation if any
+            if (totalRotation != 0)
+            {
+                // Calculate new position considering total rotation
+                int newPosition = settingsSelectedOption - totalRotation; // Negative rotation means clockwise
+
+                // Handle wrapping
+                while (newPosition < 0)
+                    newPosition += 4;
+                while (newPosition >= 4)
+                    newPosition -= 4;
+
+                settingsSelectedOption = newPosition;
+                displaySettingsScreen(nullptr);
+            }
+        }
 
         switch (currentScreen)
         {

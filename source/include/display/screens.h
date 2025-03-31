@@ -180,14 +180,14 @@ void displaySettingsScreen(void *parameters)
     // Menu configuration
     const int MENU_START_Y = 62;
     const int ITEM_SPACING = 54;
-    const char *menuItems[] = {"Modules", "IoT Devices", "Clock", "RGB"};
+    const char *menuItems[] = {"Modules", "Underglow", "Clock", "IoT link"};
     const int UNSELECTED_H = 47;
     const int SELECTED_H = 51;
     const int UNSELECTED_W = 228;
     const int SELECTED_W = 232;
 
     // Draw menu items with sprites
-    tft.setTextSize(2); // Set text size for menu items once instead of every loop
+    tft.setTextSize(2);
     for (int i = 0; i < 4; i++)
     {
         bool selected = (i == settingsSelectedOption);
@@ -209,7 +209,16 @@ void displaySettingsScreen(void *parameters)
             tft.drawBitmap(14, itemY + 37, SettingsShadow2, 212, 8, 0x9B20);
         }
 
-        // Draw text label
+        // Draw icon with correct dimensions
+        const uint8_t *icons[] = {iconBleConnectedBig, iconLightBulb, iconTranslation, iconIotChip};
+        const int iconWidths[] = {14, 18, 22, 22};
+        const int iconHeights[] = {22, 23, 22, 22};
+
+        int iconX = 16 + (selected ? 0 : 0);
+        int iconY = itemY + 14 + (selected ? 0 : 0);
+        tft.drawBitmap(iconX, iconY, icons[i], iconWidths[i], iconHeights[i], selected ? 0x0 : TEXT_COLOR);
+
+        // Draw text label (adjusting position based on icon width)
         tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
         tft.setCursor(46, itemY + (selected ? 19 : 17));
         tft.print(menuItems[i]);

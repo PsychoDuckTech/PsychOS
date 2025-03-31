@@ -18,7 +18,7 @@ void knobHandler(void *parameters)
 
     // Add variables for debouncing rapid rotations
     unsigned long lastRotationTime = 0;
-    const unsigned long ROTATION_DEBOUNCE_MS = 50; // Minimum time between processing rotations
+    const unsigned long ROTATION_DEBOUNCE_MS = 20; // Minimum time between processing rotations
 
     for (;;)
     {
@@ -51,18 +51,12 @@ void knobHandler(void *parameters)
         {
             if (rotation != 0 && (currentTime - lastRotationTime) > ROTATION_DEBOUNCE_MS)
             {
-                // Only process one step at a time with debouncing
                 lastRotationTime = currentTime;
 
-                // Get the direction of rotation (-1 for clockwise, 1 for counter-clockwise)
-                // regardless of the magnitude
-                int direction = rotation > 0 ? -1 : 1;
-
-                // Move one step in the appropriate direction
-                settingsSelectedOption = (settingsSelectedOption + direction) % 4;
-                if (settingsSelectedOption < 0)
-                    settingsSelectedOption = 3;
-                displaySettingsScreen(nullptr);
+                // Create and send rotation event to queue
+                SettingsRotationEvent event;
+                event.totalSteps = rotation; // Pass the actual number of steps
+                xQueueSend(settingsRotationQueue, &event, 0);
             }
 
             if (shortPress)

@@ -19,8 +19,13 @@ struct MenuItem
     void (*action)();
 };
 
-void switchScreen(ScreenType newScreen);
+// Add structure for settings rotation events
+struct SettingsRotationEvent
+{
+    int totalSteps; // Accumulated rotation steps
+};
 
+extern QueueHandle_t settingsRotationQueue;
 extern ScreenType currentScreen;
 extern int settingsSelectedOption;
 extern bool inSettingsSubmenu;
@@ -28,8 +33,6 @@ extern bool inSettingsSubmenu;
 void switchScreen(ScreenType newScreen);
 void displaySettingsScreen(void *parameters);
 void displayClockSubmenu(void *parameters);
-
 void displayHandler(void *parameters);
-void switchScreen(ScreenType newScreen);
 
 void startDisplayTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseType_t priority = 1);
