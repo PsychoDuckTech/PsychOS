@@ -22,14 +22,14 @@ const char *ui_wpm = "PPM";
 const char *ui_layer = "CAMADA";
 const char *ui_now_playing = "Reproduzindo";
 const char *ui_song_title = "Bury you"; // Song titles typically stay in original language
-const char *ui_settings = "Configurações";
-const char *ui_modules = "Módulos";
-const char *ui_underglow = "Iluminação";
-const char *ui_clock = "Relógio";
+const char *ui_settings = "Definicoes";
+const char *ui_modules = "Modulos";
+const char *ui_underglow = "Iluminacao";
+const char *ui_clock = "Relogio";
 const char *ui_iot_link = "Link IoT";
 const char *ui_secured_by = "Seguro por Dux";
 const char *ui_powered_by = "Desenvolvido por PsychOS";
-const char *ui_build = "versão";
+const char *ui_build = "versao";
 
 // RGB Menu
 const char *ui_red = "Vermelho";
@@ -37,7 +37,7 @@ const char *ui_green = "Verde";
 const char *ui_blue = "Azul";
 const char *ui_brightness = "Brilho";
 const char *ui_rotate_adjust = "Girar: Ajustar Valor";
-const char *ui_press_next = "Pressionar: Próximo";
+const char *ui_press_next = "Pressionar: Proximo";
 const char *ui_long_press_quit = "Press. Longo: Voltar";
 
 // Clock Menu
