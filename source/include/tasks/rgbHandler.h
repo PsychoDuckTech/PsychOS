@@ -76,22 +76,46 @@ extern uint8_t currentBrightness;
 extern uint8_t globalMaxBrightnessPercent;
 
 // Class definition
-class uRGBClass
-{
+struct RGBConfig {
+    RGBEffectType effect = RGB_EFFECT_STATIC;
+    const char* colors[MAX_COLORS] = {nullptr};
+    uint8_t numColors = 0;
+    uint8_t brightness = 100;
+    uint8_t speed = 10;
+};
+
+class uRGBClass {
 public:
     uRGBClass();
-    void color1(const char *hex);
-    void color2(const char *hex);
-    void color3(const char *hex);
-    void color4(const char *hex);
-    void color5(const char *hex);
-    void color6(const char *hex);
-    void color7(const char *hex);
-    void effect(RGBEffectType type);
-    void brightness(uint8_t percent);
-    void event(RGBEventType event);
+    // New unified configuration method
+    void configure(const RGBConfig& config);
+    
+    // Keep existing methods for backwards compatibility and simple changes
     void setMaxBrightness(uint8_t percent);
+    
+    // Mark these as deprecated to encourage using configure()
+    [[deprecated("Use configure() instead")]]
+    void color1(const char *hex);
+    [[deprecated("Use configure() instead")]]
+    void color2(const char *hex);
+    [[deprecated("Use configure() instead")]]
+    void color3(const char *hex);
+    [[deprecated("Use configure() instead")]]
+    void color4(const char *hex);
+    [[deprecated("Use configure() instead")]]
+    void color5(const char *hex);
+    [[deprecated("Use configure() instead")]]
+    void color6(const char *hex);
+    [[deprecated("Use configure() instead")]]
+    void color7(const char *hex);
+    [[deprecated("Use configure() instead")]]
+    void effect(RGBEffectType type);
+    [[deprecated("Use configure() instead")]]
+    void brightness(uint8_t percent);
+    [[deprecated("Use configure() instead")]]
     void speed(uint8_t level);
+    
+    void event(RGBEventType event);
 
 private:
     void setColor(uint8_t index, const char *hex, bool remove = false);

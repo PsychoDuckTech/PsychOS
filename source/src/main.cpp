@@ -70,14 +70,16 @@ void setup()
     startRgbTask(0, 4096, 2);
     startBuzzerTask(1, 2048, 1);
 
-    // RGB configuration
     uRGB.setMaxBrightness(50);
-    uRGB.color1("#1e130c");
-    uRGB.color2("#9a8478");
-    uRGB.color3("remove");
-    uRGB.effect(RGB_EFFECT_SCROLL);
-    uRGB.speed(15); // from 1 to 20
-    uRGB.brightness(60);
+    RGBConfig config;
+    config.effect = RGB_EFFECT_RUNNER;
+    config.colors[0] = "#FFA500"; // Orange
+    config.colors[1] = "#FF69B4"; // Hot Pink
+    config.colors[2] = "#800080"; // Purple
+    config.numColors = 3;
+    config.speed = 20;      // 1-20 scale
+    config.brightness = 70; // 0-100 scale
+    uRGB.configure(config);
 }
 
 void loop() {}

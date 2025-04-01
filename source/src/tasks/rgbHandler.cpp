@@ -349,4 +349,36 @@ void uRGBClass::speed(uint8_t level)
     xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
 }
 
+void uRGBClass::configure(const RGBConfig& config) {
+    RGBCommand cmd;
+    cmd.type = RGB_CMD_SET_EFFECT;
+    cmd.data.effect.config = {config.effect, 
+                            static_cast<uint8_t>(map(config.speed, 1, 20, 1, 255)), 
+                            255};
+    
+    // Set colors if provided
+    cmd.data.effect.set_colors = (config.numColors > 0);
+    cmd.data.effect.num_colors = std::min(config.numColors, static_cast<uint8_t>(MAX_COLORS));
+    
+    for (uint8_t i = 0; i < cmd.data.effect.num_colors; i++) {
+        if (config.colors[i]) {
+            strncpy(cmd.data.effect.colors[i], config.colors[i], HEX_COLOR_LENGTH);
+        } else {
+            strncpy(cmd.data.effect.colors[i], "#000000", HEX_COLOR_LENGTH);
+        }
+    }
+    
+    cmd.data.effect.temporary = false;
+    cmd.data.effect.duration_ms = 0;
+    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
+
+    // Set brightness if different from current
+    if (config.brightness != currentBrightness) {
+        RGBCommand brightnessCmd;
+        brightnessCmd.type = RGB_CMD_SET_BRIGHTNESS;
+        brightnessCmd.data.brightness = config.brightness;
+        xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
+    }
+}
+
 uRGBClass uRGB;
