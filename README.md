@@ -66,6 +66,9 @@ We follow [Semantic Versioning 2.0.0](https://semver.org/) with:
 - Pre-release stages: `alpha` < `beta` < `rc`
 - Build metadata: Date (YYYYMMDD) and CI run number
 
+## Project Activity
+![Alt](https://repobeats.axiom.co/api/embed/41e28f23eb43e17ac67db3d966de3dd565079220.svg "Repobeats analytics image")
+
 ## About
 This firmware was tested only on the ESP32-S3.
 
