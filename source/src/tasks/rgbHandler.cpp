@@ -273,82 +273,6 @@ void startRgbTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 // uRGB Class Implementation
 uRGBClass::uRGBClass() {}
 
-void uRGBClass::setColor(uint8_t index, const char *hex, bool remove)
-{
-    RGBCommand cmd;
-    cmd.type = RGB_CMD_SET_COLOR;
-    cmd.data.color.index = index;
-    cmd.data.color.remove = remove;
-    if (remove)
-    {
-        strncpy(cmd.data.color.hex, "#000000", HEX_COLOR_LENGTH); // Default color
-    }
-    else
-    {
-        strncpy(cmd.data.color.hex, hex, HEX_COLOR_LENGTH);
-    }
-    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
-}
-
-void uRGBClass::color1(const char *hex) { setColor(0, hex, false); }
-void uRGBClass::color2(const char *hex) { setColor(1, hex, false); }
-void uRGBClass::color3(const char *hex) { setColor(2, hex, false); }
-void uRGBClass::color4(const char *hex) { setColor(3, hex, false); }
-void uRGBClass::color5(const char *hex) { setColor(4, hex, false); }
-void uRGBClass::color6(const char *hex) { setColor(5, hex, false); }
-void uRGBClass::color7(const char *hex) { setColor(6, hex, false); }
-
-void uRGBClass::effect(RGBEffectType type)
-{
-    RGBCommand cmd;
-    cmd.type = RGB_CMD_SET_EFFECT;
-    cmd.data.effect.config = {type, 128, 255};
-    cmd.data.effect.set_colors = false;
-    cmd.data.effect.temporary = false;
-    cmd.data.effect.duration_ms = 0;
-    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
-}
-
-void uRGBClass::brightness(uint8_t percent)
-{
-    RGBCommand cmd;
-    cmd.type = RGB_CMD_SET_BRIGHTNESS;
-    cmd.data.brightness = percent;
-    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
-}
-
-void uRGBClass::event(RGBEventType event)
-{
-    RGBCommand cmd;
-    cmd.type = RGB_CMD_TRIGGER_EVENT;
-    cmd.data.event = event;
-    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
-}
-
-void uRGBClass::setMaxBrightness(uint8_t percent)
-{
-    globalMaxBrightnessPercent = constrain(percent, 0, 100);
-    updateBrightness();
-}
-
-void uRGBClass::speed(uint8_t level)
-{
-    // Validate input range
-    if (level < 1 || level > 20)
-    {
-        return; // Ignore invalid levels
-    }
-
-    // Map level 1-20 to speed 1-255
-    uint8_t speed = map(level, 1, 20, 1, 255);
-
-    // Create and send the command
-    RGBCommand cmd;
-    cmd.type = RGB_CMD_SET_SPEED;
-    cmd.data.speed = speed;
-    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
-}
-
 void uRGBClass::configure(const RGBConfig& config) {
     RGBCommand cmd;
     cmd.type = RGB_CMD_SET_EFFECT;
@@ -377,8 +301,29 @@ void uRGBClass::configure(const RGBConfig& config) {
         RGBCommand brightnessCmd;
         brightnessCmd.type = RGB_CMD_SET_BRIGHTNESS;
         brightnessCmd.data.brightness = config.brightness;
-        xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
+        xQueueSend(rgbCommandQueue, &brightnessCmd, portMAX_DELAY);
     }
+}
+
+void uRGBClass::setMaxBrightness(uint8_t percent) {
+    globalMaxBrightnessPercent = constrain(percent, 0, 100);
+    updateBrightness();
+}
+
+void uRGBClass::event(RGBEventType event) {
+    RGBCommand cmd;
+    cmd.type = RGB_CMD_TRIGGER_EVENT;
+    cmd.data.event = event;
+    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
+}
+
+void uRGBClass::setColor(uint8_t index, const char *hex, bool remove) {
+    RGBCommand cmd;
+    cmd.type = RGB_CMD_SET_COLOR;
+    cmd.data.color.index = index;
+    cmd.data.color.remove = remove;
+    strncpy(cmd.data.color.hex, remove ? "#000000" : hex, HEX_COLOR_LENGTH);
+    xQueueSend(rgbCommandQueue, &cmd, portMAX_DELAY);
 }
 
 uRGBClass uRGB;
