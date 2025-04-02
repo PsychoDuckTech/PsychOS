@@ -19,6 +19,59 @@ int rgbValues[4] = {255, 255, 255, 100};
 static unsigned long lastToggleTime = 0;
 static bool toggleDiscIcon = false;
 
+// Button drawing function for consistent UI elements
+void drawButton(const char *buttonText, const uint8_t *leftIcon = nullptr, int leftIconWidth = 0,
+                int leftIconHeight = 0, bool showRightArrow = true, int yPosition = 0, bool selected = false)
+{
+    // Constants for button dimensions
+    const int UNSELECTED_H = 47;
+    const int SELECTED_H = 51;
+    const int UNSELECTED_W = 228;
+    const int SELECTED_W = 232;
+
+    // Calculate positions
+    int itemW = selected ? SELECTED_W : UNSELECTED_W;
+    int itemH = selected ? SELECTED_H : UNSELECTED_H;
+    int itemY = yPosition - (selected ? 2 : 0);
+
+    // Draw border sprite
+    tft.drawBitmap((tft.width() - itemW) / 2, itemY,
+                   selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
+                   itemW, itemH, TEXT_COLOR);
+
+    // Draw highlight sprite if selected
+    if (selected)
+    {
+        tft.drawBitmap(10, itemY + 6, SettingsSelectedHighlight, 220, 23, HIGHLIGHT_COLOR);
+        tft.drawBitmap(10, itemY + 29, SettingsShadow1, 220, 8, 0xCC40);
+        tft.drawBitmap(14, itemY + 37, SettingsShadow2, 212, 8, 0x9B20);
+    }
+
+    // Draw left icon if provided
+    if (leftIcon != nullptr && leftIconWidth > 0 && leftIconHeight > 0)
+    {
+        int iconX = 16;
+        int iconY = itemY + 14;
+        tft.drawBitmap(iconX, iconY, leftIcon, leftIconWidth, leftIconHeight,
+                       selected ? 0x0 : TEXT_COLOR);
+    }
+
+    // Draw text label
+    tft.setTextSize(2);
+    tft.setFont();
+    tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
+    tft.setCursor(46, itemY + (selected ? 19 : 17));
+    tft.print(buttonText);
+
+    // Draw right arrow icon if requested
+    if (showRightArrow)
+    {
+        int arrowYOffset = selected ? 16 : 14;
+        tft.drawBitmap(214, itemY + arrowYOffset, iconArrowRight, 12, 20,
+                       selected ? 0x0 : TEXT_COLOR);
+    }
+}
+
 // Universal title rendering function
 void renderScreenTitle(const char *title, int yPos = 24, int textSize = 3, uint16_t textColor = TEXT_COLOR, const GFXfont *font = nullptr)
 {
@@ -191,51 +244,20 @@ void displaySettingsScreen(void *parameters)
     const int MENU_START_Y = 62;
     const int ITEM_SPACING = 54;
     const char *menuItems[] = {ui_modules, ui_underglow, ui_clock, ui_iot_link};
-    const int UNSELECTED_H = 47;
-    const int SELECTED_H = 51;
-    const int UNSELECTED_W = 228;
-    const int SELECTED_W = 232;
 
-    // Draw menu items with sprites
-    tft.setTextSize(2);
+    // Icons for each menu item
+    const uint8_t *icons[] = {iconBleConnectedBig, iconLightBulb, iconTranslation, iconIotChip};
+    const int iconWidths[] = {14, 18, 22, 22};
+    const int iconHeights[] = {22, 23, 22, 22};
+
+    // Draw menu items with our new button function
     for (int i = 0; i < 4; i++)
     {
         bool selected = (i == settingsSelectedOption);
         int baseY = MENU_START_Y + (i * ITEM_SPACING);
 
-        // Calculate positions
-        int itemY = selected ? baseY - 2 : baseY;
-        int itemW = selected ? SELECTED_W : UNSELECTED_W;
-        int itemH = selected ? SELECTED_H : UNSELECTED_H;
-
-        // Draw border sprite
-        tft.drawBitmap((tft.width() - itemW) / 2, itemY, selected ? SettingsSelectedBorder : SettingsUnselectedBorder, itemW, itemH, TEXT_COLOR);
-
-        // Draw highlight sprite if selected
-        if (selected)
-        {
-            tft.drawBitmap(10, itemY + 6, SettingsSelectedHighlight, 220, 23, HIGHLIGHT_COLOR);
-            tft.drawBitmap(10, itemY + 29, SettingsShadow1, 220, 8, 0xCC40);
-            tft.drawBitmap(14, itemY + 37, SettingsShadow2, 212, 8, 0x9B20);
-        }
-
-        // Draw icon with correct dimensions
-        const uint8_t *icons[] = {iconBleConnectedBig, iconLightBulb, iconTranslation, iconIotChip};
-        const int iconWidths[] = {14, 18, 22, 22};
-        const int iconHeights[] = {22, 23, 22, 22};
-
-        int iconX = 16 + (selected ? 0 : 0);
-        int iconY = itemY + 14 + (selected ? 0 : 0);
-        tft.drawBitmap(iconX, iconY, icons[i], iconWidths[i], iconHeights[i], selected ? 0x0 : TEXT_COLOR);
-
-        // Draw text label (adjusting position based on icon width)
-        tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
-        tft.setCursor(46, itemY + (selected ? 19 : 17));
-        tft.print(menuItems[i]);
-
-        // Draw arrow icon
-        int arrowYOffset = selected ? 16 : 14;
-        tft.drawBitmap(214, itemY + arrowYOffset, iconArrowRight, 12, 20, selected ? 0x0 : TEXT_COLOR);
+        // Use the new drawButton function with appropriate icons
+        drawButton(menuItems[i], icons[i], iconWidths[i], iconHeights[i], true, baseY, selected);
     }
 }
 
@@ -312,10 +334,6 @@ void displayClockSubmenu(void *parameters)
     const int ITEM_SPACING = 54;
     const char *labels[] = {ui_hours, ui_minutes, ui_seconds};
     const int values[] = {hours, minutes, seconds};
-    const int UNSELECTED_H = 47;
-    const int SELECTED_H = 51;
-    const int UNSELECTED_W = 228;
-    const int SELECTED_W = 232;
 
     // Draw menu items with consistent styling
     for (int i = 0; i < 3; i++)
@@ -323,37 +341,16 @@ void displayClockSubmenu(void *parameters)
         bool selected = (i == settingsSelectedOption);
         int baseY = MENU_START_Y + (i * ITEM_SPACING);
 
-        // Calculate positions like in settings menu
-        int itemY = selected ? baseY - 2 : baseY;
-        int itemW = selected ? SELECTED_W : UNSELECTED_W;
-        int itemH = selected ? SELECTED_H : UNSELECTED_H;
+        // Draw the button without right arrow since we're showing values
+        drawButton(labels[i], nullptr, 0, 0, false, baseY, selected);
 
-        // Draw border sprite
-        tft.drawBitmap((tft.width() - itemW) / 2, itemY,
-                       selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
-                       itemW, itemH, TEXT_COLOR);
-
-        // Draw highlight if selected
-        if (selected)
-        {
-            tft.drawBitmap(10, itemY + 6, SettingsSelectedHighlight, 220, 23, HIGHLIGHT_COLOR);
-            tft.drawBitmap(10, itemY + 29, SettingsShadow1, 220, 8, 0xCC40);
-            tft.drawBitmap(14, itemY + 37, SettingsShadow2, 212, 8, 0x9B20);
-        }
-
-        // Draw label and value
+        // Add the values (they're positioned differently from the right arrow)
+        char valueStr[3];
+        sprintf(valueStr, "%02d", values[i]);
         tft.setTextSize(2);
         tft.setFont();
         tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
-
-        // Draw label
-        tft.setCursor(46, itemY + (selected ? 19 : 17));
-        tft.print(labels[i]);
-
-        // Draw value
-        char valueStr[3];
-        sprintf(valueStr, "%02d", values[i]);
-        tft.setCursor(180, itemY + (selected ? 19 : 17));
+        tft.setCursor(180, baseY + (selected ? 17 : 15));
         tft.print(valueStr);
     }
 
