@@ -17,11 +17,6 @@ bool inSettingsSubmenu = false;
 bool updateMainScreen = true;
 SemaphoreHandle_t screenMutex;
 
-void clearWPM(void *parameters)
-{
-    tft.fillRect(11, 297, 55, 16, BG_COLOR);
-}
-
 void switchScreen(ScreenType newScreen)
 {
     xSemaphoreTake(screenMutex, portMAX_DELAY); // Take the mutex before switching screens

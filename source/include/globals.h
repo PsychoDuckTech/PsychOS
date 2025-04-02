@@ -9,6 +9,8 @@
 #define HIGHLIGHT_COLOR 0xFD40
 #define SELECTED_COLOR 0x2945
 
+// Include Adafruit GFX first as it contains the GFXfont definition
+#include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include "utils/nvs.h"
 
