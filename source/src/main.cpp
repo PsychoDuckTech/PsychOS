@@ -6,7 +6,7 @@
 #define USE_PT_PT true
 
 // Define the global constants
-const char *OS_version = "0.4.2b ";
+const char *OS_version = "0.4.3b ";
 const char *byCompany = "by PsychoDuck Tech ";
 const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "キーボード" (kiiboodo)
 
@@ -70,7 +70,7 @@ void setup()
     startRgbTask(0, 4096, 2);
     startBuzzerTask(1, 2048, 1);
 
-    uRGB.setMaxBrightness(50);
+    uRGB.setMaxBrightness(30);
     RGBConfig config;
     config.effect = RGB_EFFECT_RUNNER;
     config.colors[0] = "#FFA500"; // Orange

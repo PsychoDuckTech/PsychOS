@@ -1,6 +1,6 @@
-<div align="center">
-  <h1>PsychOS</h1>
-</div>
+# PsychOS
+
+A feature-rich firmware for custom mechanical keyboards, built on ESP32-S3.
 
 ## Supported Matrix Hardware Setups
 |   Device    |           Status           |       Notes        |
@@ -12,56 +12,92 @@
 [preview]: https://img.shields.io/badge/-preview-orange "preview"
 [development]: https://img.shields.io/badge/-unsupported-red "in development"
 
-## Features
-|                                Feature                                |     Status      |                    Notes                    |
-| :-------------------------------------------------------------------: | :-------------: | :-----------------------------------------: |
-|                  Keystroke Handler & Matrix Scanning                  |    Supported    |        TinyUSB library issues fixed         |
-|                       Host Communication Bridge                       | Partial Support | Keyboard communication to the host machine. |
-|                       Modifiable Configuration                        |   Unsupported   |          On-the-fly configuration           |
-| [Web Configurator](https://github.com/PsychoDuckTech/WebConfigurator) |   Unsupported   |  Web-based configurator for the firmware.   |
-|                            Rotary Encoder                             |    Supported    |            Rotary Knob support.             |
-|                             Macro Support                             |   Unsupported   |  Macro support for the main board matrix.   |
-|                                Modules                                |    Supported    |      Bluetooth Numpad Modules support.      |
-|                                Display                                |    Supported    |                  Functional                 |
-|                                Layers                                 |       WIP       |     Multiple toggle-able keymap layers.     |
-|                                  WPM                                  |    Supported    |                  WPM counter                |
-|                                  RGB                                  |    Supported    |        RGB Underglow on the keyboard        |
+## Core Features
 
+|              Feature              |     Status      |                    Notes                    |
+| :------------------------------: | :-------------: | :-----------------------------------------: |
+|       Matrix Key Scanning        |    Supported    |     High-performance scanning with debounce  |
+|    USB HID Communication        |    Supported    |       Full keyboard and consumer input       |
+|    Bluetooth Module Support     |    Supported    |   Wireless numpad module connectivity       |
+|     Display Interface          |    Supported    |    ILI9341-based UI with custom screens    |
+|     Rotary Encoder            |    Supported    |    Volume control with press detection     |
+|     RGB Underglow             |    Supported    |    Customizable effects and colors        |
+|     WPM Counter              |    Supported    |    Real-time typing speed monitoring      |
+|     Multi-tasking            |    Supported    |    FreeRTOS-based task management        |
+|     Settings System          |    Supported    |    On-device configuration menus         |
+|     Audio Feedback           |    Supported    |    Programmable buzzer tones             |
+|     Clock                    |    Supported    |    Real-time clock with sync            |
+|     Layer System             |       WIP       |    Multiple keymap layer support         |
+|     Macro Support            |   Planned    |    Custom macro programming              |
 
-## Current Features
-- USB HID Communication
-- Volume Control via Rotary Encoder
-  - Smooth increment/decrement
-  - Mute function via encoder press
-- FreeRTOS Task Management
-- Matrix Scanning
-- WPM counter
-- Serial Commands System
-- RGB underglow system
-- Buzzer tones
-- Clock
-- Builtin settings menus
+## Technical Features
+- **Task Management**: FreeRTOS-based multitasking system
+- **Communication**:
+  - USB HID for keyboard and consumer controls
+  - Bluetooth LE for wireless module support
+  - Serial interface for configuration and debugging
+- **Input Processing**:
+  - Advanced matrix scanning with hardware multiplexing
+  - Rotary encoder with acceleration and button detection
+  - Real-time WPM calculation
+- **Output Systems**:
+  - TFT display with custom UI components
+  - RGB LED control with multiple effects
+  - Buzzer feedback system
+- **Configuration**:
+  - Non-volatile settings storage (not functional at the moment)
+  - Real-time clock synchronization
+  - On-device settings menu
 
-## Serial Commands and Syntax
-- connectionStatus [0/1/?]
-- caps [0/1/?]
-- time.seconds [time 0 to 60]
-- time.minutes [time 0 to 60]
-- time.hours [time 0 to 23]
+## Serial Commands
+The firmware supports the following commands:
+- `connectionStatus [0/1/?]` - Get/set connection state
+- `caps [0/1/?]` - Get/set caps lock status
+- `time.hours [0-23]` - Set hours
+- `time.minutes [0-59]` - Set minutes
+- `time.seconds [0-59]` - Set seconds
 
-## Flashing the Firmware
-Once the compilation finishes, go to the releases tab and find the latest release. Download the `firmware.bin` file.
-Set your microcontroller to bootloader mode, then use the `esptool` command to flash the firmware.
+## Installation
 
-If you don't have the [esptool](https://github.com/espressif/esptool) installed, install it using the command: `pip install esptool`.
+### Hardware Requirements
+- ESP32-S3 microcontroller
+- Key matrix setup (compatible with standard mechanical switches)
+- ILI9341 display (optional)
+- Rotary encoder (optional)
+- RGB LEDs (optional)
+- Buzzer (optional)
 
-## Translations
-Is your preferred language missing localisation of some of the text?
-Translations are stored as `.h` files in the `source/include/translations` folder.
-_Pull requests_ are loved and accepted to enhance the firmware. <3
+### Flashing Instructions
+1. Download the latest `firmware.bin` from the releases page
+2. Install esptool: `pip install esptool`
+3. Put your ESP32-S3 into bootloader mode
+4. Flash using esptool
 
-## Versioning Scheme
-We follow [Semantic Versioning 2.0.0](https://semver.org/) with:
+## Development
+
+### Adding Translations
+Translations are managed through two main files:
+- `source/include/translations.h`: Declares all translatable strings
+- `source/src/translations.cpp`: Implements the translations
+
+To add a new language:
+1. Define a new language identifier (e.g., `USE_FR_FR` for French)
+2. Add translations in `translations.cpp` under the new language condition
+3. Keep the string declarations in `translations.h` unchanged
+
+Example:
+```cpp
+#ifdef USE_FR_FR
+// System messages
+const char *task_clock_started = "Tâche d'horloge démarrée.";
+// ... more translations ...
+#endif
+```
+
+Contributions for new languages are welcome! Please maintain the existing structure when adding translations.
+
+### Versioning
+Following Semantic Versioning 2.0.0:
 - Format: `MAJOR.MINOR.PATCH-PRERELEASE+BUILD`
 - Pre-release stages: `alpha` < `beta` < `rc`
 - Build metadata: Date (YYYYMMDD) and CI run number
@@ -69,16 +105,13 @@ We follow [Semantic Versioning 2.0.0](https://semver.org/) with:
 ## Project Activity
 ![Alt](https://repobeats.axiom.co/api/embed/41e28f23eb43e17ac67db3d966de3dd565079220.svg "Repobeats analytics image")
 
-## About
-This firmware was tested only on the ESP32-S3.
-
-Developed by PsychoDuck Tech.
-
 ## License
-This code is covered by the [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html) license **unless noted elsewhere**.
-Other components such as _FreeRTOS_ have their own licenses.
+Licensed under [LGPL-2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html) unless otherwise noted.
+Third-party components (e.g., FreeRTOS) maintain their respective licenses.
 
 ## Commercial Use
-This software is provided "AS IS", so we cannot provide any commercial support for the firmware.
-However, you are more than welcome to distribute links to the firmware or provide hardware with this firmware.
-**Please do not re-host the files, but rather link to this page, so that there are no old versions of the firmware scattered around**.
+This firmware is provided "AS IS" without commercial support. You may:
+- Distribute links to this firmware
+- Ship hardware with this firmware pre-installed
+
+Please link to this repository rather than redistributing the files to ensure users always get the latest version.
