@@ -5,6 +5,7 @@
 #include "icons.h"
 #include "main.h"
 #include "translations.h"
+#include "components/uiComponents.h" // Include the new components file
 
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
@@ -18,82 +19,6 @@ int rgbValues[4] = {255, 255, 255, 100};
 
 static unsigned long lastToggleTime = 0;
 static bool toggleDiscIcon = false;
-
-// Button drawing function for consistent UI elements
-void drawButton(const char *buttonText, const uint8_t *leftIcon = nullptr, int leftIconWidth = 0,
-                int leftIconHeight = 0, bool showRightArrow = true, int yPosition = 0, bool selected = false)
-{
-    // Constants for button dimensions
-    const int UNSELECTED_H = 47;
-    const int SELECTED_H = 51;
-    const int UNSELECTED_W = 228;
-    const int SELECTED_W = 232;
-
-    // Calculate positions
-    int itemW = selected ? SELECTED_W : UNSELECTED_W;
-    int itemH = selected ? SELECTED_H : UNSELECTED_H;
-    int itemY = yPosition - (selected ? 2 : 0);
-
-    // Draw border sprite
-    tft.drawBitmap((tft.width() - itemW) / 2, itemY,
-                   selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
-                   itemW, itemH, TEXT_COLOR);
-
-    // Draw highlight sprite if selected
-    if (selected)
-    {
-        tft.drawBitmap(10, itemY + 6, SettingsSelectedHighlight, 220, 23, HIGHLIGHT_COLOR);
-        tft.drawBitmap(10, itemY + 29, SettingsShadow1, 220, 8, 0xCC40);
-        tft.drawBitmap(14, itemY + 37, SettingsShadow2, 212, 8, 0x9B20);
-    }
-
-    // Draw left icon if provided
-    if (leftIcon != nullptr && leftIconWidth > 0 && leftIconHeight > 0)
-    {
-        int iconX = 16;
-        int iconY = itemY + 14;
-        tft.drawBitmap(iconX, iconY, leftIcon, leftIconWidth, leftIconHeight,
-                       selected ? 0x0 : TEXT_COLOR);
-    }
-
-    // Draw text label
-    tft.setTextSize(2);
-    tft.setFont();
-    tft.setTextColor(selected ? 0x0 : TEXT_COLOR);
-    tft.setCursor(46, itemY + (selected ? 19 : 17));
-    tft.print(buttonText);
-
-    // Draw right arrow icon if requested
-    if (showRightArrow)
-    {
-        int arrowYOffset = selected ? 16 : 14;
-        tft.drawBitmap(214, itemY + arrowYOffset, iconArrowRight, 12, 20,
-                       selected ? 0x0 : TEXT_COLOR);
-    }
-}
-
-// Universal title rendering function
-void renderScreenTitle(const char *title, int yPos = 24, int textSize = 3, uint16_t textColor = TEXT_COLOR, const GFXfont *font = nullptr)
-{
-    tft.setTextSize(textSize);
-    if (font)
-    {
-        tft.setFont(font);
-    }
-    else
-    {
-        tft.setFont();
-    }
-    tft.setTextColor(textColor);
-
-    // Calculate title width (multiplier 18 for default font size 3, adjust for custom fonts)
-    int charWidth = (textSize == 3 && font == nullptr) ? 18 : 16;
-    int titleWidth = strlen(title) * charWidth;
-
-    // Center the title
-    tft.setCursor((tft.width() - titleWidth) / 2, yPos);
-    tft.print(title);
-}
 
 void displayMainScreen(void *parameters)
 {
@@ -213,7 +138,7 @@ void drawSettingsStatic(void *parameters)
 {
     tft.fillScreen(BG_COLOR);
     // Draw title
-    renderScreenTitle(ui_settings);
+    drawScreenTitle(ui_settings);
 
     // Draw footer text before options are loaded
     tft.setTextSize(1);
@@ -272,7 +197,7 @@ void displayRGBSubmenu(void *parameters)
         tft.fillScreen(BG_COLOR);
 
         // Title using universal function
-        renderScreenTitle(ui_underglow, 30);
+        drawScreenTitle(ui_underglow, 30);
 
         // Draw all elements
         for (int i = 0; i < 4; i++)
@@ -327,7 +252,7 @@ void displayClockSubmenu(void *parameters)
     }
 
     // Draw title using same style as settings
-    renderScreenTitle(ui_clock);
+    drawScreenTitle(ui_clock);
 
     // Menu configuration similar to settings menu
     const int MENU_START_Y = 62;

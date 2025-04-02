@@ -2,6 +2,8 @@
 This file includes all the icons and fonts used in the UI.
 */
 
+#pragma once
+
 // Font includes
 #include "fonts/FreeSansBold9pt7b.h"
 #include "fonts/FreeMonoBold12pt7b.h"
