@@ -3,7 +3,6 @@
  */
 #include "main.h"
 #include "globals.h"
-#define USE_PT_PT true
 
 // Define the global constants
 const char *OS_version = "0.4.3b ";
