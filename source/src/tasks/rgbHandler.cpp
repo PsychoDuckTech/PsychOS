@@ -3,14 +3,15 @@
 
 // Global variables
 QueueHandle_t rgbCommandQueue = NULL;
+QueueHandle_t rgbResponseQueue = NULL; // New response queue
 CRGB leds[NUM_LEDS];
 uint8_t currentBrightness = 100;
 uint8_t globalMaxBrightnessPercent = 100;
 RGBState rgbState = {
-    0,    // currentSelection starts with brightness
-    70,   // brightness default 70% (matches config)
-    20,   // speed default 20 (matches config)
-    true  // Set needsRefresh to true initially
+    0,   // currentSelection starts with brightness
+    70,  // brightness default 70% (matches config)
+    20,  // speed default 20 (matches config)
+    true // Set needsRefresh to true initially
 };
 
 // State variables
@@ -189,7 +190,8 @@ static void triggerModuleConnect()
     cmd.data.effect.temporary = true;
     cmd.data.effect.duration_ms = 1000;
     // Use non-blocking queue send with timeout
-    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS)
+    {
         Serial.println("RGB queue full in connect event");
     }
 }
@@ -206,7 +208,8 @@ static void triggerModuleDisconnect()
     cmd.data.effect.temporary = true;
     cmd.data.effect.duration_ms = 1000;
     // Use non-blocking queue send with timeout
-    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS)
+    {
         Serial.println("RGB queue full in disconnect event");
     }
 }
@@ -216,6 +219,9 @@ void rgbTask(void *parameters)
     // Initialize FastLED
     FastLED.addLeds<APA102, RGB_DATA_PIN, RGB_CLOCK_PIN, BGR>(leds, NUM_LEDS);
     FastLED.setCorrection(TypicalLEDStrip);
+
+    // Create the response queue for getting values back from the RGB task
+    rgbResponseQueue = xQueueCreate(1, sizeof(RGBResponse));
 
     // Set initial default values
     currentEffect = {RGB_EFFECT_STATIC, 128, 255}; // Default effect: static, medium speed
@@ -257,7 +263,7 @@ void rgbTask(void *parameters)
             // Update the speed parameter in the current effect config
             currentEffect.speed = static_cast<uint8_t>(map(cmd.data.speed, 1, 20, 1, 255));
             break;
-        // Add other command cases if needed
+            // Add other command cases if needed
         }
     }
 
@@ -307,10 +313,31 @@ void rgbTask(void *parameters)
             case RGB_CMD_SET_SPEED:
                 currentEffect.speed = static_cast<uint8_t>(map(cmd.data.speed, 1, 20, 1, 255));
                 break;
-            // Handle other command types
+                
+            case RGB_CMD_GET_BRIGHTNESS:
+            case RGB_CMD_GET_SPEED:
+            case RGB_CMD_SYNC_UI:
+                // Send back current values
+                if (rgbResponseQueue != NULL) {
+                    RGBResponse response;
+                    response.brightness = currentBrightness;
+                    response.speed = map(currentEffect.speed, 1, 255, 1, 20); // Convert back to 1-20 scale
+                    response.effect = currentEffect.effect;
+                    
+                    // Send values without blocking 
+                    xQueueOverwrite(rgbResponseQueue, &response);
+                    
+                    // Update the rgbState directly if requested
+                    if (cmd.type == RGB_CMD_SYNC_UI) {
+                        rgbState.brightness = currentBrightness;
+                        rgbState.speed = map(currentEffect.speed, 1, 255, 1, 20);
+                        rgbState.needsRefresh = true;
+                    }
+                }
+                break;
             }
         }
-        
+
         applyCurrentEffect();
         FastLED.show();
         vTaskDelay(pdMS_TO_TICKS(10));
@@ -326,68 +353,120 @@ void startRgbTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 // uRGB Class Implementation
 uRGBClass::uRGBClass() {}
 
-void uRGBClass::configure(const RGBConfig& config) {
+void uRGBClass::configure(const RGBConfig &config)
+{
     RGBCommand cmd;
     cmd.type = RGB_CMD_SET_EFFECT;
-    cmd.data.effect.config = {config.effect, 
-                            static_cast<uint8_t>(map(config.speed, 1, 20, 1, 255)), 
-                            255};
-    
+    cmd.data.effect.config = {config.effect,
+                              static_cast<uint8_t>(map(config.speed, 1, 20, 1, 255)),
+                              255};
+
     // Set colors if provided
     cmd.data.effect.set_colors = (config.numColors > 0);
     cmd.data.effect.num_colors = std::min(config.numColors, static_cast<uint8_t>(MAX_COLORS));
-    
-    for (uint8_t i = 0; i < cmd.data.effect.num_colors; i++) {
-        if (config.colors[i]) {
+
+    for (uint8_t i = 0; i < cmd.data.effect.num_colors; i++)
+    {
+        if (config.colors[i])
+        {
             strncpy(cmd.data.effect.colors[i], config.colors[i], HEX_COLOR_LENGTH);
-        } else {
+        }
+        else
+        {
             strncpy(cmd.data.effect.colors[i], "#000000", HEX_COLOR_LENGTH);
         }
     }
-    
+
     cmd.data.effect.temporary = false;
     cmd.data.effect.duration_ms = 0;
     // Use non-blocking queue send with timeout
-    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS)
+    {
         Serial.println("RGB queue full in configure()");
     }
 
     // Set brightness if different from current
-    if (config.brightness != currentBrightness) {
+    if (config.brightness != currentBrightness)
+    {
         RGBCommand brightnessCmd;
         brightnessCmd.type = RGB_CMD_SET_BRIGHTNESS;
         brightnessCmd.data.brightness = config.brightness;
         // Use non-blocking queue send with timeout
-        if (xQueueSend(rgbCommandQueue, &brightnessCmd, pdMS_TO_TICKS(50)) != pdPASS) {
+        if (xQueueSend(rgbCommandQueue, &brightnessCmd, pdMS_TO_TICKS(50)) != pdPASS)
+        {
             Serial.println("RGB queue full in configure() (brightness)");
         }
     }
 }
 
-void uRGBClass::setMaxBrightness(uint8_t percent) {
+void uRGBClass::setMaxBrightness(uint8_t percent)
+{
     globalMaxBrightnessPercent = constrain(percent, 0, 100);
     updateBrightness();
 }
 
-void uRGBClass::event(RGBEventType event) {
+void uRGBClass::event(RGBEventType event)
+{
     RGBCommand cmd;
     cmd.type = RGB_CMD_TRIGGER_EVENT;
     cmd.data.event = event;
     // Use non-blocking queue send with timeout
-    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS)
+    {
         Serial.println("RGB queue full in event()");
     }
 }
 
-void uRGBClass::setColor(uint8_t index, const char *hex, bool remove) {
+void uRGBClass::setColor(uint8_t index, const char *hex, bool remove)
+{
     RGBCommand cmd;
     cmd.type = RGB_CMD_SET_COLOR;
     cmd.data.color.index = index;
     cmd.data.color.remove = remove;
     strncpy(cmd.data.color.hex, remove ? "#000000" : hex, HEX_COLOR_LENGTH);
     // Use non-blocking queue send with timeout
-    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS)
+    {
         Serial.println("RGB queue full in setColor()");
+    }
+}
+
+bool uRGBClass::getCurrentValues(uint8_t* brightness, uint8_t* speed, RGBEffectType* effect) {
+    if (rgbResponseQueue == NULL) {
+        return false; // Queue not initialized yet
+    }
+
+    // Send a request to get current values
+    RGBCommand cmd;
+    cmd.type = RGB_CMD_GET_BRIGHTNESS; // Any get command will work
+    
+    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+        Serial.println("RGB queue full in getCurrentValues()");
+        return false;
+    }
+
+    // Wait for response with a reasonable timeout
+    RGBResponse response;
+    if (xQueueReceive(rgbResponseQueue, &response, pdMS_TO_TICKS(100)) != pdPASS) {
+        Serial.println("Timeout waiting for RGB response");
+        return false;
+    }
+
+    // Update output parameters
+    if (brightness) *brightness = response.brightness;
+    if (speed) *speed = response.speed;
+    if (effect) *effect = response.effect;
+
+    return true;
+}
+
+void uRGBClass::syncUIValues() {
+    // Request RGB task to sync values to rgbState
+    RGBCommand cmd;
+    cmd.type = RGB_CMD_SYNC_UI;
+    
+    if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+        Serial.println("RGB queue full in syncUIValues()");
     }
 }
 

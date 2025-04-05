@@ -31,7 +31,10 @@ typedef enum
     RGB_CMD_SET_EFFECT,
     RGB_CMD_SET_BRIGHTNESS,
     RGB_CMD_TRIGGER_EVENT,
-    RGB_CMD_SET_SPEED
+    RGB_CMD_SET_SPEED,
+    RGB_CMD_GET_BRIGHTNESS,  // New command to request current brightness
+    RGB_CMD_GET_SPEED,       // New command to request current speed
+    RGB_CMD_SYNC_UI          // New command to sync all values to the UI
 } RGBCommandType;
 
 // Effect configuration structure
@@ -69,8 +72,17 @@ typedef struct
     } data;
 } RGBCommand;
 
+// Response structure for getting values back from RGB task
+typedef struct
+{
+    uint8_t brightness;   // Current brightness value (0-100)
+    uint8_t speed;        // Current speed value (1-20)
+    RGBEffectType effect; // Current effect
+} RGBResponse;
+
 // External variables
 extern QueueHandle_t rgbCommandQueue;
+extern QueueHandle_t rgbResponseQueue; // New queue for receiving responses from RGB task
 extern CRGB leds[NUM_LEDS];
 extern uint8_t currentBrightness;
 extern uint8_t globalMaxBrightnessPercent;
@@ -90,6 +102,11 @@ public:
     void configure(const RGBConfig& config);
     void setMaxBrightness(uint8_t percent);
     void event(RGBEventType event);
+    
+    // New methods for getting values from RGB task
+    bool getCurrentValues(uint8_t* brightness, uint8_t* speed, RGBEffectType* effect = nullptr);
+    void syncUIValues(); // Request the RGB task to update rgbState with current values
+    
 private:
     void setColor(uint8_t index, const char *hex, bool remove = false);
 };

@@ -18,6 +18,21 @@ void displayRGBSubmenu(void *parameters)
     const char *rgbOptions[] = {ui_brightness, "Speed"};
     const int valueRanges[] = {100, 20}; // Brightness 0-100%, Speed 1-20
     
+    // Sync with actual values from RGB task only on initial draw or when explicitly needed
+    if (needsFullRedraw) {
+        // We already synced when switching to the screen, but grab direct values if needed
+        // for additional verification
+        uint8_t actualBrightness, actualSpeed;
+        if (uRGB.getCurrentValues(&actualBrightness, &actualSpeed)) {
+            // Update rgbState with actual values if they differ
+            if (rgbState.brightness != actualBrightness || rgbState.speed != actualSpeed) {
+                rgbState.brightness = actualBrightness;
+                rgbState.speed = actualSpeed;
+                rgbState.needsRefresh = true;
+            }
+        }
+    }
+    
     // Only do a full redraw when necessary
     if (needsFullRedraw || rgbState.needsRefresh)
     {
@@ -30,6 +45,13 @@ void displayRGBSubmenu(void *parameters)
         // Title using universal function
         drawScreenTitle(ui_underglow, 30);
 
+        // Define the options area dimensions
+        const int OPTIONS_AREA_TOP = 60;
+        const int OPTIONS_AREA_HEIGHT = 180;
+        
+        // Clear the options area with a black rectangle (ensures clean refresh)
+        tft.fillRect(0, OPTIONS_AREA_TOP, tft.width(), OPTIONS_AREA_HEIGHT, BG_COLOR);
+
         // Draw both slider buttons with appropriate icons
         const uint8_t *icons[] = {iconLightBulb, iconMusicPlay}; // Reusing existing icons
         const int iconWidths[] = {18, 20};
@@ -39,7 +61,7 @@ void displayRGBSubmenu(void *parameters)
         const int MENU_START_Y = 80;
         const int ITEM_SPACING = 60;
         
-        // Current values to display
+        // Current values to display - using the synchronized values from rgbState
         int currentValues[] = {rgbState.brightness, rgbState.speed};
         
         // Draw the buttons

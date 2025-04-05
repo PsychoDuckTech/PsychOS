@@ -69,7 +69,7 @@ void setup()
     startRgbTask(0, 4096, 2);
     startBuzzerTask(1, 2048, 1);
 
-    uRGB.setMaxBrightness(30);
+    uRGB.setMaxBrightness(75);
     RGBConfig config;
     config.effect = RGB_EFFECT_RUNNER;
     config.colors[0] = "#FFA500"; // Orange
@@ -77,7 +77,7 @@ void setup()
     config.colors[2] = "#800080"; // Purple
     config.numColors = 3;
     config.speed = 20;      // 1-20 scale
-    config.brightness = 70; // 0-100 scale
+    config.brightness = 35; // 0-100 scale
     uRGB.configure(config);
 }
 
