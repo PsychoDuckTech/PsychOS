@@ -69,7 +69,7 @@ void setup()
     startRgbTask(0, 4096, 2);
     startBuzzerTask(1, 2048, 1);
 
-    uRGB.setMaxBrightness(75);
+    uRGB.setMaxBrightness(100); // 100% in the firmware is actually 75% of the maximum brightness
     RGBConfig config;
     config.effect = RGB_EFFECT_RUNNER;
     config.colors[0] = "#FFA500"; // Orange

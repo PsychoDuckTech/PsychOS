@@ -131,23 +131,57 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
     // Draw slider bar
     const int SLIDER_X = 46;
     const int SLIDER_Y = itemY + (selected ? 32 : 30);
-    const int SLIDER_W = 140;
+    const int SLIDER_W = 110; // Reduced width to make room for value
     const int SLIDER_H = 8;
 
     // Calculate fill width based on value
     int fillWidth = map(value, 0, maxValue, 0, SLIDER_W);
 
-    // Draw slider background
-    tft.fillRoundRect(SLIDER_X, SLIDER_Y, SLIDER_W, SLIDER_H, 4, selected ? 0x0 : ULTRA_MUTED_COLOR);
-    // Draw slider filled portion
-    tft.fillRoundRect(SLIDER_X, SLIDER_Y, fillWidth, SLIDER_H, 4, selected ? 0x0 : SELECTED_COLOR);
+    // Define different colors for filled and unfilled parts
+    uint16_t sliderBgColor, sliderFillColor;
+    
+    if (selected) {
+        // When selected: gray background with dark gray fill
+        sliderBgColor = ULTRA_MUTED_COLOR;    // Very light gray for background
+        sliderFillColor = MUTED_COLOR;        // Darker gray for the filled part
+    } else {
+        // When unselected: muted background with highlight fill
+        sliderBgColor = MUTED_COLOR;          // Gray background
+        sliderFillColor = HIGHLIGHT_COLOR;    // Yellowish fill
+    }
 
-    // Draw value text
-    tft.setTextSize(1);
-    tft.setCursor(SLIDER_X + SLIDER_W + 10, SLIDER_Y + 6);
+    // Draw slider background (unfilled part)
+    tft.fillRoundRect(SLIDER_X, SLIDER_Y, SLIDER_W, SLIDER_H, 4, sliderBgColor);
+    // Draw slider filled portion
+    tft.fillRoundRect(SLIDER_X, SLIDER_Y, fillWidth, SLIDER_H, 4, sliderFillColor);
+
+    // Draw value text - larger and properly positioned
+    tft.setTextSize(2); // Same size as button text
+    tft.setTextColor(selected ? 0x0 : TEXT_COLOR); // Same color as button text
+    
+    // Convert value to string to calculate its width
+    char valueStr[10];
+    if (showPercentage) {
+        snprintf(valueStr, sizeof(valueStr), "%d%%", value);
+    } else {
+        snprintf(valueStr, sizeof(valueStr), "%d", value);
+    }
+    
+    // Calculate text width for positioning
+    int charWidth = 12; // Approximate width per character at text size 2
+    int textWidth = strlen(valueStr) * charWidth;
+    
+    // Position value on the far right side but still inside the button
+    // The button width is approximately 220px, leave proper margin
+    int valueX = 215 - textWidth;
+    
+    // Center the value vertically in the button
+    int valueY = itemY + (selected ? 19 : 17); // Same vertical alignment as main text
+    
+    // Draw the value
+    tft.setCursor(valueX, valueY);
     tft.print(value);
-    if (showPercentage)
-    {
+    if (showPercentage) {
         tft.print("%");
     }
 }
