@@ -14,44 +14,48 @@ extern int rgbValues[4];
 
 void displayRGBSubmenu(void *parameters)
 {
-    const char *rgbOptions[] = {ui_red, ui_green, ui_blue, ui_brightness};
-    const int valueRanges[] = {255, 255, 255, 100};
-    needsFullRedraw = true;
-
-    if (rgbState.needsRefresh)
+    // Define options for the RGB menu
+    const char *rgbOptions[] = {ui_brightness, "Speed"};
+    const int valueRanges[] = {100, 20}; // Brightness 0-100%, Speed 1-20
+    
+    // Only do a full redraw when necessary
+    if (needsFullRedraw || rgbState.needsRefresh)
     {
-        tft.fillScreen(BG_COLOR);
+        // Clear the screen only on full redraws
+        if (needsFullRedraw) {
+            tft.fillScreen(BG_COLOR);
+            needsFullRedraw = false;
+        }
 
         // Title using universal function
         drawScreenTitle(ui_underglow, 30);
 
-        // Draw all elements
-        for (int i = 0; i < 4; i++)
+        // Draw both slider buttons with appropriate icons
+        const uint8_t *icons[] = {iconLightBulb, iconMusicPlay}; // Reusing existing icons
+        const int iconWidths[] = {18, 20};
+        const int iconHeights[] = {23, 18};
+        
+        // Define Y positions for the buttons
+        const int MENU_START_Y = 80;
+        const int ITEM_SPACING = 60;
+        
+        // Current values to display
+        int currentValues[] = {rgbState.brightness, rgbState.speed};
+        
+        // Draw the buttons
+        for (int i = 0; i < 2; i++)
         {
-            const int yPos = 70 + (i * 50);
-
-            // Option label
-            tft.setTextSize(1);
-            tft.setFont(&FreeSansBold9pt7b);
-            tft.setTextColor((i == rgbState.currentSelection) ? HIGHLIGHT_COLOR : TEXT_COLOR);
-            tft.setCursor(20, yPos - 5);
-            tft.print(rgbOptions[i]);
-
-            // Value bar
-            const float fillWidth = map(rgbState.values[i], 0, valueRanges[i], 0, 160);
-            tft.fillRoundRect(20, yPos, 160, 20, 5, BG_COLOR);
-            tft.fillRoundRect(20, yPos, fillWidth, 20, 5, (i == rgbState.currentSelection) ? HIGHLIGHT_COLOR : SELECTED_COLOR);
-
-            // Value text
-            tft.setTextSize(1);
-            tft.setFont(&FreeMonoBold9pt7b);
-            tft.setCursor(190, yPos + 15);
-            tft.print(rgbState.values[i]);
-            if (i == 3)
-                tft.print("%");
+            bool selected = (i == rgbState.currentSelection);
+            int yPos = MENU_START_Y + (i * ITEM_SPACING);
+            
+            // Draw slider button with appropriate parameters
+            drawSliderButton(rgbOptions[i], currentValues[i], valueRanges[i], 
+                           icons[i], iconWidths[i], iconHeights[i], 
+                           (i == 0), // Only show percentage for brightness
+                           yPos, selected);
         }
 
-        // Help text
+        // Help text at the bottom of the screen
         tft.setTextSize(1);
         tft.setFont();
         tft.setTextColor(MUTED_COLOR);

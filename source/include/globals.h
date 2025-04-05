@@ -31,8 +31,9 @@ extern int rgbValues[4];
 
 struct RGBState
 {
-    uint8_t currentSelection; // 0-3: Red, Green, Blue, Brightness
-    uint8_t values[4];        // [Red, Green, Blue, Brightness%]
+    uint8_t currentSelection; // 0: Brightness, 1: Speed
+    uint8_t brightness;       // 0-100 (%)
+    uint8_t speed;            // 1-20 scale
     bool needsRefresh;        // Flag for partial updates
 };
 extern int firstDraw;

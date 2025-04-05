@@ -61,10 +61,50 @@ void knobHandler(void *parameters)
 
             case RGBLightingSubmenu:
             {
-                uint8_t *currentValue = &rgbState.values[rgbState.currentSelection];
-                *currentValue = constrain(*currentValue + rotation, 0,
-                                          (rgbState.currentSelection == 3) ? 100 : 255);
-                rgbState.needsRefresh = true;
+                // Handle RGB menu navigation
+                if (rgbState.currentSelection == 0) {
+                    // Brightness adjustment (0-100 scale)
+                    int oldBrightness = rgbState.brightness;
+                    rgbState.brightness = constrain(rgbState.brightness + rotation, 0, 100);
+                    
+                    // Only update if value actually changed
+                    if (oldBrightness != rgbState.brightness) {
+                        // Send only the brightness command to avoid corrupting other settings
+                        RGBCommand cmd;
+                        cmd.type = RGB_CMD_SET_BRIGHTNESS;
+                        cmd.data.brightness = rgbState.brightness;
+                        
+                        // Use a timeout instead of indefinite blocking
+                        if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+                            // If queue is full, log error but continue (don't block)
+                            Serial.println("RGB queue full (brightness)");
+                        }
+                        
+                        // Always refresh the display
+                        rgbState.needsRefresh = true;
+                    }
+                } else {
+                    // Speed adjustment (1-20 scale)
+                    int oldSpeed = rgbState.speed;
+                    rgbState.speed = constrain(rgbState.speed + rotation, 1, 20);
+                    
+                    // Only update if value actually changed
+                    if (oldSpeed != rgbState.speed) {
+                        // Send only the speed command
+                        RGBCommand cmd;
+                        cmd.type = RGB_CMD_SET_SPEED;
+                        cmd.data.speed = rgbState.speed;
+                        
+                        // Use a timeout instead of indefinite blocking
+                        if (xQueueSend(rgbCommandQueue, &cmd, pdMS_TO_TICKS(50)) != pdPASS) {
+                            // If queue is full, log error but continue (don't block)
+                            Serial.println("RGB queue full (speed)");
+                        }
+                        
+                        // Always refresh the display
+                        rgbState.needsRefresh = true;
+                    }
+                }
             }
             break;
             }
@@ -101,7 +141,7 @@ void knobHandler(void *parameters)
                 }
                 break;
             case RGBLightingSubmenu:
-                rgbState.currentSelection = (rgbState.currentSelection + 1) % 4;
+                rgbState.currentSelection = (rgbState.currentSelection + 1) % 2; // Only 2 options now
                 rgbState.needsRefresh = true;
                 break;
             case ClockSubmenu:
