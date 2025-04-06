@@ -31,9 +31,10 @@ extern int rgbValues[4];
 
 struct RGBState
 {
-    uint8_t currentSelection; // 0: Brightness, 1: Speed
+    uint8_t currentSelection; // 0: Effect, 1: Brightness, 2: Speed
     uint8_t brightness;       // 0-100 (%)
     uint8_t speed;            // 1-20 scale
+    uint8_t effect;           // RGB effect type (corresponds to RGBEffectType enum)
     bool needsRefresh;        // Flag for partial updates
 };
 extern int firstDraw;
