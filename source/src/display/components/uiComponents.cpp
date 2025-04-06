@@ -208,9 +208,10 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     int itemW = selected ? SELECTED_W : UNSELECTED_W;
     int itemH = selected ? SELECTED_H : UNSELECTED_H;
     int itemY = yPosition - (selected ? 2 : 0);
+    int itemX = (tft.width() - itemW) / 2; // Center the button horizontally
 
     // Draw border sprite
-    tft.drawBitmap((tft.width() - itemW) / 2, itemY,
+    tft.drawBitmap(itemX, itemY,
                    selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
                    itemW, itemH, TEXT_COLOR);
 
@@ -226,10 +227,10 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     int leftArrowX = 30;
     int arrowY = itemY + (itemH / 2) - 6; // Center arrows vertically
     tft.drawBitmap(leftArrowX, arrowY, iconArrowLeft, 12, 20,
-                   selected ? 0x0 : MUTED_COLOR);
+            selected ? 0x0 : MUTED_COLOR);
 
     // Draw right arrow icon
-    int rightArrowX = 218;
+    int rightArrowX = 200;
     tft.drawBitmap(rightArrowX, arrowY, iconArrowRight, 12, 20,
                    selected ? 0x0 : MUTED_COLOR);
 
@@ -237,14 +238,19 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     tft.setTextSize(2);
     tft.setFont();
 
-    // Calculate text width for positioning (approximated)
-    int charWidth = 12; // Approximate width per character at text size 2
+    // Calculate text width more accurately
+    int charWidth = 11; // More precise width per character at text size 2
     int textWidth = strlen(valueText) * charWidth;
 
-    // Center the value text in the button
-    int centerX = 120;                      // Center of screen (240/2)
-    int valueX = centerX - (textWidth / 2); // Center the text
-    int valueY = itemY + (itemH / 2) + 6;   // Center text vertically
+    // Calculate the available space between arrows
+    int arrowSpacing = rightArrowX - leftArrowX - 12; // 12 is the width of left arrow
+
+    // Center the value text exactly between the arrows (horizontally)
+    int centerX = leftArrowX + 12 + (arrowSpacing / 2);
+    int valueX = centerX - (textWidth / 2);
+
+    // Position text higher in the button (moved up from 24px to 19px from top)
+    int valueY = itemY + 19;
 
     // Make value text stand out
     uint16_t valueColor = selected ? 0x0 : HIGHLIGHT_COLOR;
