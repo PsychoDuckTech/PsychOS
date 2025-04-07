@@ -10,7 +10,7 @@ void drawButton(const char *buttonText, const uint8_t *leftIcon = nullptr, int l
                 int leftIconHeight = 0, bool showRightArrow = true, int yPosition = 0, bool selected = false);
 
 // Screen title rendering function
-void drawScreenTitle(const char *title, int yPos = 24, int textSize = 3, uint16_t textColor = 0xFFFF, const GFXfont *font = nullptr);
+void drawScreenTitle(const char *title, int yPos = 24, int textSize = 3, uint16_t textColor = TEXT_COLOR, const GFXfont *font = nullptr);
 
 // New slider button component
 void drawSliderButton(const char *buttonText, int value, int maxValue, const uint8_t *leftIcon = nullptr,
