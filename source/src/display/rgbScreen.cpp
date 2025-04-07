@@ -14,11 +14,11 @@ extern int rgbValues[4];
 
 // Effect names for the UI
 const char *effectNames[] = {
-    "Static",
-    "Runner",
-    "Scroll",
+    "Brand",
+    "Color Run",
+    "White Waves",
     "Breathe",
-    "Wave"};
+    "wtf?"};
 const int NUM_EFFECTS = sizeof(effectNames) / sizeof(effectNames[0]);
 
 void displayRGBSubmenu(void *parameters)
