@@ -132,10 +132,16 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
     const int SLIDER_X = 46;
     const int SLIDER_Y = itemY + (selected ? 32 : 30);
     const int SLIDER_W = 110; // Reduced width to make room for value
-    const int SLIDER_H = 8;
+    const int SLIDER_H = 8;   // Height of the background slider
 
-    // Calculate fill width based on value
-    int fillWidth = map(value, 0, maxValue, 0, SLIDER_W);
+    // Define smaller filled part dimensions
+    const int FILL_H = 4;  // Smaller height for the filled part
+    const int BORDER_PADDING = 2;  // Padding on left and right sides of filled portion
+    const int FILL_Y = SLIDER_Y + (SLIDER_H - FILL_H) / 2; // Centered vertically in background
+
+    // Calculate fill width based on value, ensuring it fits within the slider with borders
+    int maxFillWidth = SLIDER_W - (BORDER_PADDING * 2);
+    int fillWidth = map(value, 0, maxValue, 0, maxFillWidth);
 
     // Define different colors for filled and unfilled parts
     uint16_t sliderBgColor, sliderFillColor;
@@ -155,8 +161,11 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
 
     // Draw slider background (unfilled part)
     tft.fillRoundRect(SLIDER_X, SLIDER_Y, SLIDER_W, SLIDER_H, 4, sliderBgColor);
-    // Draw slider filled portion
-    tft.fillRoundRect(SLIDER_X, SLIDER_Y, fillWidth, SLIDER_H, 4, sliderFillColor);
+    
+    // Draw slider filled portion (smaller and centered vertically) with padding on both sides
+    if (fillWidth > 0) {
+        tft.fillRoundRect(SLIDER_X + BORDER_PADDING, FILL_Y, fillWidth, FILL_H, 2, sliderFillColor);
+    }
 
     // Draw value text - larger and properly positioned
     tft.setTextSize(2);                            // Same size as button text
