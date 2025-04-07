@@ -75,7 +75,7 @@ void displayRGBSubmenu(void *parameters)
 
         // Define Y positions for the buttons
         const int MENU_START_Y = 70;
-        const int ITEM_SPACING = 50;
+        const int ITEM_SPACING = 55;
 
         // Current values to display - using the synchronized values from rgbState
         int currentValues[] = {rgbState.effect, rgbState.brightness, rgbState.speed};

@@ -135,8 +135,8 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
     const int SLIDER_H = 8;   // Height of the background slider
 
     // Define smaller filled part dimensions
-    const int FILL_H = 4;  // Smaller height for the filled part
-    const int BORDER_PADDING = 2;  // Padding on left and right sides of filled portion
+    const int FILL_H = 4;                                  // Smaller height for the filled part
+    const int BORDER_PADDING = 2;                          // Padding on left and right sides of filled portion
     const int FILL_Y = SLIDER_Y + (SLIDER_H - FILL_H) / 2; // Centered vertically in background
 
     // Calculate fill width based on value, ensuring it fits within the slider with borders
@@ -161,9 +161,10 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
 
     // Draw slider background (unfilled part)
     tft.fillRoundRect(SLIDER_X, SLIDER_Y, SLIDER_W, SLIDER_H, 4, sliderBgColor);
-    
+
     // Draw slider filled portion (smaller and centered vertically) with padding on both sides
-    if (fillWidth > 0) {
+    if (fillWidth > 0)
+    {
         tft.fillRoundRect(SLIDER_X + BORDER_PADDING, FILL_Y, fillWidth, FILL_H, 2, sliderFillColor);
     }
 
@@ -236,12 +237,12 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     int leftArrowX = 30;
     int arrowY = itemY + (itemH / 2) - 6; // Center arrows vertically
     tft.drawBitmap(leftArrowX, arrowY, iconArrowLeft, 12, 20,
-            selected ? 0x0 : MUTED_COLOR);
+                   selected ? 0x0 : TEXT_COLOR);
 
     // Draw right arrow icon
     int rightArrowX = 200;
     tft.drawBitmap(rightArrowX, arrowY, iconArrowRight, 12, 20,
-                   selected ? 0x0 : MUTED_COLOR);
+                   selected ? 0x0 : TEXT_COLOR);
 
     // Draw the value text centered between arrows
     tft.setTextSize(2);
@@ -262,7 +263,7 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     int valueY = itemY + 19;
 
     // Make value text stand out
-    uint16_t valueColor = selected ? 0x0 : HIGHLIGHT_COLOR;
+    uint16_t valueColor = selected ? 0x0 : TEXT_COLOR;
 
     // Draw the value text
     tft.setTextColor(valueColor);
