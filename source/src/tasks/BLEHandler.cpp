@@ -159,56 +159,72 @@ void handleReceivedKeypress(uint8_t *data, int length)
     // Conversion table for number pad keys
     switch (keyCode)
     {
-    case 0x53:
-        keyCode = KEY_F5;
+    case 0x1E:
+        keyCode = 0x1E;
         break;
-    case 0x54:
-        keyCode = 0x38;
+    case 0x1F:
+        keyCode = 0x1F;
         break;
-    case 0x55:
+    case 0x20:
+        keyCode = 0x20;
+        break;
+    case 0x21:
+        keyCode = 0x21;
+        break;
+    case 0x27:
+        keyCode = 0x27;
+        break;
+    // Numpad keys
+    case 0x53: // Numlock
+        keyCode = 0x53;
+        break;
+    case 0x54: // Keypad /
+        keyCode = 0x54;
+        break;
+    case 0x55: // Keypad *
+        keyCode = 0x55;
+        break;
+    case 0x56: // Keypad -
+        keyCode = 0x56;
+        break;
+    case 0x57: // Keypad +
+        keyCode = 0x57;
+        break;
+    case 0x58: // Keypad Enter
+        keyCode = 0x58;
+        break;
+    case 0x59: // Keypad 1 / End
+        keyCode = 0x1E;
+        break;
+    case 0x5A: // Keypad 2 / Down
+        keyCode = 0x1F;
+        break;
+    case 0x5B: // Keypad 3 / Page Down
+        keyCode = 0x20;
+        break;
+    case 0x5C: // Keypad 4 / Left
+        keyCode = 0x21;
+        break;
+    case 0x5D: // Keypad 5
+        keyCode = 0x22;
+        break;
+    case 0x5E: // Keypad 6 / Right
+        keyCode = 0x23;
+        break;
+    case 0x5F: // Keypad 7 / Home
+        keyCode = 0x24;
+        break;
+    case 0x60: // Keypad 8 / Up
         keyCode = 0x25;
         break;
-    case 0x56:
-        keyCode = 0x2D;
+    case 0x61: // Keypad 9 / Page Up
+        keyCode = 0x26;
         break;
-    case 0x57:
-        keyCode = 0X2E;
+    case 0x62: // Keypad 0 / Insert
+        keyCode = 0x27;
         break;
-    case 0x58:
-        keyCode = 0x28;
-        break;
-    case 0x59:
-        keyCode = 0x31;
-        break;
-    case 0x5A:
-        keyCode = 0x32;
-        break;
-    case 0x5B:
-        keyCode = 0x33;
-        break;
-    case 0x5C:
-        keyCode = 0x34;
-        break;
-    case 0x5D:
-        keyCode = 0x35;
-        break;
-    case 0x5E:
-        keyCode = 0x36;
-        break;
-    case 0x5F:
-        keyCode = 0x37;
-        break;
-    case 0x60:
-        keyCode = 0x38;
-        break;
-    case 0x61:
-        keyCode = 0x39;
-        break;
-    case 0x62:
-        keyCode = 0x30;
-        break;
-    case 0x63:
-        keyCode = 0x24;
+    case 0x63: // Keypad . / Delete
+        keyCode = 0x27;
         break;
     default:
         break;

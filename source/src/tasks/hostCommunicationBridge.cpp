@@ -3,6 +3,9 @@
 #include "tasks/commandProcessor.h"
 #include <USBHIDKeyboard.h>
 #include "tasks/wpmCounter.h"
+#include "tusb.h"
+
+uint8_t keycode[6] = {0, 0, 0, 0, 0, 0}; // Initialize as empty
 
 USBHIDKeyboard Keyboard;
 QueueHandle_t hostMessageQueue;
@@ -75,10 +78,15 @@ void hostCommunicationBridge(void *parameters)
                 break;
             case KEY_PRESS:
                 WPMCounter::recordKeyPress();
-                Keyboard.press(receivedMessage.data);
+                // Use tud_hid_keyboard_report directly
+                memset(keycode, 0, sizeof(keycode));
+                keycode[0] = receivedMessage.data;
+                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
                 break;
             case KEY_RELEASE:
-                Keyboard.release(receivedMessage.data);
+                // Send empty report to release all keys
+                memset(keycode, 0, sizeof(keycode));
+                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
                 break;
             }
         }
