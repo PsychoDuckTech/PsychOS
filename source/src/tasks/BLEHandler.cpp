@@ -8,130 +8,98 @@
 #include "utils/benchmark.h"
 
 BLEService psychoService(SERVICE_UUID);
-BLECharacteristic psychoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite | BLENotify, 32);
+BLECharacteristic psychoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite | BLENotify, 20);
 
-// Initialize ModuleManager static members
-BLEModule ModuleManager::modules[MAX_MODULES] = {};
-ModuleManager moduleManager;
+static BLEConnection connection;
+static uint8_t activeModuleKeys[6] = {0};
+static int activeKeyCount = 0;
 
-// ModuleManager implementation
-bool ModuleManager::isModuleAvailable(uint8_t slot) {
-    if (slot >= MAX_MODULES) return false;
-    return _getModuleRef(slot).state != BLEConnectionState::DISCONNECTED;
-}
-
-const char* ModuleManager::getModuleName(uint8_t slot) {
-    if (slot >= MAX_MODULES) return "";
-    return _getModuleRef(slot).info.name;
-}
-
-bool ModuleManager::isModuleConnected(uint8_t slot) {
-    if (slot >= MAX_MODULES) return false;
-    return _getModuleRef(slot).isConnected;
-}
-
-uint8_t ModuleManager::getConnectedModuleCount() {
-    uint8_t count = 0;
-    for (int i = 0; i < MAX_MODULES; i++) {
-        if (_getModuleRef(i).isConnected) count++;
-    }
-    return count;
-}
-
-BLEModule& ModuleManager::getModule(uint8_t slot) {
-    return _getModuleRef(slot);
-}
-
-int ModuleManager::findFreeSlot() {
-    for (int i = 0; i < MAX_MODULES; i++) {
-        if (!_getModuleRef(i).isConnected) {
-            return i;
+// Helper function to handle disconnection cleanup
+static void handleDisconnection() {
+    if (connection.isConnected) {
+        // Release any stuck keys
+        for (int i = 0; i < activeKeyCount; i++) {
+            HostMessage msg;
+            msg.type = KEY_RELEASE;
+            msg.data = activeModuleKeys[i];
+            xQueueSend(hostMessageQueue, &msg, 0);
+            Serial.print("Released stuck key on disconnect: ");
+            Serial.println(activeModuleKeys[i]);
         }
+        
+        activeKeyCount = 0;
+        memset(activeModuleKeys, 0, sizeof(activeModuleKeys));
+        moduleConnectionStatus = false;
+        connection.isConnected = false;
+        connection.state = BLEConnectionState::DISCONNECTED;
+        
+        Serial.println("Disconnected from slave");
+        BLE.disconnect();
+        BLE.stopScan();
+        BLE.advertise();
+        buzzerPlayPredefined(SOUND_DISCONNECT);
     }
-    return -1;
 }
 
-// Helper function to validate module handshake
-bool validateModule(BLEModule& module) {
-    BLEMessage request;
-    request.type = BLEMessageType::HANDSHAKE_REQUEST;
-    strcpy(request.data.handshake.magic, MAGIC_PACKET);
-    request.data.handshake.version = 1;
-    request.length = sizeof(request.data.handshake);
-    
-    sendMessageToModule(module, request);
-    
-    // Wait for response with timeout
-    unsigned long startTime = millis();
-    while (millis() - startTime < 1000) {
-        if (module.characteristic.valueUpdated()) {
-            BLEMessage response;
-            if (module.characteristic.readValue(response.data.rawData, sizeof(response.data.rawData))) {
-                if (response.type == BLEMessageType::HANDSHAKE_RESPONSE &&
-                    strcmp((char*)response.data.handshake.magic, MAGIC_RESPONSE) == 0) {
-                    return true;
-                }
+// Handle the connection state machine
+bool handleConnection(BLEConnection& conn) {
+    switch (conn.state) {
+        case BLEConnectionState::DISCONNECTED:
+            BLE.scanForName("Tenki one");
+            conn.peripheral = BLE.available();
+            if (conn.peripheral) {
+                BLE.stopScan();
+                conn.state = BLEConnectionState::CONNECTING;
             }
-        }
-        delay(10);
+            break;
+
+        case BLEConnectionState::CONNECTING:
+            if (conn.peripheral.connect()) {
+                conn.state = BLEConnectionState::DISCOVERING_SERVICES;
+            } else {
+                conn.state = BLEConnectionState::DISCONNECTED;
+            }
+            break;
+
+        case BLEConnectionState::DISCOVERING_SERVICES:
+            if (conn.peripheral.discoverAttributes()) {
+                BLEService service = conn.peripheral.service(SERVICE_UUID);
+                if (service) {
+                    conn.characteristic = service.characteristic(CHARACTERISTIC_UUID);
+                    if (conn.characteristic && conn.characteristic.subscribe()) {
+                        conn.state = BLEConnectionState::CONNECTED;
+                        conn.isConnected = true;
+                        moduleConnectionStatus = true;
+                        Serial.println("Connected to slave and subscribed to characteristic");
+                        buzzerPlayPredefined(SOUND_CONNECT);
+                        return true;
+                    }
+                }
+                Serial.println("Failed to setup BLE characteristic");
+            }
+            conn.peripheral.disconnect();
+            conn.state = BLEConnectionState::DISCONNECTED;
+            break;
+
+        case BLEConnectionState::CONNECTED:
+            if (!BLE.connected() || !conn.peripheral.connected()) {
+                handleDisconnection();
+                return false;
+            }
+            return true;
     }
     return false;
 }
 
-void handleReceivedKeypress(uint8_t moduleId, const uint8_t *data, int length) {
-    if (!moduleManager.isModuleConnected(moduleId) || length < 2) return;
-    
-    BLEModule& module = moduleManager.getModule(moduleId);
-    uint8_t keyCode = data[0];
-    bool isPressed = data[1] == 1;
-
-    // Update active keys tracking for this module
-    if (isPressed) {
-        if (module.activeKeyCount < 6) {
-            module.activeKeys[module.activeKeyCount++] = keyCode;
-        }
-    } else {
-        // Remove key from active keys
-        for (int i = 0; i < module.activeKeyCount; i++) {
-            if (module.activeKeys[i] == keyCode) {
-                // Shift remaining keys left
-                for (int j = i; j < module.activeKeyCount - 1; j++) {
-                    module.activeKeys[j] = module.activeKeys[j + 1];
-                }
-                module.activeKeyCount--;
-                break;
-            }
-        }
-    }
-
-    // Send to host communication bridge
-    HostMessage msg;
-    msg.type = isPressed ? KEY_PRESS : KEY_RELEASE;
-    msg.data = keyCode;
-    xQueueSend(hostMessageQueue, &msg, 0);
-}
-
-void sendMessageToModule(BLEModule& module, const BLEMessage& msg) {
-    if (module.isConnected && module.characteristic.canWrite()) {
-        module.characteristic.writeValue(msg.data.rawData, msg.length);
-    }
-}
-
-bool handleModuleMessage(BLEModule& module, const BLEMessage& msg) {
+// Handle received BLE messages
+bool handleMessageReceived(const BLEMessage& msg) {
     switch (msg.type) {
         case BLEMessageType::KEY_EVENT:
-            handleReceivedKeypress(msg.data.keyEvent.moduleId, 
-                                 &msg.data.keyEvent.keyCode, 
-                                 2);
+            handleReceivedKeypress(msg.data.rawData, msg.length);
             return true;
             
-        case BLEMessageType::MODULE_INFO:
-            memcpy(&module.info, &msg.data.moduleInfo, sizeof(ModuleInfo));
-            return true;
-            
-        case BLEMessageType::HEARTBEAT:
-            module.lastHeartbeat = millis();
-            module.missedHeartbeats = 0;
+        case BLEMessageType::CAPS_LOCK_STATUS:
+            // Handle caps lock status updates
             return true;
             
         default:
@@ -139,34 +107,44 @@ bool handleModuleMessage(BLEModule& module, const BLEMessage& msg) {
     }
 }
 
-void checkModuleConnections() {
-    unsigned long currentTime = millis();
-    for (int i = 0; i < MAX_MODULES; i++) {
-        BLEModule& module = moduleManager.getModule(i);
-        if (module.isConnected) {
-            // Check if it's time for a heartbeat check
-            if (currentTime - module.lastHeartbeat >= MODULE_CHECK_INTERVAL) {
-                module.missedHeartbeats++;
-                if (module.missedHeartbeats >= MAX_MISSED_CHECKS) {
-                    // Disconnect module and release any pressed keys
-                    for (int j = 0; j < module.activeKeyCount; j++) {
-                        HostMessage msg;
-                        msg.type = KEY_RELEASE;
-                        msg.data = module.activeKeys[j];
-                        xQueueSend(hostMessageQueue, &msg, 0);
-                    }
-                    module.peripheral.disconnect();
-                    module.isConnected = false;
-                    module.state = BLEConnectionState::DISCONNECTED;
-                    module.activeKeyCount = 0;
-                    memset(module.activeKeys, 0, sizeof(module.activeKeys));
-                    
-                    Serial.print("Module disconnected due to missed heartbeats: ");
-                    Serial.println(module.info.name);
-                    buzzerPlayPredefined(SOUND_DISCONNECT);
+void handleReceivedKeypress(const uint8_t *data, int length) {
+    if (length < 2) return;
+
+    uint8_t keyCode = data[0];
+    bool isPressed = data[1] == 1;
+
+    // Update active keys tracking
+    if (isPressed) {
+        if (activeKeyCount < 6) {
+            activeModuleKeys[activeKeyCount++] = keyCode;
+        }
+    } else {
+        // Remove key from active keys
+        for (int i = 0; i < activeKeyCount; i++) {
+            if (activeModuleKeys[i] == keyCode) {
+                // Shift remaining keys left
+                for (int j = i; j < activeKeyCount - 1; j++) {
+                    activeModuleKeys[j] = activeModuleKeys[j + 1];
                 }
+                activeKeyCount--;
+                break;
             }
         }
+    }
+
+    // Convert keycode to host message
+    HostMessage msg;
+    msg.type = isPressed ? KEY_PRESS : KEY_RELEASE;
+    msg.data = keyCode;
+
+    // Send to host communication bridge
+    xQueueSend(hostMessageQueue, &msg, 0);
+}
+
+// Send a message over BLE
+void sendMessage(BLEConnection& conn, const BLEMessage& msg) {
+    if (conn.isConnected && conn.characteristic.canWrite()) {
+        conn.characteristic.writeValue(msg.data.rawData, msg.length);
     }
 }
 
@@ -178,72 +156,50 @@ void BLEHandler(void *parameter) {
     psychoService.addCharacteristic(psychoCharacteristic);
     BLE.addService(psychoService);
     BLE.advertise();
-    Serial.println("BLE Master: Advertising for peripherals");
+    Serial.println("BLE Master: Advertising for modules");
 
-    static unsigned long lastModuleCheck = 0;
+    // Initialize connection state
+    connection.state = BLEConnectionState::DISCONNECTED;
+    connection.isConnected = false;
+    connection.lastActivityTime = 0;
+
+    static unsigned long lastKeyTime = 0;
+    static bool lastCaps = false;
 
     for (;;) {
         unsigned long currentTime = millis();
 
-        // Check for new connections from modules
-        BLEDevice peripheral = BLE.central();
-        if (peripheral) {
-            Serial.println("Connection attempt from peripheral");
-            
-            int slot = ModuleManager::findFreeSlot();
-            if (slot >= 0) {
-                BLEModule& module = moduleManager.getModule(slot);
-                module.peripheral = peripheral;
-                
-                if (peripheral.discoverAttributes()) {
-                    BLEService service = peripheral.service(SERVICE_UUID);
-                    if (service) {
-                        module.characteristic = service.characteristic(CHARACTERISTIC_UUID);
-                        if (module.characteristic && module.characteristic.subscribe()) {
-                            // Validate that this is a compatible module
-                            if (validateModule(module)) {
-                                // Request module information
-                                BLEMessage infoRequest;
-                                infoRequest.type = BLEMessageType::MODULE_INFO;
-                                infoRequest.length = 0;
-                                sendMessageToModule(module, infoRequest);
-                                
-                                module.state = BLEConnectionState::CONNECTED;
-                                module.isConnected = true;
-                                module.lastHeartbeat = currentTime;
-                                module.missedHeartbeats = 0;
-                                
-                                Serial.print("Module connected in slot ");
-                                Serial.println(slot);
-                                buzzerPlayPredefined(SOUND_CONNECT);
-                            } else {
-                                Serial.println("Module validation failed");
-                                peripheral.disconnect();
-                            }
-                        }
-                    }
-                }
-            } else {
-                Serial.println("No available module slots");
-                peripheral.disconnect();
-            }
+        // Handle connection state machine
+        if (!handleConnection(connection)) {
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            continue;
         }
 
-        // Handle messages from connected modules
-        for (int i = 0; i < MAX_MODULES; i++) {
-            BLEModule& module = moduleManager.getModule(i);
-            if (module.isConnected && module.characteristic.valueUpdated()) {
-                BLEMessage msg;
-                if (module.characteristic.readValue(msg.data.rawData, sizeof(msg.data.rawData))) {
-                    handleModuleMessage(module, msg);
+        // Process incoming data
+        BLE.poll();
+        if (connection.characteristic && connection.characteristic.valueUpdated()) {
+            if (currentTime - lastKeyTime > 20) {
+                uint8_t data[2];
+                if (connection.characteristic.readValue(data, 2)) {
+                    BLEMessage msg;
+                    msg.type = BLEMessageType::KEY_EVENT;
+                    memcpy(msg.data.rawData, data, 2);
+                    msg.length = 2;
+                    handleMessageReceived(msg);
+                    lastKeyTime = currentTime;
                 }
             }
         }
 
-        // Periodic connection check
-        if (currentTime - lastModuleCheck >= MODULE_CHECK_INTERVAL) {
-            checkModuleConnections();
-            lastModuleCheck = currentTime;
+        // Handle caps lock status updates
+        if (capsLockStatus != lastCaps) {
+            BLEMessage msg;
+            msg.type = BLEMessageType::CAPS_LOCK_STATUS;
+            msg.data.capsLock.enabled = capsLockStatus;
+            msg.length = 1;
+            sendMessage(connection, msg);
+            lastCaps = capsLockStatus;
+            Serial.println("Sent CapsLock status to module");
         }
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
