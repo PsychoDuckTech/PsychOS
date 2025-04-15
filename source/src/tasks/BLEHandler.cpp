@@ -17,31 +17,28 @@ static int activeKeyCount = 0;
 // Helper function to handle disconnection cleanup
 static void handleDisconnection()
 {
-    if (connection.isConnected)
+    // Release any stuck keys regardless of connection state
+    for (int i = 0; i < activeKeyCount; i++)
     {
-        // Release any stuck keys
-        for (int i = 0; i < activeKeyCount; i++)
-        {
-            HostMessage msg;
-            msg.type = KEY_RELEASE;
-            msg.data = activeModuleKeys[i];
-            xQueueSend(hostMessageQueue, &msg, 0);
-            Serial.print("Released stuck key on disconnect: ");
-            Serial.println(activeModuleKeys[i]);
-        }
-
-        activeKeyCount = 0;
-        memset(activeModuleKeys, 0, sizeof(activeModuleKeys));
-        moduleConnectionStatus = false;
-        connection.isConnected = false;
-        connection.state = BLEConnectionState::DISCONNECTED;
-
-        Serial.println("Disconnected from slave");
-        BLE.disconnect();
-        BLE.stopScan();
-        BLE.advertise();
-        buzzerPlayPredefined(SOUND_DISCONNECT);
+        HostMessage msg;
+        msg.type = KEY_RELEASE;
+        msg.data = activeModuleKeys[i];
+        xQueueSend(hostMessageQueue, &msg, 0);
+        Serial.print("Released stuck key on disconnect: ");
+        Serial.println(activeModuleKeys[i]);
     }
+
+    activeKeyCount = 0;
+    memset(activeModuleKeys, 0, sizeof(activeModuleKeys));
+    moduleConnectionStatus = false;
+    connection.isConnected = false;
+    connection.state = BLEConnectionState::DISCONNECTED;
+
+    Serial.println("Disconnected from slave");
+    BLE.disconnect();
+    BLE.stopScan();
+    BLE.advertise();
+    buzzerPlayPredefined(SOUND_DISCONNECT);
 }
 
 // Handle the connection state machine
@@ -191,7 +188,7 @@ void BLEHandler(void *parameter)
             {
                 moduleConnectionStatus = true;
                 Serial1.println("Connected to module");
-                while (central.connected())
+                while (central.connected() && BLE.connected()) // Added BLE.connected() check
                 {
                     if (psychoCharacteristic.written())
                     {
@@ -201,6 +198,8 @@ void BLEHandler(void *parameter)
                     }
                     vTaskDelay(10 / portTICK_PERIOD_MS);
                 }
+                // Handle disconnection and release any stuck keys
+                handleDisconnection();
                 moduleConnectionStatus = false;
                 Serial1.println("Module disconnected");
             }
