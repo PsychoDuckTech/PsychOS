@@ -11,6 +11,7 @@ enum ScreenType
     ClockSubmenu,
     IotSubmenu,
     RGBLightingSubmenu,
+    PixelFlushScreen,
 };
 
 struct MenuItem
@@ -34,5 +35,6 @@ void switchScreen(ScreenType newScreen);
 void displaySettingsScreen(void *parameters);
 void displayClockSubmenu(void *parameters);
 void displayHandler(void *parameters);
+void displayPixelFlushScreen(void *parameters);
 
 void startDisplayTask(UBaseType_t core = 1, uint32_t stackDepth = 4096, UBaseType_t priority = 1);

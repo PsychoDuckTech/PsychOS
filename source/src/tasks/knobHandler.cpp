@@ -233,9 +233,7 @@ void knobHandler(void *parameters)
                     switchScreen(IotSubmenu);
                     break;
                 case 4:
-                    displayPixelFlushScreen();
-                    needsFullRedraw = true;
-                    displaySettingsScreen(nullptr);
+                    switchScreen(PixelFlushScreen);
                     break;
                 }
                 break;

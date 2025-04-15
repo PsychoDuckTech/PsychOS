@@ -15,5 +15,6 @@ void displayDemo(void *parameters);
 void displaySettingsScreen(void *parameters);
 void displayRGBSubmenu(void *parameters);
 void displayClockSubmenu(void *parameters);
+void displayPixelFlushScreen(void *parameters);
 
 #endif // DISPLAY_CONTENT_H

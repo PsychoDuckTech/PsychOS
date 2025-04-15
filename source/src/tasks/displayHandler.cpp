@@ -52,6 +52,10 @@ void switchScreen(ScreenType newScreen)
         updateMainScreen = false;
         displayClockSubmenu(nullptr);
         break;
+    case PixelFlushScreen:
+        updateMainScreen = false;
+        displayPixelFlushScreen(nullptr);
+        break;
 
         // Add cases for submenus here
     }
