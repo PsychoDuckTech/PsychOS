@@ -54,6 +54,16 @@ void knobHandler(void *parameters)
             }
             break;
 
+            case PixelFlushScreen:
+                // Adjust volume on rotation
+                if (rotation != 0)
+                {
+                    HostMessage msg;
+                    msg.type = VOLUME_CHANGE;
+                    msg.data = rotation; // Natural direction for volume
+                    xQueueSend(hostMessageQueue, &msg, 0);
+                }
+
             case ClockSubmenu:
             {
                 SettingsRotationEvent event;
@@ -230,9 +240,6 @@ void knobHandler(void *parameters)
                     switchScreen(ClockSubmenu);
                     break;
                 case 3:
-                    switchScreen(IotSubmenu);
-                    break;
-                case 4:
                     switchScreen(PixelFlushScreen);
                     break;
                 }
@@ -244,6 +251,9 @@ void knobHandler(void *parameters)
             case ClockSubmenu:
                 settingsSelectedOption = (settingsSelectedOption + 1) % 3;
                 displayClockSubmenu(nullptr);
+                break;
+            case PixelFlushScreen:
+                switchScreen(MainScreen);
                 break;
             }
         }

@@ -12,8 +12,8 @@ extern Adafruit_ILI9341 tft; // Defined in globals.h
 // Define the TFT display object (assumed to be initialized elsewhere)
 extern Adafruit_ILI9341 tft;
 
-// Duration of the flushing process (5 minutes in milliseconds)
-const unsigned long FLUSH_DURATION_MS = 5 * 60 * 1000;
+// Duration of the flushing process (30 seconds in milliseconds)
+const unsigned long FLUSH_DURATION_MS = 2 * 15 * 1000;
 
 // High-contrast colors for rapid cycling
 const uint16_t HARSH_COLORS[] = {
@@ -40,7 +40,7 @@ void displayPixelFlushScreen(void *parameters)
     tft.setTextSize(2);
     tft.println("Harsh Pixel Flush");
     tft.println("In Progress...");
-    delay(1000); // Show message for 1 second
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Show message for 1 second
 
     while (millis() - startTime < FLUSH_DURATION_MS)
     {
@@ -48,7 +48,7 @@ void displayPixelFlushScreen(void *parameters)
         for (int i = 0; i < 50; i++)
         {
             tft.fillScreen(HARSH_COLORS[i % NUM_COLORS]);
-            delay(5); // Very fast transitions
+            vTaskDelay(pdMS_TO_TICKS(5)); // Very fast transitions
             if (millis() - startTime >= FLUSH_DURATION_MS)
                 break;
         }
@@ -61,7 +61,7 @@ void displayPixelFlushScreen(void *parameters)
                 uint16_t color = ((x + offset) % 4 < 2) ? ILI9341_BLACK : ILI9341_WHITE;
                 tft.drawFastVLine(x, 0, 320, color);
             }
-            delay(10); // Fast movement
+            vTaskDelay(pdMS_TO_TICKS(10)); // Fast movement
             if (millis() - startTime >= FLUSH_DURATION_MS)
                 break;
         }
@@ -77,7 +77,7 @@ void displayPixelFlushScreen(void *parameters)
                     tft.fillRect(x, y, 8, 8, color);
                 }
             }
-            delay(10); // Fast alternation
+            vTaskDelay(pdMS_TO_TICKS(10)); // Fast alternation
             if (millis() - startTime >= FLUSH_DURATION_MS)
                 break;
         }
@@ -86,7 +86,7 @@ void displayPixelFlushScreen(void *parameters)
         for (int i = 0; i < 10; i++)
         {
             tft.fillScreen(random(65536)); // Random 16-bit color
-            delay(20);                     // Slightly slower for noise effect
+            vTaskDelay(pdMS_TO_TICKS(20)); // Slightly slower for noise effect
             if (millis() - startTime >= FLUSH_DURATION_MS)
                 break;
         }
@@ -96,6 +96,6 @@ void displayPixelFlushScreen(void *parameters)
     tft.fillScreen(ILI9341_BLACK);
     tft.setCursor(10, 10);
     tft.println("Flush Complete");
-    delay(1000); // Show completion message
+    vTaskDelay(pdMS_TO_TICKS(1000)); // Show completion message
     switchScreen(MainScreen);
 }
