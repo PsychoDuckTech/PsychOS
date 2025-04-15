@@ -41,6 +41,10 @@ void displayTopBar(void *parameters)
 
     tft.drawBitmap(11, 9, connectionStatus ? (toggleDiscIcon ? iconDisc1 : iconDisc2) : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
     tft.drawBitmap(moduleConnectionStatus ? 35 : 36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, moduleConnectionStatus ? SUCCESS_COLOR : MUTED_COLOR, BG_COLOR);
+    if (!moduleConnectionStatus)
+    {
+        tft.fillRect(35, 9, 1, 15, BG_COLOR);
+    }
 
     tft.setTextSize(1);
     tft.setTextColor(TEXT_COLOR);
