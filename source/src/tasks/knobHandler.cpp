@@ -240,6 +240,7 @@ void knobHandler(void *parameters)
                     switchScreen(ClockSubmenu);
                     break;
                 case 3:
+                    pixelFlushComplete = false;
                     switchScreen(PixelFlushScreen);
                     break;
                 }

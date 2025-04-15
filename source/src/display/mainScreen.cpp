@@ -21,6 +21,7 @@ extern bool toggleDiscIcon;
 
 void displayMainScreen(void *parameters)
 {
+    Serial.println("displayMainScreen called");
     needsFullRedraw = true;
 
     displayTopBar(parameters);

@@ -40,3 +40,5 @@ struct RGBState
 extern int firstDraw;
 
 extern RGBState rgbState;
+
+extern bool pixelFlushComplete;

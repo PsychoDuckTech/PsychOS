@@ -50,6 +50,9 @@ const char *keyNameL0[totalRows][totalCols] = {
 
 NVSUtil nvs("psychos");
 
+// Global variable definitions
+bool pixelFlushComplete = false;
+
 void setup()
 {
     // Initialize serial communication

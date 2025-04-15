@@ -15,10 +15,13 @@ ScreenType currentScreen = MainScreen;
 int settingsSelectedOption = 0;
 bool inSettingsSubmenu = false;
 bool updateMainScreen = true;
+bool requestMainScreenSwitch = false;
 SemaphoreHandle_t screenMutex;
 
 void switchScreen(ScreenType newScreen)
 {
+    Serial.print("Switching screen to: ");
+    Serial.println(newScreen);
     xSemaphoreTake(screenMutex, portMAX_DELAY); // Take the mutex before switching screens
 
     if (newScreen == SettingsScreen)
@@ -33,6 +36,7 @@ void switchScreen(ScreenType newScreen)
     {
     case MainScreen:
         updateMainScreen = true; // Set flag to true when switching to main screen
+        Serial.println("Calling displayMainScreen");
         displayMainScreen(nullptr);
         break;
     case SettingsScreen:
@@ -41,9 +45,7 @@ void switchScreen(ScreenType newScreen)
         break;
     case RGBLightingSubmenu:
         updateMainScreen = false;
-        // First sync with actual RGB task values before setting needsRefresh
         uRGB.syncUIValues();
-        // Add a small delay to ensure the RGB task has updated rgbState
         vTaskDelay(pdMS_TO_TICKS(10));
         needsFullRedraw = true;       // Force full redraw of screen
         rgbState.needsRefresh = true; // Force full redraw of RGB content
@@ -54,13 +56,23 @@ void switchScreen(ScreenType newScreen)
         break;
     case PixelFlushScreen:
         updateMainScreen = false;
+        Serial.println("Calling displayPixelFlushScreen");
         displayPixelFlushScreen(nullptr);
+        // Create the pixel flush task after screen initialization
+        xTaskCreatePinnedToCore(
+            startPixelFlush,    // Function to be called
+            "Pixel Flush",      // Name of task
+            4096,               // Stack size
+            NULL,               // Task input parameter
+            1,                  // Priority
+            NULL,              // Task handle
+            0                  // Core where the task should run
+        );
         break;
-
-        // Add cases for submenus here
     }
 
     xSemaphoreGive(screenMutex); // Release the mutex after switching screens
+    Serial.println("Screen switch complete");
 }
 
 void displayHandler(void *parameters)
@@ -79,6 +91,27 @@ void displayHandler(void *parameters)
     for (;;)
     {
         xSemaphoreTake(screenMutex, portMAX_DELAY);
+
+        // Check if we need to switch to main screen
+        if (requestMainScreenSwitch) {
+            requestMainScreenSwitch = false;
+            xSemaphoreGive(screenMutex);
+            if (currentScreen != MainScreen) {
+                Serial.println("Processing pending switch to MainScreen");
+                switchScreen(MainScreen);
+            }
+            continue;
+        }
+
+        // Check pixel flush completion
+        if (currentScreen == PixelFlushScreen && pixelFlushComplete) {
+            Serial.println("Pixel flush complete, requesting MainScreen switch");
+            pixelFlushComplete = false;
+            updateMainScreen = true;
+            requestMainScreenSwitch = true;
+            xSemaphoreGive(screenMutex);
+            continue;
+        }
 
         // Process any pending rotation events for settings and clock screens
         if (currentScreen == SettingsScreen || currentScreen == ClockSubmenu)
