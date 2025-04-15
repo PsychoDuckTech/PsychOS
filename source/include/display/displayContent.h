@@ -16,6 +16,6 @@ void displaySettingsScreen(void *parameters);
 void displayRGBSubmenu(void *parameters);
 void displayClockSubmenu(void *parameters);
 void displayPixelFlushScreen(void *parameters);
-void startPixelFlush(void *parameters);  // New function declaration for the pixel flush task
+void startPixelFlush(void *parameters); // New function declaration for the pixel flush task
 
 #endif // DISPLAY_CONTENT_H

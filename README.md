@@ -29,6 +29,7 @@ A feature-rich firmware for custom mechanical keyboards, built on ESP32-S3.
 |     Clock                    |    Supported    |    Real-time clock with sync            |
 |     Layer System             |       WIP       |    Multiple keymap layer support         |
 |     Macro Support            |   Planned    |    Custom macro programming              |
+| Screen Pixel Flushing | Supported | Clean up stuck or burned pixels in under 1 minute! |
 
 ## Technical Features
 - **Task Management**: FreeRTOS-based multitasking system

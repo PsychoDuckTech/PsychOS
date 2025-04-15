@@ -60,13 +60,13 @@ void switchScreen(ScreenType newScreen)
         displayPixelFlushScreen(nullptr);
         // Create the pixel flush task after screen initialization
         xTaskCreatePinnedToCore(
-            startPixelFlush,    // Function to be called
-            "Pixel Flush",      // Name of task
-            4096,               // Stack size
-            NULL,               // Task input parameter
-            1,                  // Priority
-            NULL,              // Task handle
-            0                  // Core where the task should run
+            startPixelFlush, // Function to be called
+            "Pixel Flush",   // Name of task
+            4096,            // Stack size
+            NULL,            // Task input parameter
+            1,               // Priority
+            NULL,            // Task handle
+            0                // Core where the task should run
         );
         break;
     }
@@ -93,10 +93,12 @@ void displayHandler(void *parameters)
         xSemaphoreTake(screenMutex, portMAX_DELAY);
 
         // Check if we need to switch to main screen
-        if (requestMainScreenSwitch) {
+        if (requestMainScreenSwitch)
+        {
             requestMainScreenSwitch = false;
             xSemaphoreGive(screenMutex);
-            if (currentScreen != MainScreen) {
+            if (currentScreen != MainScreen)
+            {
                 Serial.println("Processing pending switch to MainScreen");
                 switchScreen(MainScreen);
             }
@@ -104,7 +106,8 @@ void displayHandler(void *parameters)
         }
 
         // Check pixel flush completion
-        if (currentScreen == PixelFlushScreen && pixelFlushComplete) {
+        if (currentScreen == PixelFlushScreen && pixelFlushComplete)
+        {
             Serial.println("Pixel flush complete, requesting MainScreen switch");
             pixelFlushComplete = false;
             updateMainScreen = true;
