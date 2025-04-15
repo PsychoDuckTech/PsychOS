@@ -44,6 +44,7 @@ const char *ui_long_press_quit = "Press. Longo: Voltar";
 const char *ui_hours = "Horas";
 const char *ui_minutes = "Minutos";
 const char *ui_seconds = "Segundos";
+const char *ui_pixel_flush = "Limpeza de Pixels";
 
 #else
 // System messages
@@ -88,4 +89,5 @@ const char *ui_long_press_quit = "Long Press: Quit to Menu";
 const char *ui_hours = "Hours";
 const char *ui_minutes = "Minutes";
 const char *ui_seconds = "Seconds";
+const char *ui_pixel_flush = "Pixel Flush";
 #endif

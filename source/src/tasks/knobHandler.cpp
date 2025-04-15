@@ -4,6 +4,9 @@
 #include "tasks/hostCommunicationBridge.h"
 #include "tasks/displayHandler.h"
 #include "main.h"
+#include "display/screens.h"
+extern void displayPixelFlushScreen();
+extern bool needsFullRedraw;
 
 #define POLLING_RATE_MS 20
 
@@ -118,7 +121,7 @@ void knobHandler(void *parameters)
                                                       static_cast<uint8_t>(map(rgbState.speed, 1, 20, 1, 255)), 255};
                             strncpy(cmd.data.effect.colors[0], "#00BFFF", HEX_COLOR_LENGTH); // Deep Sky Blue
                             strncpy(cmd.data.effect.colors[1], "#4B0082", HEX_COLOR_LENGTH); // Indigo
-                            cmd.data.effect.num_colors = 2; 
+                            cmd.data.effect.num_colors = 2;
                             break;
 
                         default:                                          // RGB_EFFECT_WAVE (custom effect for demo)
@@ -228,6 +231,11 @@ void knobHandler(void *parameters)
                     break;
                 case 3:
                     switchScreen(IotSubmenu);
+                    break;
+                case 4:
+                    displayPixelFlushScreen();
+                    needsFullRedraw = true;
+                    displaySettingsScreen(nullptr);
                     break;
                 }
                 break;

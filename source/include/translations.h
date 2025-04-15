@@ -42,3 +42,4 @@ extern const char *ui_long_press_quit;
 extern const char *ui_hours;
 extern const char *ui_minutes;
 extern const char *ui_seconds;
+extern const char *ui_pixel_flush;

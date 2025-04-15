@@ -36,3 +36,5 @@ void displayRGBSubmenu(void *parameters);
 
 // Clock submenu screen functions
 void displayClockSubmenu(void *parameters);
+
+void displayPixelFlushScreen();

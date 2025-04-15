@@ -45,7 +45,7 @@ void switchScreen(ScreenType newScreen)
         uRGB.syncUIValues();
         // Add a small delay to ensure the RGB task has updated rgbState
         vTaskDelay(pdMS_TO_TICKS(10));
-        needsFullRedraw = true; // Force full redraw of screen
+        needsFullRedraw = true;       // Force full redraw of screen
         rgbState.needsRefresh = true; // Force full redraw of RGB content
         break;
     case ClockSubmenu:
