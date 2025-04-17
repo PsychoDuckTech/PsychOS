@@ -265,6 +265,13 @@ void knobHandler(void *parameters)
             {
                 switchScreen(SettingsScreen);
             }
+            else if (currentScreen == ModulesSubmenu ||
+                     currentScreen == RGBLightingSubmenu ||
+                     currentScreen == ClockSubmenu ||
+                     currentScreen == PixelFlushScreen)
+            {
+                switchScreen(MainScreen);
+            }
             else
             {
                 switchScreen(MainScreen);

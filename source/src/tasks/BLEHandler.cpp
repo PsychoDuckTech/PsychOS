@@ -7,6 +7,9 @@
 #include "tasks/buzzer.h"
 #include "utils/benchmark.h"
 
+// Add static buffer for device name
+static char deviceNameBuffer[32];
+
 BLEService psychoService(SERVICE_UUID);
 BLECharacteristic psychoCharacteristic(CHARACTERISTIC_UUID, BLERead | BLEWrite | BLENotify, 20);
 
@@ -33,8 +36,12 @@ static void handleDisconnection()
     moduleConnectionStatus = false;
     connection.isConnected = false;
     connection.state = BLEConnectionState::DISCONNECTED;
+    deviceNameBuffer[0] = '\0';  // Clear the device name
+    connectedModuleName = deviceNameBuffer;
 
-    Serial.println("Disconnected from slave");
+    Serial.print("Disconnected from module: ");
+    Serial.println(deviceNameBuffer[0] != '\0' ? deviceNameBuffer : "Unknown device");
+    Serial.println("Restarting BLE advertising...");
     BLE.disconnect();
     BLE.stopScan();
     BLE.advertise();
@@ -79,7 +86,14 @@ bool handleConnection(BLEConnection &conn)
                     conn.state = BLEConnectionState::CONNECTED;
                     conn.isConnected = true;
                     moduleConnectionStatus = true;
-                    Serial.println("Connected to slave and subscribed to characteristic");
+                    String name = conn.peripheral.localName();
+                    if (name.length() > 0) {
+                        strncpy(deviceNameBuffer, name.c_str(), sizeof(deviceNameBuffer) - 1);
+                        deviceNameBuffer[sizeof(deviceNameBuffer) - 1] = '\0';
+                        connectedModuleName = deviceNameBuffer;
+                        Serial.print("Connected to device: ");
+                        Serial.println(deviceNameBuffer);
+                    }
                     buzzerPlayPredefined(SOUND_CONNECT);
                     return true;
                 }
@@ -173,11 +187,13 @@ void sendMessage(BLEConnection &conn, const BLEMessage &msg)
 
 void BLEHandler(void *parameter)
 {
+    Serial.println("Starting BLE Handler...");
     initializeBLE();
     BLE.setLocalName("Kibodo One");
     psychoService.addCharacteristic(psychoCharacteristic);
     BLE.addService(psychoService);
     BLE.advertise();
+    Serial.println("BLE advertising started as 'Kibodo One'");
 
     for (;;)
     {
@@ -186,22 +202,47 @@ void BLEHandler(void *parameter)
         {
             if (central.connected())
             {
-                moduleConnectionStatus = true;
-                Serial1.println("Connected to module");
-                while (central.connected() && BLE.connected()) // Added BLE.connected() check
-                {
-                    if (psychoCharacteristic.written())
-                    {
-                        uint8_t data[2];
-                        int length = psychoCharacteristic.readValue(data, 2);
-                        handleReceivedKeypress(data, length);
+                if (central.discoverAttributes()) {
+                    moduleConnectionStatus = true;
+                    // Update our connection state
+                    connection.peripheral = central;
+                    String name = central.localName();
+                    
+                    // Try to get the name a few times if needed
+                    int retries = 3;
+                    while (name.length() == 0 && retries > 0) {
+                        delay(50);  // Give BLE stack time to get the name
+                        name = central.localName();
+                        retries--;
                     }
-                    vTaskDelay(10 / portTICK_PERIOD_MS);
+
+                    if (name.length() > 0) {
+                        strncpy(deviceNameBuffer, name.c_str(), sizeof(deviceNameBuffer) - 1);
+                        deviceNameBuffer[sizeof(deviceNameBuffer) - 1] = '\0';
+                        connectedModuleName = deviceNameBuffer;
+                        Serial.print("Connected to module: ");
+                        Serial.println(deviceNameBuffer);
+                    } else {
+                        Serial.println("Warning: Could not get device name after multiple attempts");
+                    }
+                    Serial.print("Address: ");
+                    Serial.println(central.address());
+
+                    while (central.connected() && BLE.connected()) // Added BLE.connected() check
+                    {
+                        if (psychoCharacteristic.written())
+                        {
+                            uint8_t data[2];
+                            int length = psychoCharacteristic.readValue(data, 2);
+                            handleReceivedKeypress(data, length);
+                        }
+                        vTaskDelay(10 / portTICK_PERIOD_MS);
+                    }
+                    // Handle disconnection and release any stuck keys
+                    Serial.println("Connection lost, cleaning up...");
+                    handleDisconnection();
+                    moduleConnectionStatus = false;
                 }
-                // Handle disconnection and release any stuck keys
-                handleDisconnection();
-                moduleConnectionStatus = false;
-                Serial1.println("Module disconnected");
             }
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);

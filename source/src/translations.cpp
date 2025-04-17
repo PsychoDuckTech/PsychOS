@@ -31,6 +31,12 @@ const char *ui_secured_by = "Seguro por Dux";
 const char *ui_powered_by = "Desenvolvido por PsychOS";
 const char *ui_build = "versao";
 
+// Module Menu
+const char *ui_no_module = "Sem modulo";
+const char *ui_no_module_desc = "Habilite Bluetooth e conecte\nusando o App Companion";
+const char *ui_connected_to = "Conectado a:";
+const char *ui_module_status = "Status: Conectado";
+
 // RGB Menu
 const char *ui_red = "Vermelho";
 const char *ui_green = "Verde";
@@ -75,6 +81,12 @@ const char *ui_iot_link = "IoT link";
 const char *ui_secured_by = "Secured by Dux";
 const char *ui_powered_by = "Powered by PsychOS";
 const char *ui_build = "build";
+
+// Module Menu
+const char *ui_no_module = "No module";
+const char *ui_no_module_desc = "Connect a Module";
+const char *ui_connected_to = "Connected to:";
+const char *ui_module_status = "Status: Connected";
 
 // RGB Menu
 const char *ui_red = "Red";

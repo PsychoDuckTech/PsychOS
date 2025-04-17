@@ -29,6 +29,12 @@ extern const char *ui_secured_by;
 extern const char *ui_powered_by;
 extern const char *ui_build;
 
+// Module Menu
+extern const char *ui_no_module;
+extern const char *ui_no_module_desc;
+extern const char *ui_connected_to;
+extern const char *ui_module_status;
+
 // RGB Menu
 extern const char *ui_red;
 extern const char *ui_green;

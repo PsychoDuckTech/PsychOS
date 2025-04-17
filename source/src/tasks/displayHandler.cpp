@@ -22,11 +22,11 @@ void switchScreen(ScreenType newScreen)
 {
     Serial.print("Switching screen to: ");
     Serial.println(newScreen);
-    xSemaphoreTake(screenMutex, portMAX_DELAY); // Take the mutex before switching screens
+    xSemaphoreTake(screenMutex, portMAX_DELAY);
 
     if (newScreen == SettingsScreen)
     {
-        settingsSelectedOption = 0; // Reset selection when entering settings
+        settingsSelectedOption = 0;
         inSettingsSubmenu = false;
     }
     currentScreen = newScreen;
@@ -35,20 +35,25 @@ void switchScreen(ScreenType newScreen)
     switch (currentScreen)
     {
     case MainScreen:
-        updateMainScreen = true; // Set flag to true when switching to main screen
+        updateMainScreen = true;
         Serial.println("Calling displayMainScreen");
         displayMainScreen(nullptr);
         break;
     case SettingsScreen:
-        updateMainScreen = false; // Set flag to false when switching away from main screen
+        updateMainScreen = false;
         displaySettingsScreen(nullptr);
+        break;
+    case ModulesSubmenu:
+        updateMainScreen = false;
+        needsFullRedraw = true;
+        displayModulesSubmenu(nullptr);
         break;
     case RGBLightingSubmenu:
         updateMainScreen = false;
         uRGB.syncUIValues();
         vTaskDelay(pdMS_TO_TICKS(10));
-        needsFullRedraw = true;       // Force full redraw of screen
-        rgbState.needsRefresh = true; // Force full redraw of RGB content
+        needsFullRedraw = true;
+        rgbState.needsRefresh = true;
         break;
     case ClockSubmenu:
         updateMainScreen = false;
@@ -171,7 +176,7 @@ void displayHandler(void *parameters)
         switch (currentScreen)
         {
         case MainScreen:
-            if (updateMainScreen) // Check the flag before updating the main screen
+            if (updateMainScreen)
             {
                 displayTopBar(parameters);
                 if (updatedMinutes)
@@ -188,7 +193,13 @@ void displayHandler(void *parameters)
             break;
 
         case SettingsScreen:
-            // Screen is updated through knob interactions
+            break;
+
+        case ModulesSubmenu:
+            if (needsFullRedraw || moduleConnectionStatus)
+            {
+                displayModulesSubmenu(parameters);
+            }
             break;
 
         case RGBLightingSubmenu:
