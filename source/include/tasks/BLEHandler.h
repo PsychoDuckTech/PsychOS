@@ -4,6 +4,16 @@
 #include <ArduinoBLE.h>
 #include "main.h"
 
+struct ModuleStat {
+    String address;
+    int keyPresses;
+    unsigned long connectTime;  // Time of connection in millis
+    int rssi;                  // Signal strength in dBm
+};
+
+extern ModuleStat moduleStats[4];
+extern int numModules;
+
 // Message types for BLE communication
 enum class BLEMessageType {
     KEY_EVENT,
@@ -50,8 +60,8 @@ struct BLEMessage {
 void BLEHandler(void *parameter);
 bool handleConnection(BLEConnection& conn);
 bool handleMessageReceived(const BLEMessage& msg);
-void sendMessage(BLEConnection& conn, const BLEMessage& msg);
 void handleReceivedKeypress(const uint8_t *data, int length);
+void sendMessage(BLEConnection& conn, const BLEMessage& msg);
 void startBleTask(UBaseType_t core = 1, uint32_t stackDepth = 16384, UBaseType_t priority = 1);
 
 // BLE Service and Characteristic UUIDs

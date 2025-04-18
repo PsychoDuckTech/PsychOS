@@ -1,4 +1,4 @@
 #include "globals.h"
 
 // Initialize global variables
-const char *connectedModuleName = "No Module Connected";
+const char *connectedModuleName = "no name reported";
