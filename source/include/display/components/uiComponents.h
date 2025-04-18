@@ -21,3 +21,5 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
 void drawSliderButtonWithText(const char *buttonText, const char *valueText, const uint8_t *leftIcon = nullptr,
                               int leftIconWidth = 0, int leftIconHeight = 0,
                               int yPosition = 0, bool selected = false);
+
+void drawFrame(int x, int y, int width, int height, uint16_t color, int thickness = 1);

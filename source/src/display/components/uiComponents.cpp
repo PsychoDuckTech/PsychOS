@@ -22,10 +22,18 @@ void drawButton(const char *buttonText, const uint8_t *leftIcon, int leftIconWid
     int itemH = selected ? SELECTED_H : UNSELECTED_H;
     int itemY = yPosition - (selected ? 2 : 0);
 
-    // Draw border sprite
-    tft.drawBitmap((tft.width() - itemW) / 2, itemY,
-                   selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
-                   itemW, itemH, TEXT_COLOR);
+    // Draw border
+    int frameX = (tft.width() - itemW) / 2;
+    if (selected)
+    {
+        // Draw selected border using frame with thick lines (4px)
+        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 0);
+    }
+    else
+    {
+        // Draw unselected border using frame with thin lines (2px)
+        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 1);
+    }
 
     // Draw highlight sprite if selected
     if (selected)
@@ -99,10 +107,18 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
     int itemH = selected ? SELECTED_H : UNSELECTED_H;
     int itemY = yPosition - (selected ? 2 : 0);
 
-    // Draw border sprite
-    tft.drawBitmap((tft.width() - itemW) / 2, itemY,
-                   selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
-                   itemW, itemH, TEXT_COLOR);
+    // Draw border
+    int frameX = (tft.width() - itemW) / 2;
+    if (selected)
+    {
+        // Draw selected border using frame with thick lines (4px)
+        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 1);
+    }
+    else
+    {
+        // Draw unselected border using frame with thin lines (2px)
+        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 0);
+    }
 
     // Draw highlight sprite if selected
     if (selected)
@@ -220,10 +236,8 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     int itemY = yPosition - (selected ? 2 : 0);
     int itemX = (tft.width() - itemW) / 2; // Center the button horizontally
 
-    // Draw border sprite
-    tft.drawBitmap(itemX, itemY,
-                   selected ? SettingsSelectedBorder : SettingsUnselectedBorder,
-                   itemW, itemH, TEXT_COLOR);
+    // Draw border with appropriate thickness (4px when selected, 2px when not)
+    drawFrame(itemX, itemY, itemW, itemH, TEXT_COLOR, selected ? 1 : 0);
 
     // Draw highlight sprite if selected
     if (selected)
@@ -269,4 +283,56 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     tft.setTextColor(valueColor);
     tft.setCursor(valueX, valueY);
     tft.print(valueText);
+}
+
+void drawFrame(int x, int y, int width, int height, uint16_t color, int thickness)
+{
+    int cornerSize = thickness == 1 ? 13 : 15; // Size of the corner bitmap
+
+    // Select corner bitmaps based on thickness
+    const unsigned char *tlCorner = thickness == 1 ? cornerTLUnselected : cornerTL;
+    const unsigned char *trCorner = thickness == 1 ? cornerTRUnselected : cornerTR;
+    const unsigned char *blCorner = thickness == 1 ? cornerBLUnselected : cornerBL;
+    const unsigned char *brCorner = thickness == 1 ? cornerBRUnselected : cornerBR;
+
+    // Draw the four corners
+    tft.drawBitmap(x, y, tlCorner, cornerSize, cornerSize, color);                                            // Top-left
+    tft.drawBitmap(x + width - cornerSize, y, trCorner, cornerSize, cornerSize, color);                       // Top-right
+    tft.drawBitmap(x, y + height - cornerSize, blCorner, cornerSize, cornerSize, color);                      // Bottom-left
+    tft.drawBitmap(x + width - cornerSize, y + height - cornerSize, brCorner, cornerSize, cornerSize, color); // Bottom-right
+
+    if (thickness == 0)
+    {
+        // Draw double-pixel lines
+        tft.drawFastHLine(x + cornerSize, y, width - 2 * cornerSize, color);              // Top line 1
+        tft.drawFastHLine(x + cornerSize, y + 1, width - 2 * cornerSize, color);          // Top line 2
+        tft.drawFastHLine(x + cornerSize, y + height - 2, width - 2 * cornerSize, color); // Bottom line 1
+        tft.drawFastHLine(x + cornerSize, y + height - 1, width - 2 * cornerSize, color); // Bottom line 2
+
+        tft.drawFastVLine(x, y + cornerSize, height - 2 * cornerSize, color);             // Left line 1
+        tft.drawFastVLine(x + 1, y + cornerSize, height - 2 * cornerSize, color);         // Left line 2
+        tft.drawFastVLine(x + width - 2, y + cornerSize, height - 2 * cornerSize, color); // Right line 1
+        tft.drawFastVLine(x + width - 1, y + cornerSize, height - 2 * cornerSize, color); // Right line 2
+    }
+    else
+    {
+        // Draw four-pixel lines
+        // Horizontal lines
+        for (int i = 0; i < 4; i++)
+        {
+            // Top lines
+            tft.drawFastHLine(x + cornerSize, y + i, width - 2 * cornerSize, color);
+            // Bottom lines
+            tft.drawFastHLine(x + cornerSize, y + height - 4 + i, width - 2 * cornerSize, color);
+        }
+
+        // Vertical lines
+        for (int i = 0; i < 4; i++)
+        {
+            // Left lines
+            tft.drawFastVLine(x + i, y + cornerSize, height - 2 * cornerSize, color);
+            // Right lines
+            tft.drawFastVLine(x + width - 4 + i, y + cornerSize, height - 2 * cornerSize, color);
+        }
+    }
 }

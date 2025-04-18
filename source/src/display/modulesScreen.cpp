@@ -19,13 +19,13 @@ void displayModulesSubmenu(void *parameters)
     const unsigned long CHECK_INTERVAL = 500; // Check state every 500ms
     static bool animationState = false;
     static bool previousConnectionStatus = !moduleConnectionStatus; // Initialize to opposite to force first draw
-    static const char* previousModuleName = "";
-    
+    static const char *previousModuleName = "";
+
     // Check if we need to update due to state changes
     bool stateChanged = (moduleConnectionStatus != previousConnectionStatus) ||
-                       (moduleConnectionStatus && strcmp(connectedModuleName, previousModuleName) != 0);
+                        (moduleConnectionStatus && strcmp(connectedModuleName, previousModuleName) != 0);
     bool shouldCheck = (millis() - lastCheckTime >= CHECK_INTERVAL);
-    
+
     // Only refresh if there are actual changes
     bool shouldRefresh = needsFullRedraw || stateChanged;
 
@@ -42,13 +42,15 @@ void displayModulesSubmenu(void *parameters)
         tft.fillRect(4, 60, 232, 215, BG_COLOR);
 
         // Update animation state        // Update animation state if it's time to check
-        if (shouldCheck) {
+        if (shouldCheck)
+        {
             animationState = !animationState;
             lastCheckTime = millis();
-            
+
             // Store current state for next comparison
             previousConnectionStatus = moduleConnectionStatus;
-            if (moduleConnectionStatus) {
+            if (moduleConnectionStatus)
+            {
                 previousModuleName = connectedModuleName;
             }
         }
@@ -56,8 +58,7 @@ void displayModulesSubmenu(void *parameters)
         if (!moduleConnectionStatus)
         {
             // Draw a decorative box for the disconnected state
-            tft.drawRoundRect(15, 80, 210, 120, 8, MUTED_COLOR);
-            tft.drawRoundRect(16, 81, 208, 118, 7, ULTRA_MUTED_COLOR);
+            drawFrame(15, 80, 210, 120, ERROR_COLOR);
 
             // Draw BLE icon with animation
             tft.drawBitmap(107, 95, iconBleDisconnected, 14, 15,
@@ -79,8 +80,7 @@ void displayModulesSubmenu(void *parameters)
         else
         {
             // Draw a decorative box for the connected state
-            tft.drawRoundRect(15, 80, 210, 120, 8, SUCCESS_COLOR);
-            tft.drawRoundRect(16, 81, 208, 118, 7, MUTED_COLOR);
+            drawFrame(15, 80, 210, 120, SUCCESS_COLOR);
 
             // Draw BLE icon with animation
             tft.drawBitmap(25, 95, iconBleConnected, 14, 15,

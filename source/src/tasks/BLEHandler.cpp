@@ -36,7 +36,7 @@ static void handleDisconnection()
     moduleConnectionStatus = false;
     connection.isConnected = false;
     connection.state = BLEConnectionState::DISCONNECTED;
-    deviceNameBuffer[0] = '\0';  // Clear the device name
+    deviceNameBuffer[0] = '\0'; // Clear the device name
     connectedModuleName = deviceNameBuffer;
 
     Serial.print("Disconnected from module: ");
@@ -87,7 +87,8 @@ bool handleConnection(BLEConnection &conn)
                     conn.isConnected = true;
                     moduleConnectionStatus = true;
                     String name = conn.peripheral.localName();
-                    if (name.length() > 0) {
+                    if (name.length() > 0)
+                    {
                         strncpy(deviceNameBuffer, name.c_str(), sizeof(deviceNameBuffer) - 1);
                         deviceNameBuffer[sizeof(deviceNameBuffer) - 1] = '\0';
                         connectedModuleName = deviceNameBuffer;
@@ -202,27 +203,32 @@ void BLEHandler(void *parameter)
         {
             if (central.connected())
             {
-                if (central.discoverAttributes()) {
+                if (central.discoverAttributes())
+                {
                     moduleConnectionStatus = true;
                     // Update our connection state
                     connection.peripheral = central;
                     String name = central.localName();
-                    
+
                     // Try to get the name a few times if needed
                     int retries = 3;
-                    while (name.length() == 0 && retries > 0) {
-                        delay(50);  // Give BLE stack time to get the name
+                    while (name.length() == 0 && retries > 0)
+                    {
+                        delay(50); // Give BLE stack time to get the name
                         name = central.localName();
                         retries--;
                     }
 
-                    if (name.length() > 0) {
+                    if (name.length() > 0)
+                    {
                         strncpy(deviceNameBuffer, name.c_str(), sizeof(deviceNameBuffer) - 1);
                         deviceNameBuffer[sizeof(deviceNameBuffer) - 1] = '\0';
                         connectedModuleName = deviceNameBuffer;
                         Serial.print("Connected to module: ");
                         Serial.println(deviceNameBuffer);
-                    } else {
+                    }
+                    else
+                    {
                         Serial.println("Warning: Could not get device name after multiple attempts");
                     }
                     Serial.print("Address: ");
