@@ -112,12 +112,12 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
     if (selected)
     {
         // Draw selected border using frame with thick lines (4px)
-        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 1);
+        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 0);
     }
     else
     {
         // Draw unselected border using frame with thin lines (2px)
-        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 0);
+        drawFrame(frameX, itemY, itemW, itemH, TEXT_COLOR, 1);
     }
 
     // Draw highlight sprite if selected
@@ -237,7 +237,7 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     int itemX = (tft.width() - itemW) / 2; // Center the button horizontally
 
     // Draw border with appropriate thickness (4px when selected, 2px when not)
-    drawFrame(itemX, itemY, itemW, itemH, TEXT_COLOR, selected ? 1 : 0);
+    drawFrame(itemX, itemY, itemW, itemH, TEXT_COLOR, selected ? 0 : 1);
 
     // Draw highlight sprite if selected
     if (selected)

@@ -4,10 +4,11 @@
 #include <ArduinoBLE.h>
 #include "main.h"
 
-struct ModuleStat {
+struct ModuleStat
+{
     String address;
     int keyPresses;
-    unsigned long connectTime;  // Time of connection in millis
+    unsigned long connectTime; // Time of connection in millis
     int rssi;                  // Signal strength in dBm
 };
 
@@ -15,7 +16,8 @@ extern ModuleStat moduleStats[4];
 extern int numModules;
 
 // Message types for BLE communication
-enum class BLEMessageType {
+enum class BLEMessageType
+{
     KEY_EVENT,
     CAPS_LOCK_STATUS,
     RGB_CONTROL,
@@ -24,7 +26,8 @@ enum class BLEMessageType {
 };
 
 // Connection states
-enum class BLEConnectionState {
+enum class BLEConnectionState
+{
     DISCONNECTED,
     SCANNING,
     CONNECTING,
@@ -32,7 +35,8 @@ enum class BLEConnectionState {
     CONNECTED
 };
 
-struct BLEConnection {
+struct BLEConnection
+{
     BLEDevice peripheral;
     BLECharacteristic characteristic;
     BLEConnectionState state;
@@ -41,27 +45,31 @@ struct BLEConnection {
 };
 
 // Message structure for BLE communication
-struct BLEMessage {
+struct BLEMessage
+{
     BLEMessageType type;
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             uint8_t keyCode;
             bool isPressed;
         } keyEvent;
-        struct {
+        struct
+        {
             bool enabled;
         } capsLock;
-        uint8_t rawData[20];  // Max size for other message types
+        uint8_t rawData[20]; // Max size for other message types
     } data;
     uint8_t length;
 };
 
 // Function declarations
 void BLEHandler(void *parameter);
-bool handleConnection(BLEConnection& conn);
-bool handleMessageReceived(const BLEMessage& msg);
+bool handleConnection(BLEConnection &conn);
+bool handleMessageReceived(const BLEMessage &msg);
 void handleReceivedKeypress(const uint8_t *data, int length);
-void sendMessage(BLEConnection& conn, const BLEMessage& msg);
+void sendMessage(BLEConnection &conn, const BLEMessage &msg);
 void startBleTask(UBaseType_t core = 1, uint32_t stackDepth = 16384, UBaseType_t priority = 1);
 
 // BLE Service and Characteristic UUIDs

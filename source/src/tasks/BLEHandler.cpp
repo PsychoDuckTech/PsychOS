@@ -22,9 +22,11 @@ ModuleStat moduleStats[4];
 int numModules = 0;
 
 // Helper function to handle disconnection cleanup
-static void handleDisconnection() {
+static void handleDisconnection()
+{
     // Release any stuck keys regardless of connection state
-    for (int i = 0; i < activeKeyCount; i++) {
+    for (int i = 0; i < activeKeyCount; i++)
+    {
         HostMessage msg;
         msg.type = KEY_RELEASE;
         msg.data = activeModuleKeys[i];
@@ -49,7 +51,8 @@ static void handleDisconnection() {
     BLE.advertise();
 }
 
-void handleReceivedKeypress(const uint8_t *data, int length) {
+void handleReceivedKeypress(const uint8_t *data, int length)
+{
     if (length < 2)
         return;
 
@@ -58,8 +61,10 @@ void handleReceivedKeypress(const uint8_t *data, int length) {
 
     // Update key press statistics for the connected module
     String address = connection.peripheral.address();
-    for (int i = 0; i < numModules; i++) {
-        if (moduleStats[i].address == address && isPressed) {
+    for (int i = 0; i < numModules; i++)
+    {
+        if (moduleStats[i].address == address && isPressed)
+        {
             moduleStats[i].keyPresses++;
             moduleStats[i].rssi = connection.peripheral.rssi(); // Update RSSI on key press
             break;
@@ -67,16 +72,23 @@ void handleReceivedKeypress(const uint8_t *data, int length) {
     }
 
     // Update active keys tracking
-    if (isPressed) {
-        if (activeKeyCount < 6) {
+    if (isPressed)
+    {
+        if (activeKeyCount < 6)
+        {
             activeModuleKeys[activeKeyCount++] = keyCode;
         }
-    } else {
+    }
+    else
+    {
         // Remove key from active keys
-        for (int i = 0; i < activeKeyCount; i++) {
-            if (activeModuleKeys[i] == keyCode) {
+        for (int i = 0; i < activeKeyCount; i++)
+        {
+            if (activeModuleKeys[i] == keyCode)
+            {
                 // Shift remaining keys left
-                for (int j = i; j < activeKeyCount - 1; j++) {
+                for (int j = i; j < activeKeyCount - 1; j++)
+                {
                     activeModuleKeys[j] = activeModuleKeys[j + 1];
                 }
                 activeKeyCount--;
@@ -92,7 +104,8 @@ void handleReceivedKeypress(const uint8_t *data, int length) {
     xQueueSend(hostMessageQueue, &msg, 0);
 }
 
-void BLEHandler(void *parameter) {
+void BLEHandler(void *parameter)
+{
     Serial.println("Starting BLE Handler...");
     initializeBLE();
     BLE.setLocalName("Kibodo One");
@@ -101,11 +114,15 @@ void BLEHandler(void *parameter) {
     BLE.advertise();
     Serial.println("BLE advertising started as 'Kibodo One'");
 
-    for (;;) {
+    for (;;)
+    {
         BLEDevice central = BLE.central();
-        if (central) {
-            if (central.connected()) {
-                if (central.discoverAttributes()) {
+        if (central)
+        {
+            if (central.connected())
+            {
+                if (central.discoverAttributes())
+                {
                     moduleConnectionStatus = true;
                     // Update our connection state
                     connection.peripheral = central;
@@ -113,7 +130,8 @@ void BLEHandler(void *parameter) {
 
                     // Try to get the name a few times if needed
                     int retries = 3;
-                    while (name.length() == 0 && retries > 0) {
+                    while (name.length() == 0 && retries > 0)
+                    {
                         delay(50);
                         name = central.localName();
                         retries--;
@@ -121,16 +139,19 @@ void BLEHandler(void *parameter) {
 
                     String address = central.address();
                     bool found = false;
-                    for (int i = 0; i < numModules; i++) {
-                        if (moduleStats[i].address == address) {
+                    for (int i = 0; i < numModules; i++)
+                    {
+                        if (moduleStats[i].address == address)
+                        {
                             found = true;
                             moduleStats[i].connectTime = millis();
                             moduleStats[i].rssi = central.rssi();
                             break;
                         }
                     }
-                    
-                    if (!found && numModules < 4) {
+
+                    if (!found && numModules < 4)
+                    {
                         moduleStats[numModules].address = address;
                         moduleStats[numModules].keyPresses = 0;
                         moduleStats[numModules].connectTime = millis();
@@ -138,27 +159,32 @@ void BLEHandler(void *parameter) {
                         numModules++;
                     }
 
-                    if (name.length() > 0) {
+                    if (name.length() > 0)
+                    {
                         strncpy(deviceNameBuffer, name.c_str(), sizeof(deviceNameBuffer) - 1);
                         deviceNameBuffer[sizeof(deviceNameBuffer) - 1] = '\0';
                         connectedModuleName = deviceNameBuffer;
                         Serial.print("Connected to module: ");
                         Serial.println(deviceNameBuffer);
-                    } else {
+                    }
+                    else
+                    {
                         Serial.println("Warning: Could not get device name after multiple attempts");
                     }
                     Serial.print("Address: ");
                     Serial.println(central.address());
 
-                    while (central.connected() && BLE.connected()) {
-                        if (psychoCharacteristic.written()) {
+                    while (central.connected() && BLE.connected())
+                    {
+                        if (psychoCharacteristic.written())
+                        {
                             uint8_t data[2];
                             int length = psychoCharacteristic.readValue(data, 2);
                             handleReceivedKeypress(data, length);
                         }
                         vTaskDelay(10 / portTICK_PERIOD_MS);
                     }
-                    
+
                     Serial.println("Connection lost, cleaning up...");
                     handleDisconnection();
                     moduleConnectionStatus = false;
@@ -169,7 +195,8 @@ void BLEHandler(void *parameter) {
     }
 }
 
-void startBleTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority) {
+void startBleTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
+{
     TaskHandle_t bleTaskHandle;
     xTaskCreatePinnedToCore(
         BLEHandler, "BLE Handler", stackDepth, NULL, priority, &bleTaskHandle, core);
