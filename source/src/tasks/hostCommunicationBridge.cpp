@@ -9,7 +9,7 @@ uint8_t keycode[6] = {0, 0, 0, 0, 0, 0}; // Initialize as empty
 
 USBHIDKeyboard Keyboard;
 QueueHandle_t hostMessageQueue;
-USBHIDConsumerControl ConsumerControl;
+USBHIDConsumerControl Consumer;
 
 #define SERIAL_BUFFER_SIZE 128
 
@@ -44,7 +44,7 @@ void hostCommunicationBridge(void *parameters)
     hostMessageQueue = xQueueCreate(50, sizeof(HostMessage)); // Increased to 50
     HostMessage receivedMessage;
     Keyboard.begin();
-    ConsumerControl.begin();
+    Consumer.begin();
     Serial.println("Host Communication Bridge started.");
 
     char serialBuffer[SERIAL_BUFFER_SIZE] = {0};
@@ -63,18 +63,18 @@ void hostCommunicationBridge(void *parameters)
             case VOLUME_CHANGE:
                 if (receivedMessage.data > 0)
                 {
-                    ConsumerControl.press(CONSUMER_CONTROL_VOLUME_INCREMENT);
-                    ConsumerControl.release();
+                    Consumer.press(CONSUMER_CONTROL_VOLUME_INCREMENT);
+                    Consumer.release();
                 }
                 else
                 {
-                    ConsumerControl.press(CONSUMER_CONTROL_VOLUME_DECREMENT);
-                    ConsumerControl.release();
+                    Consumer.press(CONSUMER_CONTROL_VOLUME_DECREMENT);
+                    Consumer.release();
                 }
                 break;
             case VOLUME_MUTE:
-                ConsumerControl.press(CONSUMER_CONTROL_MUTE);
-                ConsumerControl.release();
+                Consumer.press(CONSUMER_CONTROL_MUTE);
+                Consumer.release();
                 break;
             case KEY_PRESS:
                 WPMCounter::recordKeyPress();
