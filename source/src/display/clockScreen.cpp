@@ -38,7 +38,8 @@ void displayClockSubmenu(void *parameters)
     // Draw non-selected menu items first
     for (int i = 0; i < 3; i++)
     {
-        if (i != settingsSelectedOption) {
+        if (i != settingsSelectedOption)
+        {
             int baseY = MENU_START_Y + (i * ITEM_SPACING);
 
             // Draw the button without right arrow since we're showing values
@@ -54,25 +55,25 @@ void displayClockSubmenu(void *parameters)
             tft.print(valueStr);
         }
     }
-    
+
     // Then draw the selected item last for perceived performance improvement
     int baseY = MENU_START_Y + (settingsSelectedOption * ITEM_SPACING);
-    
+
     // Draw the selected button without right arrow
     drawButton(labels[settingsSelectedOption], nullptr, 0, 0, false, baseY, true);
-    
+
     // Add the value for the selected item
     char valueStr[3];
     sprintf(valueStr, "%02d", values[settingsSelectedOption]);
     tft.setTextSize(2);
     tft.setFont();
-    tft.setTextColor(0x0);  // Black text for selected item
+    tft.setTextColor(0x0); // Black text for selected item
     tft.setCursor(180, baseY + 17);
     tft.print(valueStr);
 
     // Draw footer
     drawFooter();
-    
+
     // Draw help indicators
     drawHelpIndicators(230, MUTED_COLOR);
 

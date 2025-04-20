@@ -83,7 +83,8 @@ void displayRGBSubmenu(void *parameters)
         // First draw all non-selected buttons
         for (int i = 0; i < 3; i++)
         {
-            if (i != rgbState.currentSelection) {
+            if (i != rgbState.currentSelection)
+            {
                 int yPos = MENU_START_Y + (i * ITEM_SPACING);
 
                 // Special handling for effect which shows text instead of percentage
@@ -91,39 +92,39 @@ void displayRGBSubmenu(void *parameters)
                 {
                     // Effect selector shows name only with left/right arrows, no label or icon
                     drawSliderButtonWithText(nullptr, effectNames[currentValues[i]],
-                                            nullptr, 0, 0,
-                                            yPos, false);
+                                             nullptr, 0, 0,
+                                             yPos, false);
                 }
                 else
                 {
                     // Standard slider buttons for brightness and speed
                     drawSliderButton(rgbOptions[i], currentValues[i], valueRanges[i],
-                                    icons[i], iconWidths[i], iconHeights[i],
-                                    (i == 1), // Only show percentage for brightness
-                                    yPos, false);
+                                     icons[i], iconWidths[i], iconHeights[i],
+                                     (i == 1), // Only show percentage for brightness
+                                     yPos, false);
                 }
             }
         }
-        
+
         // Then draw the selected button last for perceived performance improvement
         int selectedIndex = rgbState.currentSelection;
         int yPos = MENU_START_Y + (selectedIndex * ITEM_SPACING);
-        
+
         // Special handling for effect which shows text instead of percentage
         if (selectedIndex == 0)
         {
             // Effect selector shows name only with left/right arrows, no label or icon
             drawSliderButtonWithText(nullptr, effectNames[currentValues[selectedIndex]],
-                                    nullptr, 0, 0,
-                                    yPos, true);
+                                     nullptr, 0, 0,
+                                     yPos, true);
         }
         else
         {
             // Standard slider buttons for brightness and speed
             drawSliderButton(rgbOptions[selectedIndex], currentValues[selectedIndex], valueRanges[selectedIndex],
-                            icons[selectedIndex], iconWidths[selectedIndex], iconHeights[selectedIndex],
-                            (selectedIndex == 1), // Only show percentage for brightness
-                            yPos, true);
+                             icons[selectedIndex], iconWidths[selectedIndex], iconHeights[selectedIndex],
+                             (selectedIndex == 1), // Only show percentage for brightness
+                             yPos, true);
         }
 
         // Draw help indicators at the bottom of the screen
