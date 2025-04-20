@@ -22,4 +22,7 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
                               int leftIconWidth = 0, int leftIconHeight = 0,
                               int yPosition = 0, bool selected = false);
 
+// Footer drawing function for consistent footer across screens
+void drawFooter();
+
 void drawFrame(int x, int y, int width, int height, uint16_t color, int thickness = 1);

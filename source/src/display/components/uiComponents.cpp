@@ -4,6 +4,8 @@
 #include "display/displayContent.h"
 #include "globals.h"
 #include "display/icons.h"
+#include "main.h"
+#include "translations.h"
 
 extern Adafruit_ILI9341 tft;
 
@@ -283,6 +285,41 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
     tft.setTextColor(valueColor);
     tft.setCursor(valueX, valueY);
     tft.print(valueText);
+}
+
+// Footer drawing function for consistent footer across screens
+void drawFooter()
+{
+    tft.setTextSize(1);
+    tft.setFont();
+
+    // Calculate width of each text line for proper centering
+    int displayWidth = tft.width();
+    int charWidth = 6; // Approximate width per character at text size 1
+
+    // Center "Secured by Dux"
+    int securedByWidth = strlen(ui_secured_by) * charWidth;
+    int securedByX = (displayWidth - securedByWidth) / 2;
+    tft.setTextColor(ULTRA_MUTED_COLOR);
+    tft.setCursor(securedByX, 287);
+    tft.print(ui_secured_by);
+
+    // Center "Powered by PsychOS"
+    int poweredByWidth = strlen(ui_powered_by) * charWidth;
+    int poweredByX = (displayWidth - poweredByWidth) / 2;
+    tft.setTextColor(MUTED_COLOR);
+    tft.setCursor(poweredByX, 296);
+    tft.print(ui_powered_by);
+
+    // Center "Build X.X.X" with version
+    char versionStr[30];
+    snprintf(versionStr, sizeof(versionStr), "%s %s", ui_build, OS_version);
+    int versionWidth = strlen(versionStr) * charWidth;
+    int versionX = (displayWidth - versionWidth) / 2;
+    tft.setCursor(versionX, 305);
+    tft.print(ui_build);
+    tft.print(" ");
+    tft.print(OS_version);
 }
 
 void drawFrame(int x, int y, int width, int height, uint16_t color, int thickness)

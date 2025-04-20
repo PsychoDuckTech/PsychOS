@@ -20,19 +20,8 @@ void drawSettingsStatic(void *parameters)
     // Draw title
     drawScreenTitle(ui_settings);
 
-    // Draw footer text before options are loaded
-    tft.setTextSize(1);
-    tft.setFont();
-    tft.setTextColor(ULTRA_MUTED_COLOR);
-    tft.setCursor(76, 287);
-    tft.print(ui_secured_by);
-    tft.setTextColor(MUTED_COLOR);
-    tft.setCursor(65, 296);
-    tft.print(ui_powered_by);
-    tft.setCursor(79, 305);
-    tft.print(ui_build);
-    tft.print(" ");
-    tft.print(OS_version);
+    // Draw footer
+    drawFooter();
 }
 
 void displaySettingsScreen(void *parameters)
