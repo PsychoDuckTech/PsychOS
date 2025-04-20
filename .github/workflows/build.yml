@@ -28,7 +28,7 @@ jobs:
     - name: Validate Tag Availability
       id: check_tag
       run: |
-        VERSION="0.4.7-beta"
+        VERSION="0.4.8-beta"
         if git rev-parse "v$VERSION" >/dev/null 2>&1; then
           echo "::error::Tag v$VERSION already exists!"
           exit 1

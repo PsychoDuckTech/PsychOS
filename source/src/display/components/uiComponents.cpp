@@ -380,24 +380,27 @@ void drawHelpIndicators(int yStartPosition, uint16_t textColor, bool showRotate,
     tft.setTextSize(1);
     tft.setFont();
     tft.setTextColor(textColor);
-    
+
     int lineHeight = 8; // Space between lines
     int currentY = yStartPosition;
     const int leftMargin = 15; // Consistent left margin for all help text
-    
-    if (showRotate) {
+
+    if (showRotate)
+    {
         tft.setCursor(leftMargin, currentY);
         tft.print(ui_rotate_adjust);
         currentY += lineHeight;
     }
-    
-    if (showPress) {
+
+    if (showPress)
+    {
         tft.setCursor(leftMargin, currentY);
         tft.print(ui_press_next);
         currentY += lineHeight;
     }
-    
-    if (showLongPress) {
+
+    if (showLongPress)
+    {
         tft.setCursor(leftMargin, currentY);
         tft.print(ui_long_press_quit);
     }

@@ -5,6 +5,7 @@
 #include "tasks/displayHandler.h"
 #include "main.h"
 #include "display/screens.h"
+#include "display/pixelFlushScreen.h" // Added this to access pixel flush functions
 extern void displayPixelFlushScreen();
 extern bool needsFullRedraw;
 
@@ -55,14 +56,8 @@ void knobHandler(void *parameters)
             break;
 
             case PixelFlushScreen:
-                // Adjust volume on rotation
-                if (rotation != 0)
-                {
-                    HostMessage msg;
-                    msg.type = VOLUME_CHANGE;
-                    msg.data = rotation; // Natural direction for volume
-                    xQueueSend(hostMessageQueue, &msg, 0);
-                }
+                // Handle pixel flush screen rotation (duration selection)
+                handlePixelFlushKnobRotation(rotation);
 
             case ClockSubmenu:
             {
@@ -254,7 +249,8 @@ void knobHandler(void *parameters)
                 displayClockSubmenu(nullptr);
                 break;
             case PixelFlushScreen:
-                switchScreen(MainScreen);
+                // Handle press for pixel flush screen (starts flush or returns to main)
+                handlePixelFlushKnobPress();
                 break;
             }
         }
@@ -265,10 +261,14 @@ void knobHandler(void *parameters)
             {
                 switchScreen(SettingsScreen);
             }
+            else if (currentScreen == PixelFlushScreen)
+            {
+                // Handle long press for pixel flush screen (cancel and return to main)
+                handlePixelFlushLongPress();
+            }
             else if (currentScreen == ModulesSubmenu ||
                      currentScreen == RGBLightingSubmenu ||
-                     currentScreen == ClockSubmenu ||
-                     currentScreen == PixelFlushScreen)
+                     currentScreen == ClockSubmenu)
             {
                 switchScreen(MainScreen);
             }
