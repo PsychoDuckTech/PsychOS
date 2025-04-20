@@ -373,3 +373,32 @@ void drawFrame(int x, int y, int width, int height, uint16_t color, int thicknes
         }
     }
 }
+
+// Help indicators drawing function for consistent help texts across screens
+void drawHelpIndicators(int yStartPosition, uint16_t textColor, bool showRotate, bool showPress, bool showLongPress)
+{
+    tft.setTextSize(1);
+    tft.setFont();
+    tft.setTextColor(textColor);
+    
+    int lineHeight = 8; // Space between lines
+    int currentY = yStartPosition;
+    const int leftMargin = 15; // Consistent left margin for all help text
+    
+    if (showRotate) {
+        tft.setCursor(leftMargin, currentY);
+        tft.print(ui_rotate_adjust);
+        currentY += lineHeight;
+    }
+    
+    if (showPress) {
+        tft.setCursor(leftMargin, currentY);
+        tft.print(ui_press_next);
+        currentY += lineHeight;
+    }
+    
+    if (showLongPress) {
+        tft.setCursor(leftMargin, currentY);
+        tft.print(ui_long_press_quit);
+    }
+}

@@ -104,16 +104,8 @@ void displayRGBSubmenu(void *parameters)
             }
         }
 
-        // Help text at the bottom of the screen
-        tft.setTextSize(1);
-        tft.setFont();
-        tft.setTextColor(MUTED_COLOR);
-        tft.setCursor(15, 250);
-        tft.print(ui_rotate_adjust);
-        tft.setCursor(15, 258);
-        tft.print(ui_press_next);
-        tft.setCursor(15, 266);
-        tft.print(ui_long_press_quit);
+        // Draw help indicators at the bottom of the screen
+        drawHelpIndicators(250, MUTED_COLOR);
 
         rgbState.needsRefresh = false;
     }

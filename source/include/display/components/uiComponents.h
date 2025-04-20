@@ -25,4 +25,7 @@ void drawSliderButtonWithText(const char *buttonText, const char *valueText, con
 // Footer drawing function for consistent footer across screens
 void drawFooter();
 
+// Help indicators drawing function for consistent help texts across screens
+void drawHelpIndicators(int yStartPosition = 250, uint16_t textColor = MUTED_COLOR, bool showRotate = true, bool showPress = true, bool showLongPress = true);
+
 void drawFrame(int x, int y, int width, int height, uint16_t color, int thickness = 1);

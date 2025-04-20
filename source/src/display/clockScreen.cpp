@@ -56,6 +56,9 @@ void displayClockSubmenu(void *parameters)
 
     // Draw footer
     drawFooter();
+    
+    // Draw help indicators
+    drawHelpIndicators(230, MUTED_COLOR);
 
     lastSelectedOption = settingsSelectedOption;
 }
