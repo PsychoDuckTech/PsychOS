@@ -21,24 +21,16 @@ void displayModulesSubmenu(void *parameters)
     static int previousKeyPresses = -1;
     static int previousRSSI = 0;
     static unsigned long lastTimeCheck = 0;
-    static unsigned long lastRSSICheck = 0;
     static unsigned long previousSeconds = 0;
 
     unsigned long currentMillis = millis();
     unsigned long currentSeconds = currentMillis / 1000;
 
-    // Check for periodic updates (every 100ms)
-    bool timeToUpdate = (currentMillis - lastTimeCheck) >= 100;
+    // Check for updates every second - this will handle both time and RSSI updates
+    bool timeToUpdate = (currentMillis - lastTimeCheck) >= 1000;
     if (timeToUpdate)
     {
         lastTimeCheck = currentMillis;
-    }
-
-    // Check RSSI every 500ms
-    bool timeToCheckRSSI = (currentMillis - lastRSSICheck) >= 500;
-    if (timeToCheckRSSI)
-    {
-        lastRSSICheck = currentMillis;
     }
 
     // Check if module is actually connected by querying BLE status
@@ -46,6 +38,7 @@ void displayModulesSubmenu(void *parameters)
     if (moduleConnectionStatus != actuallyConnected)
     {
         moduleConnectionStatus = actuallyConnected; // Update the global state
+        needsFullRedraw = true;                     // Force full redraw when connection state changes
     }
 
     // Find current stats to check for changes
@@ -59,9 +52,9 @@ void displayModulesSubmenu(void *parameters)
             if (moduleStats[i].address == currentAddress)
             {
                 currentStats = &moduleStats[i];
-                if (timeToCheckRSSI)
+                if (timeToUpdate)
                 {
-                    // Update RSSI periodically
+                    // Update RSSI once per second
                     currentStats->rssi = BLE.central().rssi();
                 }
                 break;
@@ -73,8 +66,8 @@ void displayModulesSubmenu(void *parameters)
     if (currentStats)
     {
         statsChanged = (currentStats->keyPresses != previousKeyPresses) ||
-                       (currentStats->rssi != previousRSSI) ||
-                       (currentSeconds != previousSeconds); // Check if time has changed
+                       (timeToUpdate && ((currentStats->rssi != previousRSSI) ||
+                                         (currentSeconds != previousSeconds))); // Only check RSSI and time changes during update interval
 
         if (statsChanged)
         {
@@ -86,8 +79,8 @@ void displayModulesSubmenu(void *parameters)
 
     bool stateChanged = (moduleConnectionStatus != previousConnectionStatus) ||
                         (moduleConnectionStatus && strcmp(connectedModuleName, previousModuleName) != 0) ||
-                        statsChanged ||
-                        timeToUpdate; // Force refresh on periodic updates
+                        statsChanged;
+
     bool shouldRefresh = needsFullRedraw || stateChanged;
 
     if (shouldRefresh)
@@ -109,20 +102,76 @@ void displayModulesSubmenu(void *parameters)
 
         if (!moduleConnectionStatus)
         {
-            drawFrame(15, 80, 210, 120, ERROR_COLOR, 1);
-            tft.drawBitmap(107, 95, iconBleDisconnected, 14, 15,
-                           ERROR_COLOR, BG_COLOR);
+            // Main disconnection info box (full width)
+            drawFrame(15, 80, 210, 70, ERROR_COLOR, 1);
 
+            // Draw BLE icon
+            tft.drawBitmap(25, 90, iconBleDisconnected, 14, 15, ERROR_COLOR, BG_COLOR);
+
+            // Display "No Module" text centered
             tft.setTextSize(2);
             tft.setFont();
             tft.setTextColor(ERROR_COLOR);
-            tft.setCursor(65, 125);
+            int16_t x1, y1;
+            uint16_t w, h;
+            tft.getTextBounds(ui_no_module, 0, 0, &x1, &y1, &w, &h);
+            int nameX = 15 + (210 - w) / 2;
+            tft.setCursor(nameX, 95);
             tft.print(ui_no_module);
 
+            // Center the status message
             tft.setTextSize(1);
+            tft.getTextBounds(ui_no_module_desc, 0, 0, &x1, &y1, &w, &h);
+            int textX = 15 + (210 - w) / 2;
+            tft.setCursor(textX, 125);
             tft.setTextColor(MUTED_COLOR);
-            tft.setCursor(35, 150);
             tft.print(ui_no_module_desc);
+
+            // Two boxes side by side for tips
+            // Left box - Search Status
+            drawFrame(15, 160, 100, 60, ERROR_COLOR, 0);
+            tft.setTextSize(1);
+
+            // Center "Status" text
+            tft.getTextBounds("Status", 0, 0, &x1, &y1, &w, &h);
+            textX = 15 + (100 - w) / 2;
+            tft.setCursor(textX, 175);
+            tft.setTextColor(TEXT_COLOR);
+            tft.print("Status");
+
+            // Center status text
+            const char *searchingText = "Searching...";
+            tft.getTextBounds(searchingText, 0, 0, &x1, &y1, &w, &h);
+            textX = 15 + (100 - w) / 2;
+            tft.setCursor(textX, 195);
+            tft.setTextColor(ERROR_COLOR);
+            tft.print(searchingText);
+
+            // Right box - Help
+            drawFrame(125, 160, 100, 60, ERROR_COLOR, 0);
+
+            // Center "Help" text
+            tft.getTextBounds("Help", 0, 0, &x1, &y1, &w, &h);
+            textX = 125 + (100 - w) / 2;
+            tft.setCursor(textX, 175);
+            tft.setTextColor(TEXT_COLOR);
+            tft.print("Help");
+
+            // Center help text
+            const char *helpText = "Press any key";
+            tft.getTextBounds(helpText, 0, 0, &x1, &y1, &w, &h);
+            textX = 125 + (100 - w) / 2;
+            tft.setCursor(textX, 195);
+            tft.setTextColor(ERROR_COLOR);
+            tft.print(helpText);
+
+            // Connection status
+            String statusText = "Status: Disconnected";
+            tft.getTextBounds(statusText.c_str(), 0, 0, &x1, &y1, &w, &h);
+            textX = 15 + (210 - w) / 2;
+            tft.setCursor(textX, 235);
+            tft.setTextColor(ERROR_COLOR);
+            tft.print(statusText);
         }
         else
         {
