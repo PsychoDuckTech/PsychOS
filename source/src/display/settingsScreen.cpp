@@ -38,10 +38,21 @@ void displaySettingsScreen(void *parameters)
     const uint8_t *icons[] = {iconBleConnectedBig, iconLightBulb, iconTranslation, nullptr};
     const int iconWidths[] = {14, 18, 22, 22, 0};
     const int iconHeights[] = {22, 23, 22, 22, 0};
+    
+    // First, draw all non-selected items
     for (int i = 0; i < 4; i++)
     {
-        bool selected = (i == settingsSelectedOption);
-        int baseY = MENU_START_Y + (i * ITEM_SPACING);
-        drawButton(menuItems[i], icons[i], iconWidths[i], iconHeights[i], true, baseY, selected);
+        if (i != settingsSelectedOption) {
+            int baseY = MENU_START_Y + (i * ITEM_SPACING);
+            drawButton(menuItems[i], icons[i], iconWidths[i], iconHeights[i], true, baseY, false);
+        }
     }
+    
+    // Then, draw the selected item last for perceived performance improvement
+    int baseY = MENU_START_Y + (settingsSelectedOption * ITEM_SPACING);
+    drawButton(menuItems[settingsSelectedOption], 
+               icons[settingsSelectedOption], 
+               iconWidths[settingsSelectedOption], 
+               iconHeights[settingsSelectedOption], 
+               true, baseY, true);
 }
