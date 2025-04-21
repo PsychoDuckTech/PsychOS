@@ -22,7 +22,7 @@
 #include "tasks/wpmCounter.h"
 
 // mediaHandler
-// #include "tasks/mediaHandler.cpp"
+#include "tasks/mediaHandler.h"
 
 // BLEHandler
 #include "tasks/BLEHandler.h"

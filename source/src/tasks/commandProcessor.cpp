@@ -2,6 +2,7 @@
 #include "tasks/clock.h"
 #include "globals.h"
 #include "utils/benchmark.h"
+#include "tasks/mediaHandler.h"
 
 bool capsLockStatus = false;
 bool connectionStatus = false;
@@ -127,6 +128,23 @@ void processCommand(String data)
             }
             return; // Command handled
         }
+    }
+
+    // Special handling for text-based commands
+    if (command == "songTitle")
+    {
+        if (isQuery)
+        {
+            Serial.println("Current song title: " + String(currentSongTitle));
+        }
+        else
+        {
+            // For songTitle, we need to grab the entire rest of the command after the first space
+            String songTitle = data.substring(spaceIndex + 1);
+            updateSongTitle(songTitle.c_str());
+            Serial.println("Song title updated to: " + songTitle);
+        }
+        return; // Command handled
     }
 
     Serial.println("Unknown command: " + command);

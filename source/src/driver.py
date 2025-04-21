@@ -2,10 +2,20 @@ import time
 import serial
 import os
 from datetime import datetime
-import dbus
+import subprocess
+
+# Try to import dbus for media player detection
+HAS_DBUS = False
+try:
+    import dbus
+    HAS_DBUS = True
+except ImportError:
+    print("Warning: python-dbus not installed. Media player detection will be limited.")
+    print("To install: sudo apt-get install python3-dbus")
 
 class ESP32Driver:
-    SLEEP_DURATION = 0.4
+    SLEEP_DURATION = 0.4  # General loop interval
+    MEDIA_CHECK_INTERVAL = 5  # Check media every 5 seconds
 
     def __init__(self, port, baudrate=115200):
         self.port = port
@@ -14,6 +24,8 @@ class ESP32Driver:
         self.caps_lock_status = self.get_caps_lock_status()
         self.connection_status = False
         self.last_time_update = None
+        self.last_media_check = time.time()
+        self.current_media = None  # Cache for current media
         self.connect_to_serial()
 
     def connect_to_serial(self):
@@ -22,10 +34,10 @@ class ESP32Driver:
                 self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
                 print("Serial connection established.")
                 self.update_connection_status(True)
-                self.update_time_from_system()  # Update time once during initialization
+                self.update_time_from_system()
                 return
             except serial.SerialException as e:
-                print(f"Failed to connect to serial port: {e}. Retrying in 1 seconds...")
+                print(f"Failed to connect to serial port: {e}. Retrying in 1 second...")
                 time.sleep(1)
 
     def send_command(self, command):
@@ -48,7 +60,7 @@ class ESP32Driver:
         command = f"{variable}?"
         response = self.send_command(command)
         print(response)
-        return response.split()[-1]  # Extract the value from the response
+        return response.split()[-1]
 
     def update_caps_lock_status(self):
         new_status = self.get_caps_lock_status()
@@ -73,22 +85,74 @@ class ESP32Driver:
             print("System time has changed, updating ESP32 time...")
             self.update_time_from_system()
 
-    def get_playing_media(self):
+    def update_song_title(self, title):
         try:
-            session_bus = dbus.SessionBus()
-            players = [service for service in session_bus.list_names() if service.startswith('org.mpris.MediaPlayer2.')]
-            for player in players:
-                proxy = session_bus.get_object(player, '/org/mpris/MediaPlayer2')
-                interface = dbus.Interface(proxy, 'org.freedesktop.DBus.Properties')
-                status = interface.Get('org.mpris.MediaPlayer2.Player', 'PlaybackStatus')
-                if status == "Playing":
-                    metadata = interface.Get('org.mpris.MediaPlayer2.Player', 'Metadata')
-                    title = metadata.get('xesam:title', 'Unknown Title')
-                    artist = metadata.get('xesam:artist', ['Unknown Artist'])[0]
-                    return f"{artist} - {title}"
-            return "No Media"
+            max_title_length = 30
+            if len(title) > max_title_length:
+                title = title[:max_title_length-3] + "..."
+            command = f"songTitle {title}"
+            response = self.send_command(command)
+            print(f"Updated song title: '{title}'")
+            return response
         except Exception as e:
-            return f"Error: {e}"
+            print(f"Failed to update song title: {e}")
+
+    def get_playing_media(self):
+        if HAS_DBUS:
+            try:
+                bus = dbus.SessionBus()
+                players = [s for s in bus.list_names() if s.startswith('org.mpris.MediaPlayer2.')]
+                print(f"Found players: {players}")
+                for player in players:
+                    print(f"Checking player: {player}")
+                    try:
+                        proxy = bus.get_object(player, "/org/mpris/MediaPlayer2")
+                        properties = dbus.Interface(proxy, "org.freedesktop.DBus.Properties")
+                        playback_status = properties.Get("org.mpris.MediaPlayer2.Player", "PlaybackStatus")
+                        print(f"Playback status for {player}: {playback_status}")
+                        if playback_status != "Playing":
+                            continue
+                        metadata = properties.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+                        print(f"Metadata for {player}: {metadata}")
+                        title = str(metadata.get("xesam:title", "Unknown Title"))
+                        artist_value = metadata.get("xesam:artist", ["Unknown Artist"])
+                        artist = str(artist_value[0]) if isinstance(artist_value, list) and artist_value else str(artist_value)
+                        media_info = f"{title} - {artist}"
+                        print(f"Found playing media: {media_info}")
+                        return media_info
+                    except Exception as e:
+                        print(f"Error getting info from {player}: {e}")
+                        continue
+            except Exception as e:
+                print(f"Error with dbus media detection: {e}")
+
+        # Fallback to playerctl
+        try:
+            result = subprocess.run(['which', 'playerctl'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if result.returncode == 0:
+                status = subprocess.run(['playerctl', 'status'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                if status.returncode == 0 and status.stdout.strip() == "Playing":
+                    title = subprocess.run(['playerctl', 'metadata', 'title'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    artist = subprocess.run(['playerctl', 'metadata', 'artist'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    if title.returncode == 0 and title.stdout.strip():
+                        title_text = title.stdout.strip()
+                        artist_text = artist.stdout.strip() if artist.returncode == 0 else "Unknown Artist"
+                        media_info = f"{title_text} - {artist_text}"
+                        print(f"Found playing media via playerctl: {media_info}")
+                        return media_info
+        except Exception as e:
+            print(f"Error with playerctl fallback: {e}")
+        print("No active media players found")
+        return None
+
+    def update_media_information(self):
+        try:
+            media_info = self.get_playing_media()
+            if media_info != self.current_media:
+                self.current_media = media_info
+                self.update_song_title(media_info if media_info else "No media playing")
+        except Exception as e:
+            print(f"Error updating media information: {e}")
 
     @staticmethod
     def get_caps_lock_status():
@@ -120,16 +184,19 @@ class ESP32Driver:
     def run_forever(self):
         try:
             while True:
+                current_time = time.time()
+                if current_time - self.last_media_check >= self.MEDIA_CHECK_INTERVAL:
+                    self.update_media_information()
+                    self.last_media_check = current_time
                 self.handle_reconnection()
                 self.check_and_update_time()
                 self.update_caps_lock_status()
-                time.sleep(self.SLEEP_DURATION)  # Check every .4 seconds
+                time.sleep(self.SLEEP_DURATION)
         except KeyboardInterrupt:
             print("Exiting driver loop...")
         finally:
             self.close()
 
-# Example usage:
 if __name__ == "__main__":
-    esp = ESP32Driver(port="/dev/ttyACM1")
+    esp = ESP32Driver(port="/dev/ttyACM0")
     esp.run_forever()

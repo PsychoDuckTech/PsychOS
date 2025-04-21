@@ -1,4 +1,25 @@
+#include "tasks/mediaHandler.h"
 #include <Arduino.h>
-#include "globals.h"
 
-bool mediaPlayingName = "No media playing"; // Name of the media currently playing
+// Initialize the global variables
+char currentSongTitle[MAX_MEDIA_TITLE_LENGTH] = "No media playing";
+char defaultSongTitle[MAX_MEDIA_TITLE_LENGTH] = "No media playing";
+
+// Function to update the current song title
+void updateSongTitle(const char *newTitle)
+{
+    // Copy the new title to the current song title, ensuring it won't overflow
+    strncpy(currentSongTitle, newTitle, MAX_MEDIA_TITLE_LENGTH - 1);
+    currentSongTitle[MAX_MEDIA_TITLE_LENGTH - 1] = '\0'; // Ensure null-terminated
+
+    // Signal that we need to refresh the main screen
+    extern bool needsFullRedraw;
+    needsFullRedraw = true;
+}
+
+// Initialize the media handler
+void initMediaHandler()
+{
+    // Initialize with default title
+    updateSongTitle(defaultSongTitle);
+}

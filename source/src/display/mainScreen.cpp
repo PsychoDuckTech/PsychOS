@@ -7,6 +7,7 @@
 #include "translations.h"
 #include "display/components/uiComponents.h"
 #include "tasks/wpmCounter.h"
+#include "tasks/mediaHandler.h"
 
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
@@ -151,7 +152,7 @@ void displayDemo(void *parameters)
     tft.print(ui_now_playing);
 
     tft.setCursor(21, 253);
-    tft.print(ui_song_title);
+    tft.print(currentSongTitle); // Use the dynamic song title instead of the static translation
 
     tft.drawBitmap(200, 241, iconMusicPlay, 20, 18, TEXT_COLOR);
 }

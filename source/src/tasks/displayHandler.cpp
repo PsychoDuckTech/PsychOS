@@ -189,6 +189,11 @@ void displayHandler(void *parameters)
                     displayWPM(parameters);
                     WPMCounter::updated = false;
                 }
+                if (needsFullRedraw)
+                {
+                    displayDemo(parameters);
+                    needsFullRedraw = false;
+                }
             }
             break;
 
