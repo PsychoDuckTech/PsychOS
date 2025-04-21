@@ -161,7 +161,7 @@ void displayModulesSubmenu(void *parameters)
             tft.print("Help");
 
             // Center help text
-            const char *helpText = "Press any key";
+            const char *helpText = "Contact us";
             tft.getTextBounds(helpText, 0, 0, &x1, &y1, &w, &h);
             textX = 125 + (100 - w) / 2;
             tft.setCursor(textX, 195);
@@ -231,11 +231,45 @@ void displayModulesSubmenu(void *parameters)
                 tft.getTextBounds(connText.c_str(), 0, 0, &x1, &y1, &w, &h);
                 int textX = 15 + (210 - w) / 2;
 
-                tft.setCursor(textX, 125);
+                tft.setCursor(textX, 120);
                 tft.setTextColor(TEXT_COLOR);
                 tft.print("Connected: ");
                 tft.setTextColor(HIGHLIGHT_COLOR);
                 tft.print(timeStr);
+
+                // Display estimated delay based on signal strength
+                float estimatedDelay = calculateDelayFromRSSI(currentStats->rssi);
+                char delayBuffer[40];
+                String delayText;
+                uint16_t delayColor;
+
+                if (estimatedDelay < 10)
+                {
+                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Great!)";
+                    delayColor = HIGHLIGHT_COLOR;
+                }
+                else if (estimatedDelay < 20)
+                {
+                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Good)";
+                    delayColor = SUCCESS_COLOR;
+                }
+                else if (estimatedDelay < 50)
+                {
+                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (OK)";
+                    delayColor = MUTED_COLOR;
+                }
+                else
+                {
+                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Poor)";
+                    delayColor = ERROR_COLOR;
+                }
+
+                // Draw the delay estimation text right below the connection time
+                tft.getTextBounds(delayText.c_str(), 0, 0, &x1, &y1, &w, &h);
+                textX = 15 + (210 - w) / 2;
+                tft.setCursor(textX, 130);
+                tft.setTextColor(delayColor);
+                tft.print(delayText);
 
                 // Two boxes side by side for stats
                 // Left box - Key Presses
@@ -282,40 +316,6 @@ void displayModulesSubmenu(void *parameters)
                 tft.setCursor(textX, 235);
                 tft.setTextColor(SUCCESS_COLOR);
                 tft.print(statusText);
-
-                // Estimated Key Click Delay based on RSSI
-                float estimatedDelay = calculateDelayFromRSSI(currentStats->rssi);
-                String delayText;
-                uint16_t delayColor;
-
-                // Format the delay text and color based on severity
-                if (estimatedDelay < 10)
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Great!)";
-                    delayColor = HIGHLIGHT_COLOR; // Great connection
-                }
-                else if (estimatedDelay < 20)
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Good)";
-                    delayColor = 0x07E0; // Green
-                }
-                else if (estimatedDelay < 50)
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (OK)";
-                    delayColor = 0xFFE0; // Yellow
-                }
-                else
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Poor)";
-                    delayColor = 0xF800; // Red
-                }
-
-                // Draw the estimated delay text
-                tft.getTextBounds(delayText.c_str(), 0, 0, &x1, &y1, &w, &h);
-                textX = 15 + (210 - w) / 2;
-                tft.setCursor(textX, 247);
-                tft.setTextColor(delayColor);
-                tft.print(delayText);
             }
         }
 
