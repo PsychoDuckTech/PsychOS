@@ -87,9 +87,9 @@ class ESP32Driver:
 
     def update_song_title(self, title):
         try:
-            max_title_length = 30
+            max_title_length = 14
             if len(title) > max_title_length:
-                title = title[:max_title_length-3] + "..."
+                title = title[:max_title_length-1] + "."
             command = f"songTitle {title}"
             response = self.send_command(command)
             print(f"Updated song title: '{title}'")
@@ -150,7 +150,7 @@ class ESP32Driver:
             media_info = self.get_playing_media()
             if media_info != self.current_media:
                 self.current_media = media_info
-                self.update_song_title(media_info if media_info else "No media playing")
+                self.update_song_title(media_info if media_info else "No media")
         except Exception as e:
             print(f"Error updating media information: {e}")
 

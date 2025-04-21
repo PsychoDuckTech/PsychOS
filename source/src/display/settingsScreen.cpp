@@ -26,12 +26,16 @@ void drawSettingsStatic(void *parameters)
 
 void displaySettingsScreen(void *parameters)
 {
-    if (needsFullRedraw)
+    if (!needsFullRedraw)
     {
         drawSettingsStatic(parameters);
         needsFullRedraw = false;
     }
-    tft.fillRect(4, 60, 232, 215, BG_COLOR);
+    else
+    {
+        // Only clear the menu area, not the title and footer
+        tft.fillRect(4, 60, 232, 215, BG_COLOR);
+    }
     const int MENU_START_Y = 62;
     const int ITEM_SPACING = 54;
     const char *menuItems[] = {ui_modules, ui_underglow, ui_clock, ui_pixel_flush};

@@ -2,8 +2,8 @@
 #include <Arduino.h>
 
 // Initialize the global variables
-char currentSongTitle[MAX_MEDIA_TITLE_LENGTH] = "No media playing";
-char defaultSongTitle[MAX_MEDIA_TITLE_LENGTH] = "No media playing";
+char currentSongTitle[MAX_MEDIA_TITLE_LENGTH] = "No media";
+char defaultSongTitle[MAX_MEDIA_TITLE_LENGTH] = "No media";
 
 // Function to update the current song title
 void updateSongTitle(const char *newTitle)
