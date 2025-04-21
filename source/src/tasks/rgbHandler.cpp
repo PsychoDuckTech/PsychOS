@@ -114,41 +114,49 @@ static void applyCurrentEffect()
         static float colorTransitionProgress = 0.0f;
         static int transitionCyclesTotal = 3; // Number of breath cycles for full color transition
         static int currentTransitionCycle = 0;
-        
+
         // Handle raw speed value directly
         uint16_t speedValue = currentEffect.speed;
-        
+
         // Map speed from 1-255 to breath cycle time:
         // Speed 1 (slowest) = 8000ms cycle time
         // Speed 255 (fastest) = 1000ms cycle time
         uint16_t cycleTime = map(speedValue, 1, 255, 8000, 1000);
-        
+
         uint32_t now = millis();
         uint16_t updateInterval = 16; // ~60fps for smooth animation
-        
-        if (now - lastUpdate >= updateInterval) {
+
+        if (now - lastUpdate >= updateInterval)
+        {
             lastUpdate = now;
-            
+
             // Calculate movement step based on cycle time
             float stepSize = (updateInterval / (float)cycleTime) * 2.0f; // *2 for complete cycle
-            
-            if (increasing) {
+
+            if (increasing)
+            {
                 brightness += stepSize;
-                if (brightness >= 1.0f) {
+                if (brightness >= 1.0f)
+                {
                     brightness = 1.0f;
                     increasing = false;
                 }
-            } else {
+            }
+            else
+            {
                 brightness -= stepSize;
-                if (brightness <= 0.0f) {
+                if (brightness <= 0.0f)
+                {
                     brightness = 0.0f;
                     increasing = true;
-                    
+
                     // At the bottom of each breath cycle
-                    if (numColors > 1) {
+                    if (numColors > 1)
+                    {
                         // Update transition progress
                         currentTransitionCycle++;
-                        if (currentTransitionCycle >= transitionCyclesTotal) {
+                        if (currentTransitionCycle >= transitionCyclesTotal)
+                        {
                             // Complete color transition
                             currentColorIndex = nextColorIndex;
                             nextColorIndex = (currentColorIndex + 1) % numColors;
@@ -159,29 +167,32 @@ static void applyCurrentEffect()
                     }
                 }
             }
-            
+
             // Use sine-based easing for more natural breathing
-            float easedBrightness = (sin(brightness * M_PI - M_PI/2) + 1.0f) / 2.0f;
-            
+            float easedBrightness = (sin(brightness * M_PI - M_PI / 2) + 1.0f) / 2.0f;
+
             // Apply gamma correction for perceptual brightness
             float gammaCorrectedBrightness = pow(easedBrightness, 2.2f);
-            
+
             // Blend between current and next color based on transition progress
             CRGB currentColor, finalColor;
-            
-            if (numColors <= 1) {
+
+            if (numColors <= 1)
+            {
                 // Only one color defined, use it directly
                 finalColor = effectColors[0];
-            } else {
+            }
+            else
+            {
                 // Blend between current and next colors
-                currentColor = effectColors[currentColorIndex]; 
+                currentColor = effectColors[currentColorIndex];
                 CRGB targetColor = effectColors[nextColorIndex];
                 finalColor = blend(currentColor, targetColor, colorTransitionProgress * 255);
             }
-            
+
             // Scale by brightness
             finalColor.nscale8_video(gammaCorrectedBrightness * 255);
-            
+
             fill_solid(leds, NUM_LEDS, finalColor);
         }
     }
