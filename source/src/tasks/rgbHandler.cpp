@@ -106,36 +106,84 @@ static void applyCurrentEffect()
     }
     else if (currentEffect.effect == RGB_EFFECT_BREATHE)
     {
-        static float phase = 0.0f;
-        const float speed = 0.01f; // Adjust this value to control breathing speed
-
-        // Calculate brightness using a sine wave (ranges from 0 to 1)
-        float brightness = (sin(phase * 2 * PI) + 1) / 2;
-
-        // Cycle through colors
-        static float colorPhase = 0.0f;
-        float colorPosition = fmod(colorPhase, 1.0f);
-        int colorIndex1 = floor(colorPosition * (numColors - 1));
-        int colorIndex2 = ceil(colorPosition * (numColors - 1));
-        float ratio = (colorPosition * (numColors - 1)) - colorIndex1;
-
-        // Blend between two colors to get the base color
-        CRGB baseColor = blend(effectColors[colorIndex1 % numColors], effectColors[colorIndex2 % numColors], ratio * 255);
-
-        // Apply brightness scaling
-        CRGB dimmedColor = baseColor;
-        dimmedColor.nscale8_video(brightness * 255);
-
-        // Set all LEDs to the dimmed color
-        fill_solid(leds, NUM_LEDS, dimmedColor);
-
-        // Update phases
-        phase += speed;
-        if (phase >= 1.0f)
-            phase -= 1.0f;
-        colorPhase += speed / 10.0f; // Slower color transition
-        if (colorPhase >= 1.0f)
-            colorPhase -= 1.0f;
+        static uint32_t lastUpdate = 0;
+        static float brightness = 0.0f;
+        static bool increasing = true;
+        static uint8_t currentColorIndex = 0;
+        static uint8_t nextColorIndex = 1;
+        static float colorTransitionProgress = 0.0f;
+        static int transitionCyclesTotal = 3; // Number of breath cycles for full color transition
+        static int currentTransitionCycle = 0;
+        
+        // Handle raw speed value directly
+        uint16_t speedValue = currentEffect.speed;
+        
+        // Map speed from 1-255 to breath cycle time:
+        // Speed 1 (slowest) = 8000ms cycle time
+        // Speed 255 (fastest) = 1000ms cycle time
+        uint16_t cycleTime = map(speedValue, 1, 255, 8000, 1000);
+        
+        uint32_t now = millis();
+        uint16_t updateInterval = 16; // ~60fps for smooth animation
+        
+        if (now - lastUpdate >= updateInterval) {
+            lastUpdate = now;
+            
+            // Calculate movement step based on cycle time
+            float stepSize = (updateInterval / (float)cycleTime) * 2.0f; // *2 for complete cycle
+            
+            if (increasing) {
+                brightness += stepSize;
+                if (brightness >= 1.0f) {
+                    brightness = 1.0f;
+                    increasing = false;
+                }
+            } else {
+                brightness -= stepSize;
+                if (brightness <= 0.0f) {
+                    brightness = 0.0f;
+                    increasing = true;
+                    
+                    // At the bottom of each breath cycle
+                    if (numColors > 1) {
+                        // Update transition progress
+                        currentTransitionCycle++;
+                        if (currentTransitionCycle >= transitionCyclesTotal) {
+                            // Complete color transition
+                            currentColorIndex = nextColorIndex;
+                            nextColorIndex = (currentColorIndex + 1) % numColors;
+                            currentTransitionCycle = 0;
+                        }
+                        // Calculate transition progress (0.0 to 1.0)
+                        colorTransitionProgress = (float)currentTransitionCycle / transitionCyclesTotal;
+                    }
+                }
+            }
+            
+            // Use sine-based easing for more natural breathing
+            float easedBrightness = (sin(brightness * M_PI - M_PI/2) + 1.0f) / 2.0f;
+            
+            // Apply gamma correction for perceptual brightness
+            float gammaCorrectedBrightness = pow(easedBrightness, 2.2f);
+            
+            // Blend between current and next color based on transition progress
+            CRGB currentColor, finalColor;
+            
+            if (numColors <= 1) {
+                // Only one color defined, use it directly
+                finalColor = effectColors[0];
+            } else {
+                // Blend between current and next colors
+                currentColor = effectColors[currentColorIndex]; 
+                CRGB targetColor = effectColors[nextColorIndex];
+                finalColor = blend(currentColor, targetColor, colorTransitionProgress * 255);
+            }
+            
+            // Scale by brightness
+            finalColor.nscale8_video(gammaCorrectedBrightness * 255);
+            
+            fill_solid(leds, NUM_LEDS, finalColor);
+        }
     }
     else if (currentEffect.effect == RGB_EFFECT_RUNNER)
     {
