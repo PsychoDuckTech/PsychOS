@@ -56,6 +56,9 @@ void handleReceivedKeypress(const uint8_t *data, int length)
     if (length < 2)
         return;
 
+    // Update lastDataReceivedTime when we get data
+    lastDataReceivedTime = millis();
+
     uint8_t keyCode = data[0];
     bool isPressed = data[1] == 1;
 
@@ -178,6 +181,7 @@ void BLEHandler(void *parameter)
                     {
                         if (psychoCharacteristic.written())
                         {
+                            lastDataReceivedTime = millis(); // Update timestamp when data is received
                             uint8_t data[2];
                             int length = psychoCharacteristic.readValue(data, 2);
                             handleReceivedKeypress(data, length);

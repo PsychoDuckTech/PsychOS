@@ -40,12 +40,35 @@ void displayTopBar(void *parameters)
         lastToggleTime = millis();
     }
 
-    tft.drawBitmap(11, 9, connectionStatus ? (toggleDiscIcon ? iconDisc1 : iconDisc2) : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
-    tft.drawBitmap(moduleConnectionStatus ? 35 : 36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, moduleConnectionStatus ? SUCCESS_COLOR : MUTED_COLOR, BG_COLOR);
+    // Get current time to check for recent data reception
+    unsigned long currentTime = millis();
+    uint16_t iconColor;
+
+    if (moduleConnectionStatus)
+    {
+        // If data was received in the last 100ms, show highlight color
+        if (currentTime - lastDataReceivedTime < 100)
+        {
+            iconColor = HIGHLIGHT_COLOR; // Flash with highlight color for data reception
+        }
+        else
+        {
+            iconColor = SUCCESS_COLOR; // Normal connected color
+        }
+    }
+    else
+    {
+        iconColor = MUTED_COLOR; // Disconnected color
+    }
+
+    tft.drawBitmap(moduleConnectionStatus ? 35 : 36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, iconColor, BG_COLOR);
     if (!moduleConnectionStatus)
     {
         tft.fillRect(35, 9, 1, 15, BG_COLOR);
     }
+
+    // Draw the connection status icon (separate from BLE)
+    tft.drawBitmap(11, 9, connectionStatus ? (toggleDiscIcon ? iconDisc1 : iconDisc2) : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
 
     tft.setTextSize(1);
     tft.setTextColor(TEXT_COLOR);

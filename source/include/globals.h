@@ -33,6 +33,7 @@ extern const char *connectedModuleName;
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
 extern bool moduleConnectionStatus;
+extern unsigned long lastDataReceivedTime; // Timestamp of last data reception
 extern bool capsLockStatus;
 extern int hours;
 extern int minutes;

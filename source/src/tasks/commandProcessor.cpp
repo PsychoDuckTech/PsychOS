@@ -5,7 +5,6 @@
 
 bool capsLockStatus = false;
 bool connectionStatus = false;
-bool moduleConnectionStatus = false;
 
 // Define update and get functions for each variable
 void updateHours(int value)

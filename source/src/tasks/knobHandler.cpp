@@ -232,7 +232,7 @@ void knobHandler(void *parameters)
                     switchScreen(RGBLightingSubmenu);
                     break;
                 case 2:
-                    settingsSelectedOption = 0;  // Reset selection before entering submenu
+                    settingsSelectedOption = 0; // Reset selection before entering submenu
                     switchScreen(ClockSubmenu);
                     break;
                 case 3:
