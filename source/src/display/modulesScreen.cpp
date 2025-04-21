@@ -25,6 +25,7 @@ void displayModulesSubmenu(void *parameters)
     static int previousRSSI = 0;
     static unsigned long lastTimeCheck = 0;
     static unsigned long previousSeconds = 0;
+    static bool staticElementsDrawn = false;
 
     unsigned long currentMillis = millis();
     unsigned long currentSeconds = currentMillis / 1000;
@@ -42,6 +43,7 @@ void displayModulesSubmenu(void *parameters)
     {
         moduleConnectionStatus = actuallyConnected; // Update the global state
         needsFullRedraw = true;                     // Force full redraw when connection state changes
+        staticElementsDrawn = false;                // Force static elements to be redrawn
     }
 
     // Find current stats to check for changes
@@ -81,30 +83,39 @@ void displayModulesSubmenu(void *parameters)
     }
 
     bool stateChanged = (moduleConnectionStatus != previousConnectionStatus) ||
-                        (moduleConnectionStatus && strcmp(connectedModuleName, previousModuleName) != 0) ||
-                        statsChanged;
+                        (moduleConnectionStatus && strcmp(connectedModuleName, previousModuleName) != 0);
 
     bool shouldRefresh = needsFullRedraw || stateChanged;
+    bool shouldUpdateDynamicContent = shouldRefresh || statsChanged;
 
-    if (shouldRefresh)
+    // Handle full screen redraw if necessary
+    if (needsFullRedraw)
     {
-        if (needsFullRedraw)
-        {
-            tft.fillScreen(BG_COLOR);
-            drawScreenTitle(ui_modules);
-            needsFullRedraw = false;
-        }
+        tft.fillScreen(BG_COLOR);
+        drawScreenTitle(ui_modules);
+        staticElementsDrawn = false; // Force static elements to be redrawn
+        needsFullRedraw = false;
+    }
 
-        tft.fillRect(4, 60, 232, 215, BG_COLOR);
-
+    // Update connection status variables
+    if (stateChanged)
+    {
         previousConnectionStatus = moduleConnectionStatus;
         if (moduleConnectionStatus)
         {
             previousModuleName = connectedModuleName;
         }
+        staticElementsDrawn = false; // Force static elements to be redrawn when state changes
+    }
 
-        if (!moduleConnectionStatus)
+    // DISCONNECTED STATE RENDERING
+    if (!moduleConnectionStatus)
+    {
+        // Draw static elements (frames, titles, icons) only when needed
+        if (!staticElementsDrawn)
         {
+            tft.fillRect(4, 60, 232, 215, BG_COLOR);
+
             // Main disconnection info box (full width)
             drawFrame(15, 80, 210, 70, ERROR_COLOR, 1);
 
@@ -142,14 +153,6 @@ void displayModulesSubmenu(void *parameters)
             tft.setTextColor(TEXT_COLOR);
             tft.print("Status");
 
-            // Center status text
-            const char *searchingText = "Searching...";
-            tft.getTextBounds(searchingText, 0, 0, &x1, &y1, &w, &h);
-            textX = 15 + (100 - w) / 2;
-            tft.setCursor(textX, 195);
-            tft.setTextColor(ERROR_COLOR);
-            tft.print(searchingText);
-
             // Right box - Help
             drawFrame(125, 160, 100, 60, ERROR_COLOR, 0);
 
@@ -159,6 +162,37 @@ void displayModulesSubmenu(void *parameters)
             tft.setCursor(textX, 175);
             tft.setTextColor(TEXT_COLOR);
             tft.print("Help");
+
+            // Draw help text
+            tft.setTextSize(1);
+            tft.setTextColor(MUTED_COLOR);
+            tft.setCursor(15, 250);
+            tft.print(ui_long_press_quit);
+
+            // Draw footer
+            drawFooter();
+
+            staticElementsDrawn = true;
+        }
+
+        // Dynamic content - always updated when refresh is needed
+        if (shouldUpdateDynamicContent)
+        {
+            // Clear the dynamic text areas only (inset by 15% from each side)
+            tft.fillRect(30, 195, 70, 15, BG_COLOR);  // Status text area (inside left box)
+            tft.fillRect(140, 195, 70, 15, BG_COLOR); // Help text area (inside right box)
+            tft.fillRect(45, 235, 150, 15, BG_COLOR); // Connection status area
+
+            // Center status text
+            const char *searchingText = "Searching...";
+            tft.setTextSize(1);
+            int16_t x1, y1;
+            uint16_t w, h;
+            tft.getTextBounds(searchingText, 0, 0, &x1, &y1, &w, &h);
+            int textX = 15 + (100 - w) / 2;
+            tft.setCursor(textX, 195);
+            tft.setTextColor(ERROR_COLOR);
+            tft.print(searchingText);
 
             // Center help text
             const char *helpText = "Contact us";
@@ -176,26 +210,32 @@ void displayModulesSubmenu(void *parameters)
             tft.setTextColor(ERROR_COLOR);
             tft.print(statusText);
         }
-        else
+    }
+    // CONNECTED STATE RENDERING
+    else
+    {
+        // Find the stats for the current module
+        ModuleStat *currentStats = nullptr;
+        String currentAddress = BLE.connected() ? BLE.central().address() : "";
+        for (int i = 0; i < numModules; i++)
         {
-            // Find the stats for the current module
-            ModuleStat *currentStats = nullptr;
-            String currentAddress = BLE.connected() ? BLE.central().address() : "";
-            for (int i = 0; i < numModules; i++)
+            if (moduleStats[i].address == currentAddress)
             {
-                if (moduleStats[i].address == currentAddress)
-                {
-                    currentStats = &moduleStats[i];
-                    break;
-                }
+                currentStats = &moduleStats[i];
+                break;
             }
+        }
+
+        // Only draw static elements when needed
+        if (!staticElementsDrawn)
+        {
+            tft.fillRect(4, 60, 232, 215, BG_COLOR);
 
             // Main connection info box (full width)
             drawFrame(15, 80, 210, 70, SUCCESS_COLOR, 1);
 
             // Draw BLE icon
-            tft.drawBitmap(25, 90, iconBleConnected, 14, 15,
-                           SUCCESS_COLOR, BG_COLOR);
+            tft.drawBitmap(25, 90, iconBleConnected, 14, 15, SUCCESS_COLOR, BG_COLOR);
 
             // Display connection info and module name
             tft.setTextSize(2);
@@ -205,128 +245,138 @@ void displayModulesSubmenu(void *parameters)
             tft.setCursor(nameX, 95);
             tft.print(connectedModuleName);
 
-            if (currentStats)
-            {
-                // Display centered connection time
-                tft.setTextSize(1);
-                unsigned long duration = (millis() - currentStats->connectTime) / 1000;
-                char timeStr[20];
-                if (duration < 60)
-                {
-                    sprintf(timeStr, "%lds", duration);
-                }
-                else if (duration < 3600)
-                {
-                    sprintf(timeStr, "%ldm %lds", duration / 60, duration % 60);
-                }
-                else
-                {
-                    sprintf(timeStr, "%ldh %ldm", duration / 3600, (duration % 3600) / 60);
-                }
+            // Two boxes side by side for stats
+            // Left box - Key Presses
+            drawFrame(15, 160, 100, 60, TEXT_COLOR, 0);
+            tft.setTextSize(1);
 
-                // Center the connection time text
-                int16_t x1, y1;
-                uint16_t w, h;
-                String connText = "Connected: " + String(timeStr);
-                tft.getTextBounds(connText.c_str(), 0, 0, &x1, &y1, &w, &h);
-                int textX = 15 + (210 - w) / 2;
+            // Center "Key Presses" text
+            int16_t x1, y1;
+            uint16_t w, h;
+            tft.getTextBounds("Key Presses", 0, 0, &x1, &y1, &w, &h);
+            int textX = 15 + (100 - w) / 2;
+            tft.setCursor(textX, 175);
+            tft.setTextColor(TEXT_COLOR);
+            tft.print("Key Presses");
 
-                tft.setCursor(textX, 120);
-                tft.setTextColor(TEXT_COLOR);
-                tft.print("Connected: ");
-                tft.setTextColor(HIGHLIGHT_COLOR);
-                tft.print(timeStr);
+            // Right box - Signal Strength
+            drawFrame(125, 160, 100, 60, TEXT_COLOR, 0);
 
-                // Display estimated delay based on signal strength
-                float estimatedDelay = calculateDelayFromRSSI(currentStats->rssi);
-                char delayBuffer[40];
-                String delayText;
-                uint16_t delayColor;
+            // Center "Signal" text
+            tft.getTextBounds("Signal", 0, 0, &x1, &y1, &w, &h);
+            textX = 125 + (100 - w) / 2;
+            tft.setCursor(textX, 175);
+            tft.setTextColor(TEXT_COLOR);
+            tft.print("Signal");
 
-                if (estimatedDelay < 10)
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Great!)";
-                    delayColor = HIGHLIGHT_COLOR;
-                }
-                else if (estimatedDelay < 20)
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Good)";
-                    delayColor = SUCCESS_COLOR;
-                }
-                else if (estimatedDelay < 50)
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (OK)";
-                    delayColor = MUTED_COLOR;
-                }
-                else
-                {
-                    delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Poor)";
-                    delayColor = ERROR_COLOR;
-                }
+            // Draw help text
+            tft.setTextSize(1);
+            tft.setTextColor(MUTED_COLOR);
+            tft.setCursor(15, 250);
+            tft.print(ui_long_press_quit);
 
-                // Draw the delay estimation text right below the connection time
-                tft.getTextBounds(delayText.c_str(), 0, 0, &x1, &y1, &w, &h);
-                textX = 15 + (210 - w) / 2;
-                tft.setCursor(textX, 130);
-                tft.setTextColor(delayColor);
-                tft.print(delayText);
+            // Draw footer
+            drawFooter();
 
-                // Two boxes side by side for stats
-                // Left box - Key Presses
-                drawFrame(15, 160, 100, 60, TEXT_COLOR, 0);
-                tft.setTextSize(1);
-
-                // Center "Key Presses" text
-                tft.getTextBounds("Key Presses", 0, 0, &x1, &y1, &w, &h);
-                textX = 15 + (100 - w) / 2;
-                tft.setCursor(textX, 175);
-                tft.setTextColor(TEXT_COLOR);
-                tft.print("Key Presses");
-
-                // Center the number
-                String keypressStr = String(currentStats->keyPresses);
-                tft.getTextBounds(keypressStr.c_str(), 0, 0, &x1, &y1, &w, &h);
-                textX = 15 + (100 - w) / 2;
-                tft.setCursor(textX, 195);
-                tft.setTextColor(HIGHLIGHT_COLOR);
-                tft.print(keypressStr);
-
-                // Right box - Signal Strength
-                drawFrame(125, 160, 100, 60, TEXT_COLOR, 0);
-
-                // Center "Signal" text
-                tft.getTextBounds("Signal", 0, 0, &x1, &y1, &w, &h);
-                textX = 125 + (100 - w) / 2;
-                tft.setCursor(textX, 175);
-                tft.setTextColor(TEXT_COLOR);
-                tft.print("Signal");
-
-                // Center the RSSI value
-                String rssiStr = String(currentStats->rssi) + " dBm";
-                tft.getTextBounds(rssiStr.c_str(), 0, 0, &x1, &y1, &w, &h);
-                textX = 125 + (100 - w) / 2;
-                tft.setCursor(textX, 195);
-                tft.setTextColor(HIGHLIGHT_COLOR);
-                tft.print(rssiStr);
-
-                // Connection status
-                String statusText = "Status: Connected";
-                tft.getTextBounds(statusText.c_str(), 0, 0, &x1, &y1, &w, &h);
-                textX = 15 + (210 - w) / 2;
-                tft.setCursor(textX, 235);
-                tft.setTextColor(SUCCESS_COLOR);
-                tft.print(statusText);
-            }
+            staticElementsDrawn = true;
         }
 
-        // Draw help text
-        tft.setTextSize(1);
-        tft.setTextColor(MUTED_COLOR);
-        tft.setCursor(15, 250);
-        tft.print(ui_long_press_quit);
+        // Dynamic content - update only when values change or time passes
+        if (shouldUpdateDynamicContent && currentStats)
+        {
+            // Clear only the dynamic text areas (inset by 15% from each side)
+            tft.fillRect(45, 120, 150, 25, BG_COLOR); // Connection time and delay text area
+            tft.fillRect(30, 195, 70, 15, BG_COLOR);  // Key presses value area (inside left box)
+            tft.fillRect(140, 195, 70, 15, BG_COLOR); // RSSI value area (inside right box)
+            tft.fillRect(45, 235, 150, 15, BG_COLOR); // Connection status area
 
-        // Draw footer
-        drawFooter();
+            // Display centered connection time
+            tft.setTextSize(1);
+            unsigned long duration = (millis() - currentStats->connectTime) / 1000;
+            char timeStr[20];
+            if (duration < 60)
+            {
+                sprintf(timeStr, "%lds", duration);
+            }
+            else if (duration < 3600)
+            {
+                sprintf(timeStr, "%ldm %lds", duration / 60, duration % 60);
+            }
+            else
+            {
+                sprintf(timeStr, "%ldh %ldm", duration / 3600, (duration % 3600) / 60);
+            }
+
+            // Center the connection time text
+            int16_t x1, y1;
+            uint16_t w, h;
+            String connText = "Connected: " + String(timeStr);
+            tft.getTextBounds(connText.c_str(), 0, 0, &x1, &y1, &w, &h);
+            int textX = 15 + (210 - w) / 2;
+
+            tft.setCursor(textX, 120);
+            tft.setTextColor(TEXT_COLOR);
+            tft.print("Connected: ");
+            tft.setTextColor(HIGHLIGHT_COLOR);
+            tft.print(timeStr);
+
+            // Display estimated delay based on signal strength
+            float estimatedDelay = calculateDelayFromRSSI(currentStats->rssi);
+            String delayText;
+            uint16_t delayColor;
+
+            if (estimatedDelay < 10)
+            {
+                delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Great!)";
+                delayColor = HIGHLIGHT_COLOR;
+            }
+            else if (estimatedDelay < 20)
+            {
+                delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Good)";
+                delayColor = SUCCESS_COLOR;
+            }
+            else if (estimatedDelay < 50)
+            {
+                delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (OK)";
+                delayColor = MUTED_COLOR;
+            }
+            else
+            {
+                delayText = "Delay: ~" + String(estimatedDelay, 1) + "ms (Poor)";
+                delayColor = ERROR_COLOR;
+            }
+
+            // Draw the delay estimation text right below the connection time
+            tft.getTextBounds(delayText.c_str(), 0, 0, &x1, &y1, &w, &h);
+            textX = 15 + (210 - w) / 2;
+            tft.setCursor(textX, 130);
+            tft.setTextColor(delayColor);
+            tft.print(delayText);
+
+            // Center the key press number
+            String keypressStr = String(currentStats->keyPresses);
+            tft.getTextBounds(keypressStr.c_str(), 0, 0, &x1, &y1, &w, &h);
+            textX = 15 + (100 - w) / 2;
+            tft.setCursor(textX, 195);
+            tft.setTextColor(HIGHLIGHT_COLOR);
+            tft.print(keypressStr);
+
+            // Center the RSSI value
+            String rssiStr = String(currentStats->rssi) + " dBm";
+            tft.getTextBounds(rssiStr.c_str(), 0, 0, &x1, &y1, &w, &h);
+            textX = 125 + (100 - w) / 2;
+            tft.setCursor(textX, 195);
+            tft.setTextColor(HIGHLIGHT_COLOR);
+            tft.print(rssiStr);
+
+            // Connection status
+            String statusText = "Status: Connected";
+            tft.getTextBounds(statusText.c_str(), 0, 0, &x1, &y1, &w, &h);
+            textX = 15 + (210 - w) / 2;
+            tft.setCursor(textX, 235);
+            tft.setTextColor(SUCCESS_COLOR);
+            tft.print(statusText);
+        }
     }
 }
 
