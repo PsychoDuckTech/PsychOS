@@ -3,20 +3,32 @@ import serial
 import os
 from datetime import datetime
 import subprocess
+import threading
 
 # Try to import dbus for media player detection
 HAS_DBUS = False
+HAS_GLIB = False
 try:
     import dbus
     HAS_DBUS = True
+    # Try to import GLib components for signal handling
+    try:
+        from dbus_media_listener import MediaPlayerSignalHandler
+        import gi
+        gi.require_version('GLib', '2.0')
+        from gi.repository import GLib
+        HAS_GLIB = True
+    except ImportError:
+        print("Warning: GLib not available. Media signal detection will be disabled.")
+        print("To install: sudo apt-get install python3-gi")
 except ImportError:
     print("Warning: python-dbus not installed. Media player detection will be limited.")
     print("To install: sudo apt-get install python3-dbus")
 
 class ESP32Driver:
     SLEEP_DURATION = 0.4  # General loop interval
-    MEDIA_CHECK_INTERVAL = 5  # Check media every 5 seconds
-
+    MEDIA_CHECK_INTERVAL = 1  # Check media every 1 second for better responsiveness
+    
     def __init__(self, port, baudrate=115200):
         self.port = port
         self.baudrate = baudrate
@@ -26,6 +38,7 @@ class ESP32Driver:
         self.last_time_update = None
         self.last_media_check = time.time()
         self.current_media = None  # Cache for current media
+        self.dbus_signals_registered = False
         self.connect_to_serial()
 
     def connect_to_serial(self):
@@ -35,6 +48,9 @@ class ESP32Driver:
                 print("Serial connection established.")
                 self.update_connection_status(True)
                 self.update_time_from_system()
+                # Try to register for media player signals
+                if HAS_DBUS and not self.dbus_signals_registered:
+                    self.register_media_signals()
                 return
             except serial.SerialException as e:
                 print(f"Failed to connect to serial port: {e}. Retrying in 1 second...")
@@ -154,6 +170,32 @@ class ESP32Driver:
         except Exception as e:
             print(f"Error updating media information: {e}")
 
+    def register_media_signals(self):
+        """Register for media player signals for real-time updates"""
+        if not HAS_GLIB:
+            print("GLib not available, skipping media signal registration")
+            return False
+
+        try:
+            # Create signal handler with callback to our media update method
+            from dbus_media_listener import MediaPlayerSignalHandler
+            self.media_handler = MediaPlayerSignalHandler(self.on_media_changed)
+            success = self.media_handler.start()
+            if success:
+                self.dbus_signals_registered = True
+                print("Successfully registered for media player signals")
+            return success
+        except Exception as e:
+            print(f"Failed to register for media player signals: {e}")
+            return False
+
+    def on_media_changed(self, media_info):
+        """Callback for when media information changes"""
+        if media_info != self.current_media:
+            self.current_media = media_info
+            print(f"Media changed event: {media_info if media_info else 'No media'}")
+            self.update_song_title(media_info if media_info else "No media")
+
     @staticmethod
     def get_caps_lock_status():
         caps_lock_state = os.popen('xset q | grep Caps | awk \'{print $4}\'').read().strip()
@@ -180,12 +222,20 @@ class ESP32Driver:
         self.update_connection_status(False)
         if self.ser and self.ser.is_open:
             self.ser.close()
+        # Clean up the media signal handler if it exists
+        if HAS_GLIB and hasattr(self, 'media_handler'):
+            print("Stopping media signal handler...")
+            self.media_handler.stop()
 
     def run_forever(self):
         try:
+            # Set a longer polling interval for fallback checks when event system is active
+            media_check_interval = self.MEDIA_CHECK_INTERVAL * 5 if self.dbus_signals_registered else self.MEDIA_CHECK_INTERVAL
+            
             while True:
                 current_time = time.time()
-                if current_time - self.last_media_check >= self.MEDIA_CHECK_INTERVAL:
+                # Only poll for media updates if signals aren't registered or as a backup
+                if current_time - self.last_media_check >= media_check_interval:
                     self.update_media_information()
                     self.last_media_check = current_time
                 self.handle_reconnection()
