@@ -34,6 +34,20 @@ extern const char *ui_no_module;
 extern const char *ui_no_module_desc;
 extern const char *ui_connected_to;
 extern const char *ui_module_status;
+extern const char *ui_status;
+extern const char *ui_help;
+extern const char *ui_searching;
+extern const char *ui_contact_us;
+extern const char *ui_status_disconnected;
+extern const char *ui_connected;
+extern const char *ui_key_presses;
+extern const char *ui_signal;
+extern const char *ui_delay;
+extern const char *ui_delay_great;
+extern const char *ui_delay_good;
+extern const char *ui_delay_ok;
+extern const char *ui_delay_poor;
+extern const char *ui_status_connected;
 
 // RGB Menu
 extern const char *ui_red;

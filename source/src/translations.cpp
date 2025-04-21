@@ -1,5 +1,5 @@
 #define DEFINE_TRANSLATIONS
-#define USE_EN_US
+#define USE_PT_PT
 
 #ifdef USE_PT_PT
 // System messages
@@ -28,14 +28,48 @@ const char *ui_underglow = "Iluminacao";
 const char *ui_clock = "Relogio";
 const char *ui_iot_link = "Link IoT";
 const char *ui_secured_by = "Seguro por Dux";
-const char *ui_powered_by = "Desenvolvido por PsychOS";
+const char *ui_powered_by = "Rodando PsychOS";
 const char *ui_build = "versao";
+#endif
 
+#ifdef USE_EN_US
+// Module Menu
+const char *ui_status = "Status";
+const char *ui_help = "Help";
+const char *ui_searching = "Searching...";
+const char *ui_contact_us = "Contact us";
+const char *ui_status_disconnected = "Status: Disconnected";
+const char *ui_connected = "Connected: ";
+const char *ui_key_presses = "Key Presses";
+const char *ui_signal = "Signal";
+const char *ui_delay = "Delay: ~";
+const char *ui_delay_great = "ms (Great!)";
+const char *ui_delay_good = "ms (Good)";
+const char *ui_delay_ok = "ms (OK)";
+const char *ui_delay_poor = "ms (Poor)";
+const char *ui_status_connected = "Status: Connected";
+#endif
+
+#ifdef USE_PT_PT
 // Module Menu
 const char *ui_no_module = "Sem modulo";
 const char *ui_no_module_desc = "Habilite Bluetooth e conecte\nusando o App Companion";
 const char *ui_connected_to = "Conectado a:";
-const char *ui_module_status = "Status: Conectado";
+const char *ui_module_status = "Estado: Conectado";
+const char *ui_status = "Estado";
+const char *ui_help = "Ajuda";
+const char *ui_searching = "Procurando...";
+const char *ui_contact_us = "Contate-nos";
+const char *ui_status_disconnected = "Estado: Desconectado";
+const char *ui_connected = "Conectado: ";
+const char *ui_key_presses = "Teclas Pressas";
+const char *ui_signal = "Sinal";
+const char *ui_delay = "Atraso: ~";
+const char *ui_delay_great = "ms (Otimo!)";
+const char *ui_delay_good = "ms (Bom)";
+const char *ui_delay_ok = "ms (OK)";
+const char *ui_delay_poor = "ms (Ruim)";
+const char *ui_status_connected = "Estado: Conectado";
 
 // RGB Menu
 const char *ui_red = "Vermelho";
@@ -50,7 +84,7 @@ const char *ui_long_press_quit = "Press. Longo: Voltar";
 const char *ui_hours = "Horas";
 const char *ui_minutes = "Minutos";
 const char *ui_seconds = "Segundos";
-const char *ui_pixel_flush = "Limpeza de Pixels";
+const char *ui_pixel_flush = "Limpeza Ecra";
 
 #else
 // System messages
