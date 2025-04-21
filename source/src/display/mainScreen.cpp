@@ -47,7 +47,7 @@ void displayTopBar(void *parameters)
     if (moduleConnectionStatus)
     {
         // If data was received in the last 100ms, show highlight color
-        if (currentTime - lastDataReceivedTime < 100)
+        if (currentTime - lastDataReceivedTime < 65)
         {
             iconColor = HIGHLIGHT_COLOR; // Flash with highlight color for data reception
         }
