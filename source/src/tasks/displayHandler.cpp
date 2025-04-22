@@ -86,7 +86,7 @@ void displayHandler(void *parameters)
     tft.begin();
     tft.invertDisplay(true);
     tft.fillScreen(BG_COLOR);
-    tft.setRotation(2);
+    tft.setRotation(0);
     Serial.println("Display Handler started.");
 
     screenMutex = xSemaphoreCreateMutex();
