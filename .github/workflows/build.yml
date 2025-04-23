@@ -25,15 +25,23 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Validate Tag Availability
-      id: check_tag
+    - name: Extract Version from main.cpp
+      id: extract_version
       run: |
-        VERSION="0.4.13-beta"
-        if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-          echo "::error::Tag v$VERSION already exists!"
+        VERSION=$(grep -oP '(?<=#define VERSION ")([^"]+)' source/main.cpp)
+        if [ -z "$VERSION" ]; then
+          echo "::error::Version not found in main.cpp!"
           exit 1
         fi
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "Extracted version: $VERSION"
+
+    - name: Validate Tag Availability
+      run: |
+        if git rev-parse "v${{ steps.extract_version.outputs.version }}" >/dev/null 2>&1; then
+          echo "::error::Tag v${{ steps.extract_version.outputs.version }} already exists!"
+          exit 1
+        fi
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
@@ -63,15 +71,12 @@ jobs:
       id: find_firmware
       run: |
         set -e
-        # Specific path to firmware binary (adjust based on your platformio.ini environment)
         FIRMWARE_PATH=$(find source/.pio/build -name 'firmware*.bin' -not -name '*bootloader*' -type f -print -quit)
-
         if [ -z "$FIRMWARE_PATH" ]; then
           echo "::error::Firmware binary not found in build artifacts!"
           exit 1
         fi
-
-        FIRMWARE_NAME="psychos-${{ steps.check_tag.outputs.version }}.bin"
+        FIRMWARE_NAME="psychos-${{ steps.extract_version.outputs.version }}.bin"
         mv "$FIRMWARE_PATH" "$FIRMWARE_NAME"
         echo "firmware_path=$FIRMWARE_NAME" >> "$GITHUB_OUTPUT"
         echo "firmware_name=$FIRMWARE_NAME" >> "$GITHUB_OUTPUT"
@@ -80,23 +85,54 @@ jobs:
     - name: Generate Release Notes
       id: release_notes
       run: |
-        cat << EOF > RELEASE.md
-        ## 🎉 PsychOS Alpha Release v${{ steps.check_tag.outputs.version }}
+        PREV_TAG=$(git tag --sort=-version:refname | head -n 1 || echo "")
+        if [ -z "$PREV_TAG" ]; then
+          COMMITS=$(git log --oneline | sed 's/^/- /')
+        else
+          COMMITS=$(git log $PREV_TAG..HEAD --oneline | sed 's/^/- /')
+        fi
 
-        ### ✨ New Features
-        - USB HID Communication Bridge
-        - Volume Control System
-          - Smooth increment/decrement with direction lock
-          - Configurable polling rate (1000Hz)
-        - FreeRTOS Task Management
+        cat << EOF > RELEASE.md
+        ## 🎉 PsychOS Alpha Release v${{ steps.extract_version.outputs.version }}
+
+        ### ✨ Changes
+        \$COMMITS
 
         ### 📥 Installation
+
+        #### Prerequisites
+
+        <details>
+        <summary>Install esptool on Windows</summary>
+
+        1. Install Python from [python.org](https://www.python.org/downloads/).
+        2. Open Command Prompt and run:
+           \`\`\`bash
+           pip install esptool
+           \`\`\`
+        </details>
+
+        <details>
+        <summary>Install esptool on Linux</summary>
+
+        1. Open Terminal and run:
+           \`\`\`bash
+           sudo apt-get install python3-pip
+           pip3 install esptool
+           \`\`\`
+        </details>
+
+        #### Flashing the Firmware
+
         Download \`${{ steps.find_firmware.outputs.firmware_name }}\` and flash using:
+
+        ##### For Windows:
         \`\`\`bash
-        # Windows
-        esptool.py --chip esp32s3 --port COM[X] write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
-        
-        # Linux/macOS
+        python -m esptool --chip esp32s3 --port COM[X] write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
+        \`\`\`
+
+        ##### For Linux/macOS:
+        \`\`\`bash
         esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
         \`\`\`
 
@@ -113,8 +149,8 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v${{ steps.check_tag.outputs.version }}
-        name: PsychOS v${{ steps.check_tag.outputs.version }}
+        tag_name: v${{ steps.extract_version.outputs.version }}
+        name: PsychOS v${{ steps.extract_version.outputs.version }}
         body_path: RELEASE.md
         prerelease: true
         files: |

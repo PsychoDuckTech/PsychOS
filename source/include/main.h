@@ -42,8 +42,8 @@ extern const int KNOB_SW_PIN;
 extern const int BUZZER_PIN;
 
 // RGB LED pins - defined as macros for compile-time constants
-#define RGB_DATA_PIN 46
-#define RGB_CLOCK_PIN 3
+#define RGB_DATA_PIN 3
+#define RGB_CLOCK_PIN 46
 
 // Key Maps & Names
 extern const uint8_t keyMapL0[][16];
