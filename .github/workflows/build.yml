@@ -28,7 +28,7 @@ jobs:
     - name: Extract Version from main.cpp
       id: extract_version
       run: |
-        VERSION=$(grep -oP '(?<=#define VERSION ")([^"]+)' source/main.cpp)
+        VERSION=$(grep -oP '(?<=#define VERSION ")([^"]+)' source/src/main.cpp)
         if [ -z "$VERSION" ]; then
           echo "::error::Version not found in main.cpp!"
           exit 1
