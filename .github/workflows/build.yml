@@ -61,6 +61,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-platformio-
 
+    - name: Clean Build Directory
+      run: platformio run --target clean
+      working-directory: source
+
     - name: Build Firmware
       run: platformio run
       working-directory: source
@@ -91,55 +95,55 @@ jobs:
         else
           COMMITS=$(git log $PREV_TAG..HEAD --oneline | sed 's/^/- /')
         fi
-
+        
         cat << EOF > RELEASE.md
         ## 🎉 PsychOS Alpha Release v${{ steps.extract_version.outputs.version }}
-
+        
         ### ✨ Changes
-        \$COMMITS
-
+        $COMMITS
+        
         ### 📥 Installation
-
+        
         #### Prerequisites
-
+        
         <details>
         <summary>Install esptool on Windows</summary>
-
+        
         1. Install Python from [python.org](https://www.python.org/downloads/).
         2. Open Command Prompt and run:
            \`\`\`bash
            pip install esptool
            \`\`\`
         </details>
-
+        
         <details>
         <summary>Install esptool on Linux</summary>
-
+        
         1. Open Terminal and run:
            \`\`\`bash
            sudo apt-get install python3-pip
            pip3 install esptool
            \`\`\`
         </details>
-
+        
         #### Flashing the Firmware
-
+        
         Download \`${{ steps.find_firmware.outputs.firmware_name }}\` and flash using:
-
+        
         ##### For Windows:
         \`\`\`bash
         python -m esptool --chip esp32s3 --port COM[X] write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
         \`\`\`
-
+        
         ##### For Linux/macOS:
         \`\`\`bash
         esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
         \`\`\`
-
+        
         ### ⚠️ Known Issues
         - Matrix scanning in development
         - Configuration system pending
-
+        
         ### 🛠️ Next Steps
         - Complete matrix scanning implementation
         - Add configuration interface

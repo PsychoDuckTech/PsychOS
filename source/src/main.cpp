@@ -5,7 +5,7 @@
 #include "globals.h"
 
 // Define the global constants
-const char *OS_version = "0.4.14b ";
+const char *OS_version = "0.4.15b ";
 const char *byCompany = "by PsychoDuck Tech ";
 const char *PRODUCT_NAME = "Kibodo one"; // In Japanese, a keyboard is called "キーボード" (kiiboodo)
 

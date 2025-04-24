@@ -27,8 +27,8 @@ const char *ui_modules = "Modulos";
 const char *ui_underglow = "Iluminacao";
 const char *ui_clock = "Relogio";
 const char *ui_iot_link = "Link IoT";
-const char *ui_secured_by = "Seguro por Dux";
-const char *ui_powered_by = "Rodando PsychOS";
+const char *ui_secured_by = "Secured by Dux";
+const char *ui_powered_by = "Powered by PsychOS";
 const char *ui_build = "versao";
 #endif
 
@@ -53,7 +53,7 @@ const char *ui_status_connected = "Status: Connected";
 #ifdef USE_PT_PT
 // Module Menu
 const char *ui_no_module = "Sem modulo";
-const char *ui_no_module_desc = "Habilite Bluetooth e conecte\nusando o App Companion";
+const char *ui_no_module_desc = "Conecte um Modulo";
 const char *ui_connected_to = "Conectado a:";
 const char *ui_module_status = "Estado: Conectado";
 const char *ui_status = "Estado";
