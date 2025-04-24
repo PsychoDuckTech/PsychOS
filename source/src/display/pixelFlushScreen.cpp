@@ -122,8 +122,7 @@ void startFlushProcess();
 
 // Initialize the pixel flush screen with duration selection
 void displayPixelFlushScreen(void *parameters)
-{
-    // Reset state
+{    // Reset state
     pixelFlushCancelled = false;
     pixelFlushRunning = false;
 
@@ -131,7 +130,27 @@ void displayPixelFlushScreen(void *parameters)
     tft.setTextColor(ILI9341_WHITE);
 
     // Display title
-    drawScreenTitle("Screen Flush", 30);
+    drawScreenTitle("Screen Flush", 30);    // Draw warning box (positioned below duration selector)
+    drawFrame(15, 140, 210, 70, ERROR_COLOR, 1);
+      // Display warning icon (using error color)
+    tft.fillTriangle(43, 160, 58, 185, 28, 185, ERROR_COLOR);
+    tft.setTextColor(ILI9341_BLACK);
+    tft.setTextSize(2);
+    tft.setCursor(39, 168);
+    tft.print("!");
+    
+    // Warning text
+    tft.setTextColor(ERROR_COLOR);
+    tft.setTextSize(1);
+    tft.setCursor(70, 155);
+    tft.println("WARNING:");
+    tft.setCursor(70, 168);
+    tft.setTextColor(ILI9341_WHITE);
+    tft.println("This screen contains");
+    tft.setCursor(70, 178);
+    tft.println("flashing patterns that");
+    tft.setCursor(70, 188);
+    tft.println("may trigger seizures");
 
     // Display duration selection screen
     drawDurationSelector();
@@ -153,12 +172,12 @@ void displayPixelFlushScreen(void *parameters)
 // Draw the duration selection interface
 void drawDurationSelector()
 {
-    tft.fillRect(0, 60, SCREEN_WIDTH, 180, ILI9341_BLACK); // Clear selection area
+    tft.fillRect(0, 60, SCREEN_WIDTH, 80, ILI9341_BLACK); // Clear only the duration selector area
 
     // Draw instruction text
     tft.setTextSize(1);
     tft.setTextColor(ILI9341_WHITE);
-    tft.setCursor(20, 70);
+    tft.setCursor(20, 65);
     tft.println("Select flush duration:");
 
     // Format duration string based on seconds vs minutes
@@ -173,33 +192,12 @@ void drawDurationSelector()
     }
 
     // Use the standard slider button with text component for consistent UI
-    const int DURATION_Y = 100;
+    const int DURATION_Y = 85;
 
     // Use the exact same style as the first slider in underglow menu
     drawSliderButtonWithText("Duration", durationStr,
                              nullptr, 0, 0,
                              DURATION_Y, true);
-
-    // Draw start button using the standard button style but with smaller width
-    const int BUTTON_Y = 180;
-    const int BUTTON_WIDTH = 120; // Smaller width (was full width)
-    const int BUTTON_HEIGHT = 47;
-    const int BUTTON_X = (SCREEN_WIDTH - BUTTON_WIDTH) / 2;
-    const char *startText = "START";
-
-    // Draw custom sized button with consistent styling
-    drawFrame(BUTTON_X, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT, TEXT_COLOR, 0);
-
-    // Add highlight effect similar to selected buttons
-    tft.drawBitmap(BUTTON_X + 5, BUTTON_Y + 6, SettingsSelectedHighlight, BUTTON_WIDTH - 10, 23, HIGHLIGHT_COLOR);
-    tft.drawBitmap(BUTTON_X + 5, BUTTON_Y + 29, SettingsShadow1, BUTTON_WIDTH - 10, 8, 0xCC40);
-    tft.drawBitmap(BUTTON_X + 9, BUTTON_Y + 37, SettingsShadow2, BUTTON_WIDTH - 18, 8, 0x9B20);
-
-    // Add text
-    int textX = BUTTON_X + (BUTTON_WIDTH - strlen(startText) * 12) / 2;
-    tft.setTextColor(0x0); // Black text
-    tft.setCursor(textX, BUTTON_Y + 19);
-    tft.println(startText);
 }
 
 // Prepare the flush screen UI and start the process
