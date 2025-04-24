@@ -6,6 +6,7 @@
 #include "display/pixelFlushScreen.h" // Include the new header file
 #include "translations.h"
 #include "display/icons.h" // Include icons for iconArrowLeft and iconArrowRight
+#include "tasks/hostCommunicationBridge.h" // Add this include for HostMessage and queue
 
 extern SemaphoreHandle_t screenMutex;
 extern Adafruit_ILI9341 tft;
@@ -309,9 +310,13 @@ void startPixelFlush(void *parameters)
 // Handle knob rotation for pixel flush screen
 void handlePixelFlushKnobRotation(int direction)
 {
-    // Only handle rotation if we're in the selection screen
+    // If we're running the flush, control volume
     if (pixelFlushRunning)
     {
+        HostMessage msg;
+        msg.type = VOLUME_CHANGE;
+        msg.data = direction;
+        xQueueSend(hostMessageQueue, &msg, 0);
         return;
     }
 

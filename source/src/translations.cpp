@@ -1,5 +1,5 @@
 #define DEFINE_TRANSLATIONS
-#define USE_PT_PT
+#define USE_EN_US
 
 #ifdef USE_PT_PT
 // System messages
