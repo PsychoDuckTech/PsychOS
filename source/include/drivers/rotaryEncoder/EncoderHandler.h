@@ -18,12 +18,19 @@ private:
     static const unsigned long DEBOUNCE_TIME = 50;
     static const unsigned long LONG_PRESS_TIME = 225;
     static const unsigned long DOUBLE_PRESS_TIMEOUT = 250;
+    static const unsigned long ENCODER_DEBOUNCE_TIME = 5; // 5ms debounce for encoder
+    static const int ENCODER_THRESHOLD = 4; // Number of steps before registering a change
 
     // Track button states between updates
     bool lastButtonState = HIGH;
     bool currentButtonState = HIGH;
     unsigned long lastDebounceTime = 0;
     bool pendingShortPress = false;
+
+    // Encoder state tracking
+    int32_t lastStableCount = 0;
+    int32_t accumulatedSteps = 0;
+    unsigned long lastEncoderTime = 0;
 
 public:
     EncoderHandler(int clkPin, int dtPin, int swPin) : buttonPin(swPin)
@@ -38,15 +45,35 @@ public:
         ESP32Encoder::useInternalWeakPullResistors = UP;
         encoder.clearCount();
         encoder.setFilter(1023);
+        lastEncoderTime = millis();
     }
 
     int32_t getEncoderDelta()
     {
-        static int32_t lastCount = 0;
+        unsigned long currentTime = millis();
         int32_t currentCount = encoder.getCount();
-        int32_t delta = currentCount - lastCount;
-        lastCount = currentCount;
-        return delta;
+        
+        // Only process changes after debounce time
+        if (currentTime - lastEncoderTime >= ENCODER_DEBOUNCE_TIME) {
+            int32_t delta = currentCount - lastStableCount;
+            
+            // Accumulate steps
+            accumulatedSteps += delta;
+            
+            // If we've accumulated enough steps, return the movement
+            if (abs(accumulatedSteps) >= ENCODER_THRESHOLD) {
+                int32_t result = accumulatedSteps / ENCODER_THRESHOLD;
+                accumulatedSteps = accumulatedSteps % ENCODER_THRESHOLD; // Keep remainder
+                lastStableCount = currentCount;
+                lastEncoderTime = currentTime;
+                return result;
+            }
+            
+            lastStableCount = currentCount;
+            lastEncoderTime = currentTime;
+        }
+        
+        return 0;
     }
 
     void update()

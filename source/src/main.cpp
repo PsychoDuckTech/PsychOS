@@ -24,8 +24,8 @@ const int LCD_RS = 16;
 const int SPI_MOSI = 12;
 const int SPI_SCK = 18;
 // Rotary Encoder Pins
-const int KNOB_CLK_PIN = 2;
-const int KNOB_DT_PIN = 36;
+const int KNOB_CLK_PIN = 36;
+const int KNOB_DT_PIN = 2;
 const int KNOB_SW_PIN = 0;
 // Buzzer Pin
 const int BUZZER_PIN = 8;
