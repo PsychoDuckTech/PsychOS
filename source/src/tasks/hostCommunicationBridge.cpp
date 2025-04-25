@@ -65,7 +65,8 @@ void hostCommunicationBridge(void *parameters)
                 // Apply volume changes based on the magnitude of rotation
                 // This takes advantage of encoder acceleration
                 int steps = abs(receivedMessage.data);
-                for (int i = 0; i < steps; i++) {
+                for (int i = 0; i < steps; i++)
+                {
                     if (receivedMessage.data > 0)
                     {
                         Consumer.press(CONSUMER_CONTROL_VOLUME_INCREMENT);
@@ -77,7 +78,7 @@ void hostCommunicationBridge(void *parameters)
                         Consumer.release();
                     }
                     // Small delay between volume commands to ensure they register correctly
-                    delay(5); 
+                    delay(5);
                 }
                 break;
             }
