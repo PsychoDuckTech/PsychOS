@@ -61,17 +61,26 @@ void hostCommunicationBridge(void *parameters)
             switch (receivedMessage.type)
             {
             case VOLUME_CHANGE:
-                if (receivedMessage.data > 0)
-                {
-                    Consumer.press(CONSUMER_CONTROL_VOLUME_INCREMENT);
-                    Consumer.release();
-                }
-                else
-                {
-                    Consumer.press(CONSUMER_CONTROL_VOLUME_DECREMENT);
-                    Consumer.release();
+            {
+                // Apply volume changes based on the magnitude of rotation
+                // This takes advantage of encoder acceleration
+                int steps = abs(receivedMessage.data);
+                for (int i = 0; i < steps; i++) {
+                    if (receivedMessage.data > 0)
+                    {
+                        Consumer.press(CONSUMER_CONTROL_VOLUME_INCREMENT);
+                        Consumer.release();
+                    }
+                    else
+                    {
+                        Consumer.press(CONSUMER_CONTROL_VOLUME_DECREMENT);
+                        Consumer.release();
+                    }
+                    // Small delay between volume commands to ensure they register correctly
+                    delay(5); 
                 }
                 break;
+            }
             case VOLUME_MUTE:
                 Consumer.press(CONSUMER_CONTROL_MUTE);
                 Consumer.release();

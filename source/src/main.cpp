@@ -68,7 +68,7 @@ void setup()
     startMatrixScanTask(0, 8192, 3);
     startKnobHandlerTask(0, 4096, 1);
     WPMCounter::startWPMTask(1, 2048, 1);
-    startBleTask(1, 8192, 2);
+    // startBleTask(1, 8192, 2);
     startRgbTask(0, 4096, 2);
     startBuzzerTask(1, 2048, 1);
 
