@@ -111,7 +111,7 @@ void matrixScan(void *parameters)
 #if BENCHMARK_ENABLED
         if (currentTime - lastTime >= BENCHMARK_WINDOW_MS)
         {
-            unsigned long *pollRates = new unsigned long[totalRows * totalCols];
+            unsigned long pollRates[totalRows * totalCols];
             int index = 0;
             for (int row = 0; row < totalRows; row++)
             {
@@ -130,7 +130,6 @@ void matrixScan(void *parameters)
             Serial.print("Benchmark (polls per second per key): ");
             Serial.println(medianRate);
 
-            delete[] pollRates;     // Free allocated memory
             lastTime = currentTime; // Reset the timer
         }
 #endif
