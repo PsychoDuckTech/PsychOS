@@ -18,6 +18,58 @@ bool updateMainScreen = true;
 bool requestMainScreenSwitch = false;
 SemaphoreHandle_t screenMutex;
 
+void handleMainScreenSwitch()
+{
+    updateMainScreen = true;
+    Serial.println("Calling displayMainScreen");
+    displayMainScreen(nullptr);
+}
+
+void handleSettingsScreenSwitch()
+{
+    updateMainScreen = false;
+    displaySettingsScreen(nullptr);
+}
+
+void handleModulesSubmenuSwitch()
+{
+    updateMainScreen = false;
+    needsFullRedraw = true;
+    displayModulesSubmenu(nullptr);
+}
+
+void handleRGBLightingSubmenuSwitch()
+{
+    updateMainScreen = false;
+    uRGB.syncUIValues();
+    vTaskDelay(pdMS_TO_TICKS(10));
+    needsFullRedraw = true;
+    rgbState.needsRefresh = true;
+}
+
+void handleClockSubmenuSwitch()
+{
+    updateMainScreen = false;
+    displayClockSubmenu(nullptr);
+}
+
+void handlePixelFlushScreenSwitch()
+{
+    updateMainScreen = false;
+    Serial.println("Calling displayPixelFlushScreen");
+    displayPixelFlushScreen(nullptr);
+    // Create the pixel flush task after screen initialization
+    xTaskCreatePinnedToCore(
+        startPixelFlush, // Function to be called
+        "Pixel Flush",   // Name of task
+        4096,            // Stack size
+        NULL,            // Task input parameter
+        1,               // Priority
+        NULL,            // Task handle
+        0                // Core where the task should run
+    );
+}
+
 void switchScreen(ScreenType newScreen)
 {
     Serial.print("Switching screen to: ");
@@ -35,44 +87,22 @@ void switchScreen(ScreenType newScreen)
     switch (currentScreen)
     {
     case MainScreen:
-        updateMainScreen = true;
-        Serial.println("Calling displayMainScreen");
-        displayMainScreen(nullptr);
+        handleMainScreenSwitch();
         break;
     case SettingsScreen:
-        updateMainScreen = false;
-        displaySettingsScreen(nullptr);
+        handleSettingsScreenSwitch();
         break;
     case ModulesSubmenu:
-        updateMainScreen = false;
-        needsFullRedraw = true;
-        displayModulesSubmenu(nullptr);
+        handleModulesSubmenuSwitch();
         break;
     case RGBLightingSubmenu:
-        updateMainScreen = false;
-        uRGB.syncUIValues();
-        vTaskDelay(pdMS_TO_TICKS(10));
-        needsFullRedraw = true;
-        rgbState.needsRefresh = true;
+        handleRGBLightingSubmenuSwitch();
         break;
     case ClockSubmenu:
-        updateMainScreen = false;
-        displayClockSubmenu(nullptr);
+        handleClockSubmenuSwitch();
         break;
     case PixelFlushScreen:
-        updateMainScreen = false;
-        Serial.println("Calling displayPixelFlushScreen");
-        displayPixelFlushScreen(nullptr);
-        // Create the pixel flush task after screen initialization
-        xTaskCreatePinnedToCore(
-            startPixelFlush, // Function to be called
-            "Pixel Flush",   // Name of task
-            4096,            // Stack size
-            NULL,            // Task input parameter
-            1,               // Priority
-            NULL,            // Task handle
-            0                // Core where the task should run
-        );
+        handlePixelFlushScreenSwitch();
         break;
     }
 
