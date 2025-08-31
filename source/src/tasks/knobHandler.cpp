@@ -9,7 +9,12 @@
 extern void displayPixelFlushScreen();
 extern bool needsFullRedraw;
 
-#define POLLING_RATE_MS 20
+constexpr unsigned long POLLING_RATE_MS = 20;
+constexpr unsigned long ROTATION_DEBOUNCE_MS = 50;
+constexpr int NUM_RGB_EFFECTS = 5;
+constexpr int NUM_RGB_SELECTIONS = 3;
+constexpr int NUM_CLOCK_SELECTIONS = 3;
+constexpr int NUM_SETTINGS_OPTIONS = 4;
 
 EncoderHandler knob(KNOB_CLK_PIN, KNOB_DT_PIN, KNOB_SW_PIN);
 
@@ -19,7 +24,6 @@ void knobHandler(void *parameters)
     Serial.println("Knob Handler started");
 
     unsigned long lastRotationTime = 0;
-    const unsigned long ROTATION_DEBOUNCE_MS = 50;
 
     for (;;)
     {
@@ -79,9 +83,9 @@ void knobHandler(void *parameters)
                     int newEffect = rgbState.effect + rotation;
                     if (newEffect < 0)
                     {
-                        newEffect = 4; // Wrap to last effect
+                        newEffect = NUM_RGB_EFFECTS - 1; // Wrap to last effect
                     }
-                    else if (newEffect > 4)
+                    else if (newEffect >= NUM_RGB_EFFECTS)
                     {
                         newEffect = 0; // Wrap to first effect
                     }
@@ -242,11 +246,11 @@ void knobHandler(void *parameters)
                 }
                 break;
             case RGBLightingSubmenu:
-                rgbState.currentSelection = (rgbState.currentSelection + 1) % 3; // Now 3 options (Effect, Brightness, Speed)
+                rgbState.currentSelection = (rgbState.currentSelection + 1) % NUM_RGB_SELECTIONS; // Now 3 options (Effect, Brightness, Speed)
                 rgbState.needsRefresh = true;
                 break;
             case ClockSubmenu:
-                settingsSelectedOption = (settingsSelectedOption + 1) % 3;
+                settingsSelectedOption = (settingsSelectedOption + 1) % NUM_CLOCK_SELECTIONS;
                 displayClockSubmenu(nullptr);
                 break;
             case PixelFlushScreen:

@@ -11,7 +11,10 @@ USBHIDKeyboard Keyboard;
 QueueHandle_t hostMessageQueue;
 USBHIDConsumerControl Consumer;
 
-#define SERIAL_BUFFER_SIZE 128
+constexpr size_t SERIAL_BUFFER_SIZE = 128;
+constexpr int HOST_MESSAGE_QUEUE_SIZE = 50;
+constexpr unsigned long TASK_DELAY_MS = 10;
+constexpr unsigned long VOLUME_COMMAND_DELAY_MS = 5;
 
 void handleSerialCommands(char *serialBuffer, size_t &bufferIndex)
 {
@@ -41,7 +44,7 @@ void handleSerialCommands(char *serialBuffer, size_t &bufferIndex)
 
 void hostCommunicationBridge(void *parameters)
 {
-    hostMessageQueue = xQueueCreate(50, sizeof(HostMessage)); // Increased to 50
+    hostMessageQueue = xQueueCreate(HOST_MESSAGE_QUEUE_SIZE, sizeof(HostMessage)); // Increased to 50
     HostMessage receivedMessage;
     Keyboard.begin();
     Consumer.begin();
@@ -78,7 +81,7 @@ void hostCommunicationBridge(void *parameters)
                         Consumer.release();
                     }
                     // Small delay between volume commands to ensure they register correctly
-                    delay(5);
+                    delay(VOLUME_COMMAND_DELAY_MS);
                 }
                 break;
             }
@@ -102,7 +105,7 @@ void hostCommunicationBridge(void *parameters)
         }
 
         // Yield to other tasks
-        vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay for responsiveness
+        vTaskDelay(TASK_DELAY_MS / portTICK_PERIOD_MS); // 10ms delay for responsiveness
     }
 }
 

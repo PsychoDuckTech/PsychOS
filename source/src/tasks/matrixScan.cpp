@@ -2,13 +2,13 @@
 #include "tasks/BLEHandler.h"
 #include "utils/benchmark.h"
 
-#define keyMap keyMapL0
-#define keyName keyNameL0
+const auto keyMap = keyMapL0;
+const auto keyName = keyNameL0;
 
-#define BENCHMARK_ENABLED false  // Set to false to disable benchmarking entirely
-#define BENCHMARK_WINDOW_MS 3000 // Benchmarking window in milliseconds
-
-#define DEBOUNCE_DELAY_MS 10
+constexpr bool BENCHMARK_ENABLED = false;  // Set to false to disable benchmarking entirely
+constexpr unsigned long BENCHMARK_WINDOW_MS = 3000; // Benchmarking window in milliseconds
+constexpr unsigned long DEBOUNCE_DELAY_MS = 10;
+constexpr unsigned long ELECTRICAL_DELAY_US = 1;
 
 void matrixScan(void *parameters)
 {
@@ -33,7 +33,7 @@ void matrixScan(void *parameters)
         for (int col = 0; col < totalCols; col++) // Scan the column combination with the current row
         {
             colPinsMultiplexer.fastSelect(col);
-            ets_delay_us(1); // Reduced delay for electrical stability
+            ets_delay_us(ELECTRICAL_DELAY_US); // Reduced delay for electrical stability
 
             bool reading = (colPinsMultiplexer.readChannel() == LOW);
             keyStates[row][col] = reading;
@@ -53,7 +53,7 @@ void matrixScan(void *parameters)
             for (int col = 0; col < totalCols; col++)
             {
                 colPinsMultiplexer.fastSelect(col);
-                ets_delay_us(1); // Reduced delay for electrical stability
+                ets_delay_us(ELECTRICAL_DELAY_US); // Reduced delay for electrical stability
 
                 bool reading = (colPinsMultiplexer.readChannel() == LOW);
 
