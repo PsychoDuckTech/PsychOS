@@ -228,6 +228,9 @@ static void applyCurrentEffect()
         for (int i = 0; i < NUM_LEDS; i++)
         {
             float position = fmod((float)i / NUM_LEDS + phase, 1.0f);
+            if (i < 10) {
+                position = 1.0f - position;
+            }
             int colorIndex1 = floor(position * (numColors - 1));
             int colorIndex2 = ceil(position * (numColors - 1));
             float ratio = (position * (numColors - 1)) - colorIndex1;
@@ -250,6 +253,9 @@ static void applyCurrentEffect()
         for (int i = 0; i < NUM_LEDS; i++)
         {
             float position = fmod((float)i / NUM_LEDS + phase, 1.0f);
+            if (i < 10) {
+                position = 1.0f - position;
+            }
             float scaledPosition = position * numColors;
             int colorIndex1 = static_cast<int>(floor(scaledPosition)) % numColors;
             int colorIndex2 = (colorIndex1 + 1) % numColors;
