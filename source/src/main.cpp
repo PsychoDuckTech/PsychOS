@@ -48,8 +48,6 @@ const char *keyNameL0[totalRows][totalCols] = {
     {"LEFTSHIFT", "LESS_GREATER", "Z", "X", "C", "V", "B", "N", "M", "COMMA", "DOT", "MINUS", "RIGHT_SHIFT", 0, "UP", "PAGEDOWN"},
     {"LEFTCTRL", "LEFTMETA", 0, "LEFTALT", 0, 0, "SPACE", 0, 0, 0, "RIGHTALT", 0, "RIGHTCTRL", "LEFT", "DOWN", "RIGHT"}};
 
-NVSUtil nvs("psychos");
-
 // Global variable definitions
 bool pixelFlushComplete = false;
 
@@ -62,15 +60,15 @@ void setup()
 
     initializeMatrix();
 
-    startClockTask(0, 1024, 1);
-    startDisplayTask(1, 4096, 2); // Adjust core, stackDepth, and priority respectively.
-    startHostCommTask(1, 4096, 2);
+    //startClockTask(0, 1024, 1);
+    //startDisplayTask(1, 4096, 2); // Adjust core, stackDepth, and priority respectively.
+    startHostCommTask(0, 4096, 2);
     startMatrixScanTask(0, 8192, 3);
-    startKnobHandlerTask(0, 4096, 1);
+    //startKnobHandlerTask(0, 4096, 1);
     WPMCounter::startWPMTask(1, 2048, 1);
     startBleTask(1, 8192, 2);
     startRgbTask(0, 4096, 2);
-    startBuzzerTask(1, 2048, 1);
+    //startBuzzerTask(1, 2048, 1);
 
     uRGB.setMaxBrightness(60); // 100% in the firmware is actually 65% of the maximum output by the LED driver
     RGBConfig config;

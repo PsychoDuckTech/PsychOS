@@ -5,21 +5,6 @@ int minutes = 0;
 int seconds = 0; // Add this line
 bool updatedMinutes = false;
 
-void saveTime()
-{
-    nvs.saveInt("hours", hours);
-    nvs.saveInt("minutes", minutes);
-    nvs.saveInt("seconds", seconds);
-}
-
-void loadTime()
-{
-    hours = nvs.loadInt("hours", 0);
-    minutes = nvs.loadInt("minutes", 0);
-    seconds = nvs.loadInt("seconds", 0);
-    Serial.printf("Loaded time on boot: %02d:%02d:%02d\n", hours, minutes, seconds);
-}
-
 void clockTask(void *parameters)
 {
     bool refreshFlags[3] = {false, false, false}; // [capsLockStatus, hours, minutes]
@@ -43,7 +28,6 @@ void clockTask(void *parameters)
                     hours = 0;
                 }
             }
-            saveTime();
         }
     }
 }
@@ -67,7 +51,6 @@ void updateClock(int newHours, int newMinutes, int newSeconds)
 
 void startClockTask(UBaseType_t core, uint32_t stackDepth, UBaseType_t priority)
 {
-    loadTime();
     TaskHandle_t clock;
     xTaskCreatePinnedToCore(
         clockTask,

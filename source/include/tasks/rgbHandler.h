@@ -1,5 +1,5 @@
 #pragma once
-#include <FastLED.h>
+#include <Adafruit_NeoPixel.h>
 #include "globals.h" // Assumes this defines shared variables like currentBrightness
 
 extern RGBState rgbState;
@@ -7,6 +7,10 @@ extern RGBState rgbState;
 #define NUM_LEDS 60        // Number of LEDs in the strip
 #define MAX_COLORS 7       // Maximum number of colors supported
 #define HEX_COLOR_LENGTH 7 // Length of hex color string "#RRGGBB"
+
+// Pins
+#define LED_PIN 3        // WS2812 data pin
+#define GPIO46 46        // Power enable pin
 
 // Enumerations
 typedef enum
@@ -83,7 +87,7 @@ typedef struct
 // External variables
 extern QueueHandle_t rgbCommandQueue;
 extern QueueHandle_t rgbResponseQueue; // New queue for receiving responses from RGB task
-extern CRGB leds[NUM_LEDS];
+extern Adafruit_NeoPixel strip;
 extern uint8_t currentBrightness;
 extern uint8_t globalMaxBrightnessPercent;
 

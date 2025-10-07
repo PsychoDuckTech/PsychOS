@@ -28,7 +28,6 @@ extern const char *connectedModuleName;
 // Include Adafruit GFX first as it contains the GFXfont definition
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
-#include "utils/nvs.h"
 
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
@@ -39,7 +38,6 @@ extern int hours;
 extern int minutes;
 extern int seconds;
 
-extern NVSUtil nvs;
 
 extern int settingsSelectedOption;
 extern bool inSettingsSubmenu;

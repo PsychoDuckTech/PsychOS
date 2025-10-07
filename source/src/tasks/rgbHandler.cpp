@@ -4,7 +4,7 @@
 // Global variables
 QueueHandle_t rgbCommandQueue = NULL;
 QueueHandle_t rgbResponseQueue = NULL; // New response queue
-CRGB leds[NUM_LEDS];
+Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 uint8_t currentBrightness = 100;
 uint8_t globalMaxBrightnessPercent = 100;
 RGBState rgbState = {
@@ -18,8 +18,8 @@ RGBState rgbState = {
 // State variables
 static RGBEffectConfig currentEffect = {RGB_EFFECT_STATIC, 128, 255};
 static RGBEffectConfig previousEffect;
-static CRGB effectColors[MAX_COLORS];
-static CRGB previousColors[MAX_COLORS];
+static uint32_t effectColors[MAX_COLORS];
+static uint32_t previousColors[MAX_COLORS];
 static uint8_t numColors = 1;
 static uint8_t previousNumColors;
 static bool inTemporaryEffect = false;
@@ -33,8 +33,22 @@ static uint8_t applyGamma(uint8_t value)
     return (uint8_t)(pow((float)value / 255.0f, 2.2f) * 255.0f + 0.5f);
 }
 
-// Helper function to convert hex string to CRGB
-static CRGB hexToCRGB(const char *hex)
+// Function to blend two RGB colors
+static uint32_t blendColors(uint32_t c1, uint32_t c2, float ratio) {
+    uint8_t r1 = (c1 >> 16) & 0xFF;
+    uint8_t g1 = (c1 >> 8) & 0xFF;
+    uint8_t b1 = c1 & 0xFF;
+    uint8_t r2 = (c2 >> 16) & 0xFF;
+    uint8_t g2 = (c2 >> 8) & 0xFF;
+    uint8_t b2 = c2 & 0xFF;
+    uint8_t r = (uint8_t)(r1 + (r2 - r1) * ratio);
+    uint8_t g = (uint8_t)(g1 + (g2 - g1) * ratio);
+    uint8_t b = (uint8_t)(b1 + (b2 - b1) * ratio);
+    return strip.Color(r, g, b);
+}
+
+// Helper function to convert hex string to uint32_t color
+static uint32_t hexToColor(const char *hex)
 {
     // Skip the '#' if present
     if (hex[0] == '#')
@@ -53,7 +67,7 @@ static CRGB hexToCRGB(const char *hex)
     g = applyGamma(g);
     b = applyGamma(b);
 
-    return CRGB(r, g, b);
+    return strip.Color(r, g, b);
 }
 
 // Update brightness with global max limit
@@ -61,7 +75,7 @@ static void updateBrightness()
 {
     float scale = globalMaxBrightnessPercent / 100.0f;
     uint8_t actualBrightness = (currentBrightness / 100.0f) * scale * 255;
-    FastLED.setBrightness(actualBrightness);
+    strip.setBrightness(actualBrightness);
 }
 
 // Set brightness with optional fade effect
@@ -72,7 +86,7 @@ static void setBrightnessWithFade(uint8_t targetBrightness, uint32_t fadeDuratio
         // Immediate brightness change
         currentBrightness = constrain(targetBrightness, 0, 100);
         updateBrightness();
-        FastLED.show();
+        strip.show();
         return;
     }
 
@@ -87,14 +101,14 @@ static void setBrightnessWithFade(uint8_t targetBrightness, uint32_t fadeDuratio
         currentBrightness = startBrightness + (brightnessDelta * i) / fadeSteps;
         updateBrightness();
         applyCurrentEffect(); // Ensure the current effect is applied at each step
-        FastLED.show();
+        strip.show();
         vTaskDelay(pdMS_TO_TICKS(fadeDelay));
     }
 
     // Ensure final brightness is exact
     currentBrightness = constrain(targetBrightness, 0, 100);
     updateBrightness();
-    FastLED.show();
+    strip.show();
 }
 
 // Simplified effect implementation (expand as needed)
@@ -102,7 +116,10 @@ static void applyCurrentEffect()
 {
     if (currentEffect.effect == RGB_EFFECT_STATIC)
     {
-        fill_solid(leds, NUM_LEDS, effectColors[0]);
+        for(int i = 0; i < NUM_LEDS; i++) {
+            strip.setPixelColor(i, effectColors[0]);
+        }
+        strip.show();
     }
     else if (currentEffect.effect == RGB_EFFECT_BREATHE)
     {
@@ -175,7 +192,7 @@ static void applyCurrentEffect()
             float gammaCorrectedBrightness = pow(easedBrightness, 2.2f);
 
             // Blend between current and next color based on transition progress
-            CRGB currentColor, finalColor;
+            uint32_t finalColor;
 
             if (numColors <= 1)
             {
@@ -185,15 +202,22 @@ static void applyCurrentEffect()
             else
             {
                 // Blend between current and next colors
-                currentColor = effectColors[currentColorIndex];
-                CRGB targetColor = effectColors[nextColorIndex];
-                finalColor = blend(currentColor, targetColor, colorTransitionProgress * 255);
+                finalColor = blendColors(effectColors[currentColorIndex], effectColors[nextColorIndex], colorTransitionProgress);
             }
 
             // Scale by brightness
-            finalColor.nscale8_video(gammaCorrectedBrightness * 255);
+            uint8_t r = (finalColor >> 16) & 0xFF;
+            uint8_t g = (finalColor >> 8) & 0xFF;
+            uint8_t b = finalColor & 0xFF;
+            r = (uint8_t)(r * gammaCorrectedBrightness);
+            g = (uint8_t)(g * gammaCorrectedBrightness);
+            b = (uint8_t)(b * gammaCorrectedBrightness);
+            finalColor = strip.Color(r, g, b);
 
-            fill_solid(leds, NUM_LEDS, finalColor);
+            for(int i = 0; i < NUM_LEDS; i++) {
+                strip.setPixelColor(i, finalColor);
+            }
+            strip.show();
         }
     }
     else if (currentEffect.effect == RGB_EFFECT_RUNNER)
@@ -208,14 +232,14 @@ static void applyCurrentEffect()
             int colorIndex2 = ceil(position * (numColors - 1));
             float ratio = (position * (numColors - 1)) - colorIndex1;
 
-            CRGB color1 = effectColors[colorIndex1 % numColors];
-            CRGB color2 = effectColors[colorIndex2 % numColors];
-            leds[i] = blend(color1, color2, ratio * 255);
+            uint32_t blended = blendColors(effectColors[colorIndex1 % numColors], effectColors[colorIndex2 % numColors], ratio);
+            strip.setPixelColor(i, blended);
         }
 
         phase += speed;
         if (phase >= 1.0f)
             phase -= 1.0f;
+        strip.show();
     }
     else if (currentEffect.effect == RGB_EFFECT_SCROLL)
     {
@@ -230,9 +254,23 @@ static void applyCurrentEffect()
             int colorIndex1 = static_cast<int>(floor(scaledPosition)) % numColors;
             int colorIndex2 = (colorIndex1 + 1) % numColors;
             float ratio = scaledPosition - floor(scaledPosition);
-            CRGB color1 = effectColors[colorIndex1];
-            CRGB color2 = effectColors[colorIndex2];
-            leds[i] = blend(color1, color2, ratio * 255);
+            uint32_t blended = blendColors(effectColors[colorIndex1], effectColors[colorIndex2], ratio);
+            strip.setPixelColor(i, blended);
+        }
+        strip.show();
+    }
+    else if (currentEffect.effect == RGB_EFFECT_FLASH)
+    {
+        static unsigned long lastFlash = 0;
+        static bool on = true;
+        unsigned long now = millis();
+        if (now - lastFlash > 100) // flash every 100ms
+        {
+            on = !on;
+            lastFlash = now;
+            uint32_t color = on ? effectColors[0] : effectColors[1];
+            for(int i = 0; i < NUM_LEDS; i++) strip.setPixelColor(i, color);
+            strip.show();
         }
     }
 }
@@ -276,16 +314,18 @@ static void triggerModuleDisconnect()
 
 void rgbTask(void *parameters)
 {
-    // Initialize FastLED
-    FastLED.addLeds<APA102, RGB_DATA_PIN, RGB_CLOCK_PIN, BGR>(leds, NUM_LEDS);
-    FastLED.setCorrection(TypicalLEDStrip);
+    // Initialize WS2812
+    pinMode(GPIO46, OUTPUT);
+    digitalWrite(GPIO46, HIGH);
+    strip.begin();
+    strip.setBrightness(255); // Will be updated by updateBrightness
 
     // Create the response queue for getting values back from the RGB task
     rgbResponseQueue = xQueueCreate(1, sizeof(RGBResponse));
 
     // Set initial default values
     currentEffect = {RGB_EFFECT_STATIC, 128, 255}; // Default effect: static, medium speed
-    effectColors[0] = CRGB::White;                 // Default color: white
+    effectColors[0] = strip.Color(255, 255, 255); // Default color: white
     numColors = 1;
     uint8_t targetBrightness = 100; // Default target brightness: 100%
 
@@ -298,7 +338,7 @@ void rgbTask(void *parameters)
         case RGB_CMD_SET_COLOR:
             if (cmd.data.color.index < MAX_COLORS && !cmd.data.color.remove)
             {
-                effectColors[cmd.data.color.index] = hexToCRGB(cmd.data.color.hex);
+                effectColors[cmd.data.color.index] = hexToColor(cmd.data.color.hex);
                 if (cmd.data.color.index + 1 > numColors)
                 {
                     numColors = cmd.data.color.index + 1;
@@ -312,7 +352,7 @@ void rgbTask(void *parameters)
                 numColors = cmd.data.effect.num_colors;
                 for (int i = 0; i < numColors; i++)
                 {
-                    effectColors[i] = hexToCRGB(cmd.data.effect.colors[i]);
+                    effectColors[i] = hexToColor(cmd.data.effect.colors[i]);
                 }
             }
             break;
@@ -331,7 +371,7 @@ void rgbTask(void *parameters)
     currentBrightness = 0;
     applyCurrentEffect();
     updateBrightness();
-    FastLED.show();
+    strip.show();
 
     // Fade in to the target brightness over 1000ms
     setBrightnessWithFade(targetBrightness, 1000);
@@ -348,7 +388,7 @@ void rgbTask(void *parameters)
             case RGB_CMD_SET_COLOR:
                 if (cmd.data.color.index < MAX_COLORS && !cmd.data.color.remove)
                 {
-                    effectColors[cmd.data.color.index] = hexToCRGB(cmd.data.color.hex);
+                    effectColors[cmd.data.color.index] = hexToColor(cmd.data.color.hex);
                     if (cmd.data.color.index + 1 > numColors)
                     {
                         numColors = cmd.data.color.index + 1;
@@ -362,7 +402,7 @@ void rgbTask(void *parameters)
                     numColors = cmd.data.effect.num_colors;
                     for (int i = 0; i < numColors; i++)
                     {
-                        effectColors[i] = hexToCRGB(cmd.data.effect.colors[i]);
+                        effectColors[i] = hexToColor(cmd.data.effect.colors[i]);
                     }
                 }
                 break;
@@ -402,7 +442,7 @@ void rgbTask(void *parameters)
         }
 
         applyCurrentEffect();
-        FastLED.show();
+        strip.show();
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

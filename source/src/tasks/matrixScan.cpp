@@ -5,8 +5,8 @@
 const auto keyMap = keyMapL0;
 const auto keyName = keyNameL0;
 
-constexpr bool BENCHMARK_ENABLED = false;  // Set to false to disable benchmarking entirely
-constexpr unsigned long BENCHMARK_WINDOW_MS = 3000; // Benchmarking window in milliseconds
+constexpr bool BENCHMARK_ENABLED = true;  // Set to false to disable benchmarking entirely
+constexpr unsigned long BENCHMARK_WINDOW_MS = 4500; // Benchmarking window in milliseconds
 constexpr unsigned long DEBOUNCE_DELAY_MS = 10;
 constexpr unsigned long ELECTRICAL_DELAY_US = 1;
 
