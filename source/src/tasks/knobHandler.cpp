@@ -16,7 +16,7 @@ constexpr int NUM_RGB_SELECTIONS = 3;
 constexpr int NUM_CLOCK_SELECTIONS = 3;
 constexpr int NUM_SETTINGS_OPTIONS = 4;
 
-EncoderHandler knob(KNOB_CLK_PIN, KNOB_DT_PIN, KNOB_SW_PIN);
+EncoderHandler knob(KNOB_DT_PIN, KNOB_CLK_PIN, KNOB_SW_PIN);
 
 void knobHandler(void *parameters)
 {
@@ -120,25 +120,25 @@ void knobHandler(void *parameters)
                         case RGB_EFFECT_SCROLL:
                             cmd.data.effect.config = {RGB_EFFECT_SCROLL,
                                                       static_cast<uint8_t>(map(rgbState.speed, 1, 20, 1, 255)), 255};
-                            strncpy(cmd.data.effect.colors[0], "#1e130c", HEX_COLOR_LENGTH); // Dark Brown
-                            strncpy(cmd.data.effect.colors[1], "#9a8478", HEX_COLOR_LENGTH); // Light Brown
+                            strncpy(cmd.data.effect.colors[0], "#1d1d1d", HEX_COLOR_LENGTH); // Dark Brown
+                            strncpy(cmd.data.effect.colors[1], "#674de0", HEX_COLOR_LENGTH); // Light Brown
                             cmd.data.effect.num_colors = 2;
                             break;
 
                         case RGB_EFFECT_BREATHE:
                             cmd.data.effect.config = {RGB_EFFECT_BREATHE,
                                                       static_cast<uint8_t>(map(rgbState.speed, 1, 20, 1, 255)), 255};
-                            strncpy(cmd.data.effect.colors[0], "#00BFFF", HEX_COLOR_LENGTH); // Deep Sky Blue
-                            strncpy(cmd.data.effect.colors[1], "#4B0082", HEX_COLOR_LENGTH); // Indigo
+                            strncpy(cmd.data.effect.colors[0], "#51ff00ff", HEX_COLOR_LENGTH); // Deep Sky Blue
+                            strncpy(cmd.data.effect.colors[1], "#590082ff", HEX_COLOR_LENGTH); // Indigo
                             cmd.data.effect.num_colors = 2;
                             break;
 
                         default:                                          // RGB_EFFECT_WAVE (custom effect for demo)
                             cmd.data.effect.config = {RGB_EFFECT_BREATHE, // Using breathe as base
                                                       static_cast<uint8_t>(map(rgbState.speed, 1, 20, 1, 255)), 255};
-                            strncpy(cmd.data.effect.colors[0], "#00FF00", HEX_COLOR_LENGTH); // Green
-                            strncpy(cmd.data.effect.colors[1], "#0000FF", HEX_COLOR_LENGTH); // Blue
-                            strncpy(cmd.data.effect.colors[2], "#FF0000", HEX_COLOR_LENGTH); // Red
+                            strncpy(cmd.data.effect.colors[0], "#fffb00ff", HEX_COLOR_LENGTH); // Green
+                            strncpy(cmd.data.effect.colors[1], "#ff00ddff", HEX_COLOR_LENGTH); // Blue
+                            strncpy(cmd.data.effect.colors[2], "#00f7ffff", HEX_COLOR_LENGTH); // Red
                             cmd.data.effect.num_colors = 3;
                             break;
                         }

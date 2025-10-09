@@ -60,17 +60,17 @@ void setup()
 
     initializeMatrix();
 
-    //startClockTask(0, 1024, 1);
-    //startDisplayTask(1, 4096, 2); // Adjust core, stackDepth, and priority respectively.
+    startClockTask(0, 1024, 1);
+    startDisplayTask(1, 4096, 2); // Adjust core, stackDepth, and priority respectively.
     startHostCommTask(0, 4096, 2);
     startMatrixScanTask(0, 8192, 3);
-    //startKnobHandlerTask(0, 4096, 1);
+    startKnobHandlerTask(0, 4096, 1);
     WPMCounter::startWPMTask(1, 2048, 1);
     startBleTask(1, 8192, 2);
     startRgbTask(0, 4096, 2);
     //startBuzzerTask(1, 2048, 1);
 
-    uRGB.setMaxBrightness(60); // 100% in the firmware is actually 65% of the maximum output by the LED driver
+    uRGB.setMaxBrightness(35); // 100% in the firmware is actually 65% of the maximum output by the LED driver
     RGBConfig config;
     config.effect = RGB_EFFECT_RUNNER;
     config.colors[0] = "#FFA500"; // Orange
@@ -78,7 +78,7 @@ void setup()
     config.colors[2] = "#800080"; // Purple
     config.numColors = 3;
     config.speed = 20;      // 1-20 scale
-    config.brightness = 45; // 0-100 scale
+    config.brightness = 75; // 0-100 scale
     uRGB.configure(config);
 }
 
