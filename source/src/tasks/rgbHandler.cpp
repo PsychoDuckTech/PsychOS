@@ -449,7 +449,7 @@ void rgbTask(void *parameters)
 
         applyCurrentEffect();
         strip.show();
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(24));
     }
 }
 

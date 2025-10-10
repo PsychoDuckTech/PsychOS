@@ -58,6 +58,9 @@ void setup()
     Serial.begin(serialBaudRate);
     Serial.printf("%s, %s\n", OS_version, byCompany);
 
+    // Reduce CPU frequency for power savings
+    setCpuFrequencyMhz(160);
+
     initializeMatrix();
 
     startClockTask(0, 1024, 1);

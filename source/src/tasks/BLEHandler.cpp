@@ -195,7 +195,7 @@ void BLEHandler(void *parameter)
                 }
             }
         }
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(150 / portTICK_PERIOD_MS);
     }
 }
 

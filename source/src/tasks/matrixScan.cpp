@@ -133,7 +133,7 @@ void matrixScan(void *parameters)
             lastTime = currentTime; // Reset the timer
         }
 #endif
-        vTaskDelay(1); // allow other tasks to run, 1ms delay
+        vTaskDelay(4); // allow other tasks to run, 4ms delay
     }
 }
 
