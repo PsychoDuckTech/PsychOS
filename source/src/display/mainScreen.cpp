@@ -126,21 +126,37 @@ void displayTime(void *parameters)
 
 void displayWPM(void *parameters)
 {
-    clearWPM(parameters);
-    tft.setTextColor(TEXT_COLOR);
-    tft.setTextSize(2);
-    tft.setFont();
-    tft.setCursor(11, 297);
-    tft.print(String(WPMCounter::wpm));
+    // Track previous WPM to avoid unnecessary redraws
+    static int previousWPM = -1;
+    static int previousDigits = -1;
+    
+    int currentWPM = WPMCounter::wpm;
+    int currentDigits = String(currentWPM).length();
+    
+    // Force redraw on full screen refresh
+    bool forceRedraw = needsFullRedraw;
+    
+    // Only redraw if WPM changed or forcing redraw
+    if (forceRedraw || currentWPM != previousWPM || currentDigits != previousDigits)
+    {
+        clearWPM(parameters);
+        tft.setTextColor(TEXT_COLOR);
+        tft.setTextSize(2);
+        tft.setFont();
+        tft.setCursor(11, 297);
+        tft.print(String(currentWPM));
 
-    // Adjust the position of "WPM" based on the number of digits in WPM
-    int wpmLength = String(WPMCounter::wpm).length();
-    int wpmOffset = 24 + (wpmLength - 1) * 12; // Adjust offset dynamically
+        // Adjust the position of "WPM" based on the number of digits in WPM
+        int wpmOffset = 24 + (currentDigits - 1) * 12; // Adjust offset dynamically
 
-    tft.setTextColor(MUTED_COLOR);
-    tft.setTextSize(1);
-    tft.setCursor(wpmOffset, 304);
-    tft.print(ui_wpm);
+        tft.setTextColor(MUTED_COLOR);
+        tft.setTextSize(1);
+        tft.setCursor(wpmOffset, 304);
+        tft.print(ui_wpm);
+        
+        previousWPM = currentWPM;
+        previousDigits = currentDigits;
+    }
 }
 
 void displayLAYER(void *parameters)
