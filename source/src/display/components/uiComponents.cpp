@@ -201,9 +201,10 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
         snprintf(valueStr, sizeof(valueStr), "%d", value);
     }
 
-    // Calculate text width for positioning
-    int charWidth = 12; // Approximate width per character at text size 2
-    int textWidth = strlen(valueStr) * charWidth;
+    // Calculate text width for precise positioning using getTextBounds
+    int16_t x1, y1;
+    uint16_t textWidth, textHeight;
+    tft.getTextBounds(valueStr, 0, 0, &x1, &y1, &textWidth, &textHeight);
 
     // Position value on the far right side but still inside the button
     // The button width is approximately 220px, leave proper margin

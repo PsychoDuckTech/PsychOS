@@ -82,13 +82,30 @@ void displayTopBar(void *parameters)
     }
 
     // Draw the connection status icon (separate from BLE)
-    tft.drawBitmap(11, 9, connectionStatus ? (toggleDiscIcon ? iconDisc1 : iconDisc2) : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
+    // Track previous connection icon state to avoid unnecessary redraws
+    static bool prevConnectionStatus = !connectionStatus;
+    static bool prevToggleDiscIcon = !toggleDiscIcon;
+    
+    // Force redraw on full screen refresh
+    bool forceConnectionRedraw = needsFullRedraw;
+    
+    // Only redraw connection icon if status changed or icon toggled, or forcing redraw
+    if (forceConnectionRedraw || connectionStatus != prevConnectionStatus || (connectionStatus && toggleDiscIcon != prevToggleDiscIcon))
+    {
+        tft.drawBitmap(11, 9, connectionStatus ? (toggleDiscIcon ? iconDisc1 : iconDisc2) : iconDiscMuted, 16, 15, connectionStatus ? SUCCESS_COLOR : ERROR_COLOR, BG_COLOR);
+        prevConnectionStatus = connectionStatus;
+        prevToggleDiscIcon = toggleDiscIcon;
+    }
 
-    tft.setTextSize(1);
-    tft.setTextColor(TEXT_COLOR);
-    tft.setFont();
-    tft.setCursor(206, 8);
-    tft.print(ui_caps);
+    // Draw the static "CAPS" text only on full screen refresh
+    if (needsFullRedraw)
+    {
+        tft.setTextSize(1);
+        tft.setTextColor(TEXT_COLOR);
+        tft.setFont();
+        tft.setCursor(206, 8);
+        tft.print(ui_caps);
+    }
 
     // Add a static variable to track the previous capsLockStatus
     static bool previousCapsLockStatus = !capsLockStatus; // Initialize to a different value to ensure the first update
@@ -109,19 +126,36 @@ void displayTopBar(void *parameters)
 
 void displayTime(void *parameters)
 {
-    clearTime(parameters);
-    tft.setTextColor(TEXT_COLOR);
-    tft.setTextSize(8);
-    tft.setFont();
+    // Track previous time values to avoid unnecessary redraws
+    static int previousHours = -1;
+    static int previousMinutes = -1;
+    
+    int currentHours = hours;
+    int currentMinutes = minutes;
+    
+    // Force redraw on full screen refresh
+    bool forceRedraw = needsFullRedraw;
+    
+    // Only redraw if time changed or forcing redraw
+    if (forceRedraw || currentHours != previousHours || currentMinutes != previousMinutes)
+    {
+        clearTime(parameters);
+        tft.setTextColor(TEXT_COLOR);
+        tft.setTextSize(8);
+        tft.setFont();
 
-    char timeString[3];
-    sprintf(timeString, "%02d", hours);
-    tft.setCursor(75, 60);
-    tft.print(timeString);
+        char timeString[3];
+        sprintf(timeString, "%02d", currentHours);
+        tft.setCursor(75, 60);
+        tft.print(timeString);
 
-    sprintf(timeString, "%02d", minutes);
-    tft.setCursor(75, 122);
-    tft.print(timeString);
+        sprintf(timeString, "%02d", currentMinutes);
+        tft.setCursor(75, 122);
+        tft.print(timeString);
+        
+        previousHours = currentHours;
+        previousMinutes = currentMinutes;
+    }
 }
 
 void displayWPM(void *parameters)
@@ -161,15 +195,19 @@ void displayWPM(void *parameters)
 
 void displayLAYER(void *parameters)
 {
-    tft.setTextColor(MUTED_COLOR);
-    tft.setTextSize(1);
-    tft.setFont();
-    tft.setCursor(186, 304);
-    tft.print(ui_layer);
-    tft.setTextColor(HIGHLIGHT_COLOR);
-    tft.setTextSize(2);
-    tft.setCursor(219, 297);
-    tft.print("3");
+    // Only draw static layer info on full screen refresh
+    if (needsFullRedraw)
+    {
+        tft.setTextColor(MUTED_COLOR);
+        tft.setTextSize(1);
+        tft.setFont();
+        tft.setCursor(186, 304);
+        tft.print(ui_layer);
+        tft.setTextColor(HIGHLIGHT_COLOR);
+        tft.setTextSize(2);
+        tft.setCursor(219, 297);
+        tft.print("3");
+    }
 }
 
 void displayDemo(void *parameters)

@@ -31,6 +31,7 @@ EncoderHandler knob(KNOB_DT_PIN, KNOB_CLK_PIN, KNOB_SW_PIN);
 static volatile unsigned long pressStartTime = 0;
 static volatile bool buttonIsPressed = false;
 static volatile unsigned long lastButtonTime = 0;
+static volatile bool longPressDetected = false; // Flag to track if long press was detected for current press
 static TimerHandle_t longPressTimer = NULL;
 
 // Enum para tipos de eventos de botão
@@ -43,6 +44,7 @@ enum ButtonEventType {
 // Callback do temporizador para Long Press
 void longPressTimerCallback(TimerHandle_t xTimer) {
     if (buttonIsPressed) {
+        longPressDetected = true; // Mark that long press was detected
         ButtonEventType event = LONG_PRESS_DETECTED;
         // Enviar o evento do timer para a fila
         xQueueSendFromISR(knobButtonQueue, &event, NULL);
@@ -67,6 +69,7 @@ void IRAM_ATTR knobButtonISR() {
         // Pressionamento detectado (Início)
         pressStartTime = currentTime;
         buttonIsPressed = true;
+        longPressDetected = false; // Reset flag for new press
         // Iniciar o temporizador de Long Press (225ms definido no EncoderHandler.h)
         xTimerStartFromISR(longPressTimer, &xHigherPriorityTaskWoken);
     } else {
@@ -75,8 +78,8 @@ void IRAM_ATTR knobButtonISR() {
             unsigned long duration = currentTime - pressStartTime;
             xTimerStopFromISR(longPressTimer, &xHigherPriorityTaskWoken);
             
-            // Se o temporizador não detetou um Long Press (i.e., duração < 225ms)
-            if (duration < 225) {
+            // Only send SHORT_PRESS if no long press was detected
+            if (!longPressDetected && duration < 325) {
                 event = SHORT_PRESS;
                 xQueueSendFromISR(knobButtonQueue, &event, &xHigherPriorityTaskWoken);
             }
@@ -95,7 +98,7 @@ static void setupKnobISR() {
     // Configurar o Timer para o Long Press
     longPressTimer = xTimerCreate(
         "LongPressTimer",
-        pdMS_TO_TICKS(225), // LONG_PRESS_TIME do EncoderHandler.h
+        pdMS_TO_TICKS(325), // LONG_PRESS_TIME do EncoderHandler.h
         pdFALSE,            // Não repetir
         (void *)0,
         longPressTimerCallback
