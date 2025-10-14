@@ -77,10 +77,11 @@ void runVerticalStripes(unsigned long &startTime)
     // Phase 2: Moving Vertical Stripes (30% of cycle)
     for (int offset = 0; offset < SCREEN_WIDTH && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; offset += STRIPE_STEP)
     {
-        for (int x = 0; x < SCREEN_WIDTH; x++)
+        // Optimized: draw 2-pixel wide vertical bars instead of individual lines
+        for (int x = 0; x < SCREEN_WIDTH; x += 2)
         {
             uint16_t color = ((x + offset) % 4 < 2) ? ILI9341_BLACK : ILI9341_WHITE;
-            tft.drawFastVLine(x, 0, SCREEN_HEIGHT, color);
+            tft.fillRect(x, 0, 2, SCREEN_HEIGHT, color);
         }
         displayProgress(millis(), startTime);
         vTaskDelay(pdMS_TO_TICKS(STRIPE_DELAY_MS));
