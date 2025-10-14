@@ -62,10 +62,23 @@ void displayTopBar(void *parameters)
         iconColor = MUTED_COLOR; // Disconnected color
     }
 
-    tft.drawBitmap(moduleConnectionStatus ? 35 : 36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, iconColor, BG_COLOR);
-    if (!moduleConnectionStatus)
+    // Track previous BLE state to avoid unnecessary redraws
+    static bool prevModuleConnectionStatus = !moduleConnectionStatus;
+    static uint16_t prevIconColor = 0xFFFF; // Invalid color to force first draw
+
+    // Force redraw on full screen refresh
+    bool forceRedraw = needsFullRedraw;
+
+    // Only redraw BLE icon if status or color changed, or if forcing redraw
+    if (forceRedraw || moduleConnectionStatus != prevModuleConnectionStatus || iconColor != prevIconColor)
     {
-        tft.fillRect(35, 9, 1, 15, BG_COLOR);
+        tft.drawBitmap(moduleConnectionStatus ? 35 : 36, 9, moduleConnectionStatus ? iconBleConnected : iconBleDisconnected, 14, 15, iconColor, BG_COLOR);
+        if (!moduleConnectionStatus)
+        {
+            tft.fillRect(35, 9, 1, 15, BG_COLOR);
+        }
+        prevModuleConnectionStatus = moduleConnectionStatus;
+        prevIconColor = iconColor;
     }
 
     // Draw the connection status icon (separate from BLE)
@@ -80,14 +93,18 @@ void displayTopBar(void *parameters)
     // Add a static variable to track the previous capsLockStatus
     static bool previousCapsLockStatus = !capsLockStatus; // Initialize to a different value to ensure the first update
 
+    // Force redraw on full screen refresh
+    bool forceCapsRedraw = needsFullRedraw;
+
     // Check if capsLockStatus has changed
-    if (capsLockStatus != previousCapsLockStatus)
+    if (forceCapsRedraw || capsLockStatus != previousCapsLockStatus)
     {
-        tft.drawBitmap(206, 18, capsLockStatus ? textOff : textOn, capsLockStatus ? 14 : 9, 5, capsLockStatus ? BG_COLOR : BG_COLOR, BG_COLOR);
+        // Clear the caps lock status area
+        tft.fillRect(206, 18, 14, 5, BG_COLOR);
+        // Draw the correct status text
+        tft.drawBitmap(206, 18, capsLockStatus ? textOn : textOff, capsLockStatus ? 9 : 14, 5, capsLockStatus ? HIGHLIGHT_COLOR : MUTED_COLOR, BG_COLOR);
         previousCapsLockStatus = capsLockStatus; // Update the previous status
     }
-
-    tft.drawBitmap(206, 18, capsLockStatus ? textOn : textOff, capsLockStatus ? 9 : 14, 5, capsLockStatus ? HIGHLIGHT_COLOR : MUTED_COLOR, BG_COLOR);
 }
 
 void displayTime(void *parameters)
