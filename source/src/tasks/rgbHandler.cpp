@@ -123,9 +123,7 @@ static void applyCurrentEffect()
 {
     if (currentEffect.effect == RGB_EFFECT_STATIC)
     {
-        for(int i = 0; i < NUM_LEDS; i++) {
-            strip.setPixelColor(i, effectColors[0]);
-        }
+        strip.fill(effectColors[0]);
         strip.show();
     }
     else if (currentEffect.effect == RGB_EFFECT_BREATHE)
@@ -221,9 +219,7 @@ static void applyCurrentEffect()
             b = (uint8_t)(b * gammaCorrectedBrightness);
             finalColor = strip.Color(r, g, b);
 
-            for(int i = 0; i < NUM_LEDS; i++) {
-                strip.setPixelColor(i, finalColor);
-            }
+            strip.fill(finalColor);
             strip.show();
         }
     }
@@ -282,7 +278,7 @@ static void applyCurrentEffect()
             on = !on;
             lastFlash = now;
             uint32_t color = on ? effectColors[0] : effectColors[1];
-            for(int i = 0; i < NUM_LEDS; i++) strip.setPixelColor(i, color);
+            strip.fill(color);
             strip.show();
         }
     }
