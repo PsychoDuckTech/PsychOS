@@ -76,6 +76,13 @@ static void updateBrightness()
     float scale = globalMaxBrightnessPercent / 100.0f;
     uint8_t actualBrightness = (currentBrightness / 100.0f) * scale * 255;
     strip.setBrightness(actualBrightness);
+    
+    // Turns off the LED power line if brightness is low to save extra power
+    if (currentBrightness <= 3) {
+        digitalWrite(GPIO46, LOW);
+    } else {
+        digitalWrite(GPIO46, HIGH);
+    }
 }
 
 // Set brightness with optional fade effect
