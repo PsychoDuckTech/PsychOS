@@ -130,6 +130,17 @@ void displayRGBSubmenu(void *parameters)
         // Draw help indicators at the bottom of the screen
         drawHelpIndicators(250, MUTED_COLOR);
 
-        rgbState.needsRefresh = false;
+        // Check if the state changed during the redraw, and if so, trigger another refresh
+        if (currentValues[0] != rgbState.effect || 
+            currentValues[1] != rgbState.brightness || 
+            currentValues[2] != rgbState.speed ||
+            selectedIndex != rgbState.currentSelection)
+        {
+            rgbState.needsRefresh = true;
+        }
+        else
+        {
+            rgbState.needsRefresh = false;
+        }
     }
 }
