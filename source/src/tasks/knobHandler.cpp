@@ -11,6 +11,8 @@
 
 extern void displayPixelFlushScreen();
 extern bool needsFullRedraw;
+extern bool capsLockStatus;
+extern bool updateMainScreen;
 
 constexpr unsigned long POLLING_RATE_MS = 20;
 // CORREÇÃO: Reduzido de 50ms para 5ms. 
@@ -34,11 +36,16 @@ static volatile unsigned long lastButtonTime = 0;
 static volatile bool longPressDetected = false; // Flag to track if long press was detected for current press
 static TimerHandle_t longPressTimer = NULL;
 
+// Variáveis para Double Press
+static volatile unsigned long lastShortPressTime = 0;
+static volatile bool waitingForDoublePress = false;
+static TimerHandle_t doublePressTimer = NULL;
+
 // Enum para tipos de eventos de botão
 enum ButtonEventType {
     SHORT_PRESS,
     LONG_PRESS_DETECTED,
-    // DOUBLE_PRESS pode ser calculado no task handler
+    DOUBLE_PRESS
 };
 
 // Callback do temporizador para Long Press
@@ -49,6 +56,14 @@ void longPressTimerCallback(TimerHandle_t xTimer) {
         // Enviar o evento do timer para a fila
         xQueueSendFromISR(knobButtonQueue, &event, NULL);
     }
+}
+
+// Callback do temporizador para Double Press
+void doublePressTimerCallback(TimerHandle_t xTimer) {
+    waitingForDoublePress = false;
+    // Send the pending SHORT_PRESS since double press window expired
+    ButtonEventType event = SHORT_PRESS;
+    xQueueSendFromISR(knobButtonQueue, &event, NULL);
 }
 
 // Funções de ISR para detetar pressionamentos
@@ -79,9 +94,21 @@ void IRAM_ATTR knobButtonISR() {
             xTimerStopFromISR(longPressTimer, &xHigherPriorityTaskWoken);
             
             // Only send SHORT_PRESS if no long press was detected
-            if (!longPressDetected && duration < 325) {
-                event = SHORT_PRESS;
-                xQueueSendFromISR(knobButtonQueue, &event, &xHigherPriorityTaskWoken);
+            if (!longPressDetected && duration < 225) {
+                unsigned long currentTime = millis();
+                
+                if (waitingForDoublePress && (currentTime - lastShortPressTime) <= 300) {
+                    // Double press detected
+                    xTimerStopFromISR(doublePressTimer, &xHigherPriorityTaskWoken);
+                    waitingForDoublePress = false;
+                    event = DOUBLE_PRESS;
+                    xQueueSendFromISR(knobButtonQueue, &event, &xHigherPriorityTaskWoken);
+                } else {
+                    // Start waiting for double press - timer will send SHORT_PRESS if no double press
+                    waitingForDoublePress = true;
+                    lastShortPressTime = currentTime;
+                    xTimerStartFromISR(doublePressTimer, &xHigherPriorityTaskWoken);
+                }
             }
             buttonIsPressed = false;
         }
@@ -98,10 +125,19 @@ static void setupKnobISR() {
     // Configurar o Timer para o Long Press
     longPressTimer = xTimerCreate(
         "LongPressTimer",
-        pdMS_TO_TICKS(325), // LONG_PRESS_TIME do EncoderHandler.h
+        pdMS_TO_TICKS(225), // LONG_PRESS_TIME do EncoderHandler.h
         pdFALSE,            // Não repetir
         (void *)0,
         longPressTimerCallback
+    );
+
+    // Configurar o Timer para o Double Press
+    doublePressTimer = xTimerCreate(
+        "DoublePressTimer",
+        pdMS_TO_TICKS(300), // 300ms window for double press
+        pdFALSE,            // Não repetir
+        (void *)0,
+        doublePressTimerCallback
     );
 
     // Anexar a ISR ao pino do botão
@@ -336,7 +372,17 @@ void knobHandler(void *parameters)
                     handlePixelFlushKnobPress();
                     break;
                 }
-            } 
+            }
+            else if (buttonEvent == DOUBLE_PRESS)
+            {
+                // Lógica de Double Press - only on Main Screen for caps lock toggle
+                if (currentScreen == MainScreen)
+                {
+                    capsLockStatus = !capsLockStatus;
+                    // Force top bar redraw to show caps lock change
+                    updateMainScreen = true;
+                }
+            }
             else if (buttonEvent == LONG_PRESS_DETECTED)
             {
                 // Lógica de Long Press
