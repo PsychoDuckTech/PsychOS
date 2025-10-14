@@ -25,12 +25,23 @@ static uint8_t previousNumColors;
 static bool inTemporaryEffect = false;
 static unsigned long temporaryEffectEnd = 0;
 
+// Gamma correction lookup table for faster processing
+static uint8_t gammaTable[256];
+// Brightness gamma correction lookup table (0.0-1.0 mapped to 0-255)
+static uint8_t brightnessGammaTable[256];
+
+// Initialize gamma lookup table
+static void initGammaTable() {
+    for (int i = 0; i < 256; i++) {
+        gammaTable[i] = (uint8_t)(pow((float)i / 255.0f, 2.2f) * 255.0f + 0.5f);
+        brightnessGammaTable[i] = (uint8_t)(pow((float)i / 255.0f, 2.2f) * 255.0f + 0.5f);
+    }
+}
+
 // Helper function to apply gamma correction (gamma 2.2)
 static uint8_t applyGamma(uint8_t value)
 {
-    // Formula: (value/255)^(gamma) * 255
-    // Using fixed-point arithmetic for speed, approximating gamma 2.2
-    return (uint8_t)(pow((float)value / 255.0f, 2.2f) * 255.0f + 0.5f);
+    return gammaTable[value];
 }
 
 // Function to blend two RGB colors
@@ -194,7 +205,8 @@ static void applyCurrentEffect()
             float easedBrightness = (sin(brightness * M_PI - M_PI / 2) + 1.0f) / 2.0f;
 
             // Apply gamma correction for perceptual brightness
-            float gammaCorrectedBrightness = pow(easedBrightness, 2.2f);
+            uint8_t brightnessIndex = (uint8_t)(easedBrightness * 255.0f);
+            float gammaCorrectedBrightness = brightnessGammaTable[brightnessIndex] / 255.0f;
 
             // Blend between current and next color based on transition progress
             uint32_t finalColor;
@@ -328,6 +340,9 @@ void rgbTask(void *parameters)
     digitalWrite(GPIO46, HIGH);
     strip.begin();
     strip.setBrightness(255); // Will be updated by updateBrightness
+
+    // Initialize gamma correction lookup table for faster processing
+    initGammaTable();
 
     // Create the response queue for getting values back from the RGB task
     rgbResponseQueue = xQueueCreate(1, sizeof(RGBResponse));
