@@ -15,6 +15,12 @@ extern Adafruit_ILI9341 tft;
 constexpr int SCREEN_WIDTH = 240;
 constexpr int SCREEN_HEIGHT = 320;
 
+// Progress bar constants
+constexpr int PROGRESS_BAR_HEIGHT = 15;
+constexpr int PROGRESS_BAR_Y = 0;
+constexpr int ANIMATION_START_Y = PROGRESS_BAR_HEIGHT; // Start animations below progress bar
+constexpr int ANIMATION_HEIGHT = SCREEN_HEIGHT - PROGRESS_BAR_HEIGHT;
+
 // Pixel flush state variables
 volatile bool pixelFlushRunning = false;
 volatile bool pixelFlushCancelled = false;
@@ -54,11 +60,31 @@ const int NUM_COLORS = sizeof(HARSH_COLORS) / sizeof(HARSH_COLORS[0]);
 // Helper functions for each phase
 void displayProgress(unsigned long currentTime, unsigned long startTime)
 {
-    int progress = ((currentTime - startTime) * 100) / FLUSH_DURATION_MS;
-    tft.fillRect(10, 50, 220, 20, ILI9341_BLACK); // Clear previous progress
-    tft.setTextSize(1);
-    tft.setCursor(10, 50);
-    tft.printf("Progress: %d%%", progress);
+    static unsigned long lastProgressUpdate = 0;
+    const unsigned long PROGRESS_UPDATE_INTERVAL_MS = 200; // Update every 200ms for smooth bar
+    
+    // Only update if enough time has passed since last update
+    if (currentTime - lastProgressUpdate >= PROGRESS_UPDATE_INTERVAL_MS)
+    {
+        int progress = ((currentTime - startTime) * 100) / FLUSH_DURATION_MS;
+        
+        // Draw progress bar background (full width, top of screen)
+        tft.fillRect(0, PROGRESS_BAR_Y, SCREEN_WIDTH, PROGRESS_BAR_HEIGHT, ILI9341_BLACK);
+        
+        // Draw progress fill (green bar)
+        int fillWidth = (progress * SCREEN_WIDTH) / 100;
+        if (fillWidth > 0) {
+            tft.fillRect(0, PROGRESS_BAR_Y, fillWidth, PROGRESS_BAR_HEIGHT, ILI9341_GREEN);
+        }
+        
+        // Draw progress percentage text in the center of the bar
+        tft.setTextSize(1);
+        tft.setTextColor(ILI9341_WHITE);
+        tft.setCursor(SCREEN_WIDTH / 2 - 15, PROGRESS_BAR_Y + 4);
+        tft.printf("%d%%", progress);
+        
+        lastProgressUpdate = currentTime;
+    }
 }
 
 void runColorCycling(unsigned long &startTime)
@@ -66,7 +92,8 @@ void runColorCycling(unsigned long &startTime)
     // Phase 1: Rapid Color Cycling (30% of cycle)
     for (int i = 0; i < NUM_COLOR_CYCLES && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; i++)
     {
-        tft.fillScreen(HARSH_COLORS[i % NUM_COLORS]);
+        // Fill only the animation area, leaving progress bar intact
+        tft.fillRect(0, ANIMATION_START_Y, SCREEN_WIDTH, ANIMATION_HEIGHT, HARSH_COLORS[i % NUM_COLORS]);
         displayProgress(millis(), startTime);
         vTaskDelay(pdMS_TO_TICKS(COLOR_CYCLE_DELAY_MS));
     }
@@ -81,7 +108,7 @@ void runVerticalStripes(unsigned long &startTime)
         for (int x = 0; x < SCREEN_WIDTH; x += 2)
         {
             uint16_t color = ((x + offset) % 4 < 2) ? ILI9341_BLACK : ILI9341_WHITE;
-            tft.fillRect(x, 0, 2, SCREEN_HEIGHT, color);
+            tft.fillRect(x, ANIMATION_START_Y, 2, ANIMATION_HEIGHT, color);
         }
         displayProgress(millis(), startTime);
         vTaskDelay(pdMS_TO_TICKS(STRIPE_DELAY_MS));
@@ -93,7 +120,7 @@ void runCheckerboard(unsigned long &startTime)
     // Phase 3: Moving Checkerboard (30% of cycle)
     for (int offset = 0; offset < SCREEN_WIDTH && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; offset += STRIPE_STEP)
     {
-        for (int y = 0; y < SCREEN_HEIGHT; y += CHECKERBOARD_SIZE)
+        for (int y = ANIMATION_START_Y; y < SCREEN_HEIGHT; y += CHECKERBOARD_SIZE)
         {
             for (int x = 0; x < SCREEN_WIDTH; x += CHECKERBOARD_SIZE)
             {
@@ -111,7 +138,14 @@ void runRandomNoise(unsigned long &startTime)
     // Phase 4: Random Noise (10% of cycle)
     for (int i = 0; i < NUM_NOISE_FRAMES && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; i++)
     {
-        tft.fillScreen(random(65536));
+        // Fill only the animation area with random colors
+        for (int y = ANIMATION_START_Y; y < SCREEN_HEIGHT; y++)
+        {
+            for (int x = 0; x < SCREEN_WIDTH; x++)
+            {
+                tft.drawPixel(x, y, random(65536));
+            }
+        }
         displayProgress(millis(), startTime);
         vTaskDelay(pdMS_TO_TICKS(NOISE_DELAY_MS));
     }
@@ -207,25 +241,24 @@ void startFlushProcess()
     // Update the duration based on user selection - convert seconds directly to milliseconds
     FLUSH_DURATION_MS = durationOptions[selectedDurationIndex] * 1000;
 
-    // Clear the screen and prepare for flushing
-    tft.fillScreen(ILI9341_BLACK);
+    // Clear the animation area (leave progress bar area for now)
+    tft.fillRect(0, ANIMATION_START_Y, SCREEN_WIDTH, ANIMATION_HEIGHT, ILI9341_BLACK);
     tft.setTextColor(ILI9341_WHITE);
 
-    // Display title
+    // Display title in animation area
     tft.setTextSize(2);
-    tft.setCursor(10, 10);
+    tft.setCursor(10, ANIMATION_START_Y + 10);
     tft.println("Pixel Flushing");
 
     // Show selected duration
     tft.setTextSize(1);
-    tft.setCursor(10, 40);
+    tft.setCursor(10, ANIMATION_START_Y + 40);
     tft.print("Duration: ");
     tft.print(durationOptions[selectedDurationIndex]);
     tft.println(" minutes");
 
-    // Display initial progress
-    tft.setCursor(10, 50);
-    tft.println("Progress: 0%");
+    // Draw initial progress bar
+    displayProgress(0, 0); // Force initial draw
 
     // Mark flushing as running
     pixelFlushRunning = true;
@@ -276,13 +309,14 @@ void startPixelFlush(void *parameters)
     // If cancelled, show cancellation message
     if (pixelFlushCancelled)
     {
-        tft.fillScreen(ILI9341_BLACK);
-        tft.setCursor(10, 10);
+        // Clear animation area but keep progress bar
+        tft.fillRect(0, ANIMATION_START_Y, SCREEN_WIDTH, ANIMATION_HEIGHT, ILI9341_BLACK);
+        tft.setCursor(10, ANIMATION_START_Y + 10);
         tft.setTextColor(ILI9341_RED);
         tft.setTextSize(2);
         tft.println("Flushing Cancelled");
         tft.setTextSize(1);
-        tft.setCursor(10, 50);
+        tft.setCursor(10, ANIMATION_START_Y + 50);
         unsigned long elapsedTime = millis() - startTime;
         int progress = (elapsedTime * 100) / FLUSH_DURATION_MS;
         tft.printf("Progress: %d%%", progress);
@@ -290,13 +324,14 @@ void startPixelFlush(void *parameters)
     else
     {
         // Show completion message
-        tft.fillScreen(ILI9341_BLACK);
-        tft.setCursor(10, 10);
+        // Clear animation area but keep progress bar
+        tft.fillRect(0, ANIMATION_START_Y, SCREEN_WIDTH, ANIMATION_HEIGHT, ILI9341_BLACK);
+        tft.setCursor(10, ANIMATION_START_Y + 10);
         tft.setTextColor(ILI9341_WHITE);
         tft.setTextSize(2);
         tft.println("Flushing Complete");
         tft.setTextSize(1);
-        tft.setCursor(10, 50);
+        tft.setCursor(10, ANIMATION_START_Y + 50);
         tft.println("Progress: 100%");
     }
 
