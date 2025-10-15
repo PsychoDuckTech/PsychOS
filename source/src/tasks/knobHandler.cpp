@@ -5,7 +5,8 @@
 #include "tasks/displayHandler.h"
 #include "main.h"
 #include "display/screens.h"
-#include "display/pixelFlushScreen.h" 
+#include "display/pixelFlushScreen.h"
+#include "display/components/uiComponents.h"  // For menu system
 #include "freertos/queue.h"
 #include "freertos/timers.h"
 
@@ -303,28 +304,10 @@ void knobHandler(void *parameters)
                     break;
                 }
                 case SettingsScreen:
-                    switch (settingsSelectedOption)
-                    {
-                    case 0:
-                        switchScreen(ModulesSubmenu);
-                        break;
-                    case 1:
-                        switchScreen(RGBLightingSubmenu);
-                        break;
-                    case 2:
-                        settingsSelectedOption = 0;
-                        switchScreen(ClockSubmenu);
-                        break;
-                    case 3:
-                        pixelFlushComplete = false;
-                        switchScreen(PixelFlushScreen);
-                        break;
-                    case 4:
-                        // Languages menu - placeholder for now
-                        break;
-                    case 5:
-                        // About menu - placeholder for now
-                        break;
+                    // Use centralized menu actions
+                    extern const ScrollableMenuItem settingsMenuItems[];
+                    if (settingsSelectedOption >= 0 && settingsSelectedOption < 6) {
+                        settingsMenuItems[settingsSelectedOption].action();
                     }
                     break;
                 case RGBLightingSubmenu:

@@ -10,7 +10,7 @@ QueueHandle_t settingsRotationQueue = NULL;
 extern bool updatedMinutes;
 
 // Settings menu configuration (mirrored from settingsScreen.cpp)
-const int SETTINGS_MENU_ITEM_COUNT = 6;
+// const int SETTINGS_MENU_ITEM_COUNT = 6;  // Now defined in uiComponents.h
 
 // Declare global variables
 Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);

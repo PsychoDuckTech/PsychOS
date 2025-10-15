@@ -14,14 +14,22 @@ extern Adafruit_ILI9341 tft;
 extern bool needsFullRedraw;
 extern int settingsSelectedOption;
 
-// Settings menu configuration
+// Forward declarations for menu actions
+void actionModules();
+void actionUnderglow();
+void actionClock();
+void actionPixelFlush();
+void actionLanguages();
+void actionAbout();
+
+// Settings menu configuration - defined in uiComponents.h
 const ScrollableMenuItem settingsMenuItems[] = {
-    {ui_modules, iconBleConnectedBig, 14, 22},
-    {ui_underglow, iconLightBulb, 18, 23},
-    {ui_clock, iconTranslation, 22, 22},
-    {ui_pixel_flush, nullptr, 0, 0},
-    {ui_languages, nullptr, 0, 0},
-    {ui_about, iconInfo, 14, 22}  // About option with I icon
+    {ui_modules, iconBleConnectedBig, 14, 22, actionModules},
+    {ui_underglow, iconLightBulb, 18, 23, actionUnderglow},
+    {ui_clock, iconTranslation, 22, 22, actionClock},
+    {ui_pixel_flush, nullptr, 0, 0, actionPixelFlush},
+    {ui_languages, nullptr, 0, 0, actionLanguages},
+    {ui_about, iconInfo, 14, 22, actionAbout}
 };
 
 const int SETTINGS_MENU_ITEM_COUNT = 6;
@@ -106,4 +114,31 @@ void displaySettingsScreen(void *parameters)
             break; // Only one selected item
         }
     }
+}
+
+// Menu action implementations - centralized in one place
+void actionModules() {
+    switchScreen(ModulesSubmenu);
+}
+
+void actionUnderglow() {
+    switchScreen(RGBLightingSubmenu);
+}
+
+void actionClock() {
+    settingsSelectedOption = 0;
+    switchScreen(ClockSubmenu);
+}
+
+void actionPixelFlush() {
+    pixelFlushComplete = false;
+    switchScreen(PixelFlushScreen);
+}
+
+void actionLanguages() {
+    // Languages menu - placeholder for now
+}
+
+void actionAbout() {
+    // About menu - placeholder for now
 }

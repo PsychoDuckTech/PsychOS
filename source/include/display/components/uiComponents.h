@@ -9,7 +9,12 @@ struct ScrollableMenuItem {
     const uint8_t *icon;
     int iconWidth;
     int iconHeight;
+    void (*action)();  // Function to call when selected
 };
+
+// Settings menu configuration - centralized
+extern const ScrollableMenuItem settingsMenuItems[];
+extern const int SETTINGS_MENU_ITEM_COUNT;
 
 // UI Component function declarations
 
