@@ -9,6 +9,9 @@ QueueHandle_t settingsRotationQueue = NULL;
 
 extern bool updatedMinutes;
 
+// Settings menu configuration (mirrored from settingsScreen.cpp)
+const int SETTINGS_MENU_ITEM_COUNT = 6;
+
 // Declare global variables
 Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
 ScreenType currentScreen = MainScreen;
@@ -155,27 +158,50 @@ void displayHandler(void *parameters)
         if (currentScreen == SettingsScreen || currentScreen == ClockSubmenu)
         {
             SettingsRotationEvent event;
-            int totalRotation = 0;
 
-            // Collect all pending rotation events
-            while (xQueueReceive(settingsRotationQueue, &event, 0) == pdTRUE)
-            {
-                totalRotation += event.totalSteps;
-            }
-
-            // Apply accumulated rotation if any
-            if (totalRotation != 0)
+            // Process rotation events one by one for immediate response
+            if (xQueueReceive(settingsRotationQueue, &event, 0) == pdTRUE)
             {
                 if (currentScreen == SettingsScreen)
                 {
-                    // Calculate new position considering total rotation
-                    int newPosition = settingsSelectedOption - totalRotation;
+                    const int MAX_VISIBLE_ITEMS = 4;
+                    int currentPage = settingsSelectedOption / MAX_VISIBLE_ITEMS;
+                    int itemsOnCurrentPage = min(MAX_VISIBLE_ITEMS, SETTINGS_MENU_ITEM_COUNT - (currentPage * MAX_VISIBLE_ITEMS));
+                    int lastItemOnPage = (currentPage * MAX_VISIBLE_ITEMS) + (itemsOnCurrentPage - 1);
+                    int firstItemOnPage = currentPage * MAX_VISIBLE_ITEMS;
 
-                    // Clamp the position between 0 and 3 without wrapping
+                    // Calculate new position considering rotation
+                    int newPosition = settingsSelectedOption - event.totalSteps;
+
+                    // Handle page transitions
+                    if (event.totalSteps > 0) { // Scrolling up (towards higher indices)
+                        if (settingsSelectedOption == lastItemOnPage && newPosition > lastItemOnPage) {
+                            // At last item on page, scrolling up - go to next page
+                            int nextPage = currentPage + 1;
+                            if (nextPage * MAX_VISIBLE_ITEMS < SETTINGS_MENU_ITEM_COUNT) {
+                                newPosition = nextPage * MAX_VISIBLE_ITEMS;
+                            } else {
+                                newPosition = lastItemOnPage; // Stay on current page
+                            }
+                        }
+                    } else if (event.totalSteps < 0) { // Scrolling down (towards lower indices)
+                        if (settingsSelectedOption == firstItemOnPage && newPosition < firstItemOnPage) {
+                            // At first item on page, scrolling down - go to previous page
+                            int prevPage = currentPage - 1;
+                            if (prevPage >= 0) {
+                                int prevPageLastItem = min((prevPage + 1) * MAX_VISIBLE_ITEMS - 1, SETTINGS_MENU_ITEM_COUNT - 1);
+                                newPosition = prevPageLastItem;
+                            } else {
+                                newPosition = firstItemOnPage; // Stay on current page
+                            }
+                        }
+                    }
+
+                    // Clamp the position between 0 and SETTINGS_MENU_ITEM_COUNT - 1
                     if (newPosition < 0)
                         newPosition = 0;
-                    if (newPosition > 3)
-                        newPosition = 3;
+                    if (newPosition >= SETTINGS_MENU_ITEM_COUNT)
+                        newPosition = SETTINGS_MENU_ITEM_COUNT - 1;
 
                     if (settingsSelectedOption != newPosition)
                     {
@@ -189,13 +215,13 @@ void displayHandler(void *parameters)
                     switch (settingsSelectedOption)
                     {
                     case 0: // Hours
-                        hours = (hours - totalRotation + 24) % 24;
+                        hours = (hours - event.totalSteps + 24) % 24;
                         break;
                     case 1: // Minutes
-                        minutes = (minutes - totalRotation + 60) % 60;
+                        minutes = (minutes - event.totalSteps + 60) % 60;
                         break;
                     case 2: // Seconds
-                        seconds = (seconds - totalRotation + 60) % 60;
+                        seconds = (seconds - event.totalSteps + 60) % 60;
                         break;
                     }
                     displayClockSubmenu(nullptr);

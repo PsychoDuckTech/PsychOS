@@ -136,4 +136,6 @@ const char *ui_hours = "Hours";
 const char *ui_minutes = "Minutes";
 const char *ui_seconds = "Seconds";
 const char *ui_pixel_flush = "Pixel Flush";
+const char *ui_languages = "Languages";
+const char *ui_about = "About";
 #endif

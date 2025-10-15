@@ -319,6 +319,12 @@ void knobHandler(void *parameters)
                         pixelFlushComplete = false;
                         switchScreen(PixelFlushScreen);
                         break;
+                    case 4:
+                        // Languages menu - placeholder for now
+                        break;
+                    case 5:
+                        // About menu - placeholder for now
+                        break;
                     }
                     break;
                 case RGBLightingSubmenu:

@@ -63,3 +63,5 @@ extern const char *ui_hours;
 extern const char *ui_minutes;
 extern const char *ui_seconds;
 extern const char *ui_pixel_flush;
+extern const char *ui_languages;
+extern const char *ui_about;
