@@ -88,35 +88,30 @@ void processCommand(String data)
         return;
     }
 
-    // Extract command and value/query using C-style strings for better performance
-    char command[64] = {0};
+    String command;
     int value = 0;
     bool isQuery = (queryIndex != -1);
 
     // Extract command and value/query
     if (isQuery)
     {
-        strncpy(command, data.c_str(), queryIndex);
-        command[queryIndex] = '\0';
+        command = data.substring(0, queryIndex);
     }
     else
     {
-        strncpy(command, data.c_str(), spaceIndex);
-        command[spaceIndex] = '\0';
-        value = atoi(data.c_str() + spaceIndex + 1);
+        command = data.substring(0, spaceIndex);
+        value = data.substring(spaceIndex + 1).toInt();
     }
 
     // Iterate through the command table to find a match
     for (int i = 0; i < commandCount; i++)
     {
-        if (strcmp(command, commandTable[i].name) == 0)
+        if (command == commandTable[i].name)
         {
             if (isQuery)
             {
                 // Query command
-                Serial.print(command);
-                Serial.print(" is: ");
-                Serial.println(commandTable[i].getFunc());
+                Serial.println(command + " is: " + String(commandTable[i].getFunc()));
             }
             else
             {
@@ -127,13 +122,8 @@ void processCommand(String data)
                 }
                 else
                 {
-                    Serial.print("Invalid value for ");
-                    Serial.print(command);
-                    Serial.print(". Must be between ");
-                    Serial.print(commandTable[i].minValue);
-                    Serial.print(" and ");
-                    Serial.print(commandTable[i].maxValue);
-                    Serial.println(".");
+                    Serial.println("Invalid value for " + command + ". Must be between " +
+                                   commandTable[i].minValue + " and " + commandTable[i].maxValue + ".");
                 }
             }
             return; // Command handled
@@ -141,25 +131,22 @@ void processCommand(String data)
     }
 
     // Special handling for text-based commands
-    if (strcmp(command, "songTitle") == 0)
+    if (command == "songTitle")
     {
         if (isQuery)
         {
-            Serial.print("Current song title: ");
-            Serial.println(currentSongTitle);
+            Serial.println("Current song title: " + String(currentSongTitle));
         }
         else
         {
             // For songTitle, we need to grab the entire rest of the command after the first space
-            const char* songTitleStr = data.c_str() + spaceIndex + 1;
-            updateSongTitle(songTitleStr);
-            Serial.print("Song title updated to: ");
-            Serial.println(songTitleStr);
+            String songTitle = data.substring(spaceIndex + 1);
+            updateSongTitle(songTitle.c_str());
+            Serial.println("Song title updated to: " + songTitle);
         }
         return; // Command handled
     }
 
-    Serial.print("Unknown command: ");
-    Serial.println(command);
+    Serial.println("Unknown command: " + command);
     vTaskDelay(1);
 }

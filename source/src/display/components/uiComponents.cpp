@@ -201,10 +201,9 @@ void drawSliderButton(const char *buttonText, int value, int maxValue, const uin
         snprintf(valueStr, sizeof(valueStr), "%d", value);
     }
 
-    // Calculate text width for precise positioning using getTextBounds
-    int16_t x1, y1;
-    uint16_t textWidth, textHeight;
-    tft.getTextBounds(valueStr, 0, 0, &x1, &y1, &textWidth, &textHeight);
+    // Calculate text width for positioning
+    int charWidth = 12; // Approximate width per character at text size 2
+    int textWidth = strlen(valueStr) * charWidth;
 
     // Position value on the far right side but still inside the button
     // The button width is approximately 220px, leave proper margin
@@ -354,15 +353,24 @@ void drawFrame(int x, int y, int width, int height, uint16_t color, int thicknes
     }
     else
     {
-        // Draw four-pixel lines using fillRect for better performance
-        // Top border
-        tft.fillRect(x + cornerSize, y, width - 2 * cornerSize, 4, color);
-        // Bottom border
-        tft.fillRect(x + cornerSize, y + height - 4, width - 2 * cornerSize, 4, color);
-        // Left border
-        tft.fillRect(x, y + cornerSize, 4, height - 2 * cornerSize, color);
-        // Right border
-        tft.fillRect(x + width - 4, y + cornerSize, 4, height - 2 * cornerSize, color);
+        // Draw four-pixel lines
+        // Horizontal lines
+        for (int i = 0; i < 4; i++)
+        {
+            // Top lines
+            tft.drawFastHLine(x + cornerSize, y + i, width - 2 * cornerSize, color);
+            // Bottom lines
+            tft.drawFastHLine(x + cornerSize, y + height - 4 + i, width - 2 * cornerSize, color);
+        }
+
+        // Vertical lines
+        for (int i = 0; i < 4; i++)
+        {
+            // Left lines
+            tft.drawFastVLine(x + i, y + cornerSize, height - 2 * cornerSize, color);
+            // Right lines
+            tft.drawFastVLine(x + width - 4 + i, y + cornerSize, height - 2 * cornerSize, color);
+        }
     }
 }
 

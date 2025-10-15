@@ -25,29 +25,12 @@ static uint8_t previousNumColors;
 static bool inTemporaryEffect = false;
 static unsigned long temporaryEffectEnd = 0;
 
-// Gamma correction lookup table for faster processing
-static uint8_t gammaTable[256];
-// Brightness gamma correction lookup table (0.0-1.0 mapped to 0-255)
-static uint8_t brightnessGammaTable[256];
-// Sine-based easing lookup table for breathing effect (brightness 0.0-1.0 mapped to eased 0.0-1.0)
-static uint8_t sineEaseTable[256];
-
-// Initialize gamma lookup table
-static void initGammaTable() {
-    for (int i = 0; i < 256; i++) {
-        gammaTable[i] = (uint8_t)(pow((float)i / 255.0f, 2.2f) * 255.0f + 0.5f);
-        brightnessGammaTable[i] = (uint8_t)(pow((float)i / 255.0f, 2.2f) * 255.0f + 0.5f);
-        // Precompute sine-based easing: (sin(i/255 * π - π/2) + 1) / 2
-        float brightness = (float)i / 255.0f;
-        float eased = (sin(brightness * M_PI - M_PI / 2) + 1.0f) / 2.0f;
-        sineEaseTable[i] = (uint8_t)(eased * 255.0f + 0.5f);
-    }
-}
-
 // Helper function to apply gamma correction (gamma 2.2)
 static uint8_t applyGamma(uint8_t value)
 {
-    return gammaTable[value];
+    // Formula: (value/255)^(gamma) * 255
+    // Using fixed-point arithmetic for speed, approximating gamma 2.2
+    return (uint8_t)(pow((float)value / 255.0f, 2.2f) * 255.0f + 0.5f);
 }
 
 // Function to blend two RGB colors
@@ -140,7 +123,9 @@ static void applyCurrentEffect()
 {
     if (currentEffect.effect == RGB_EFFECT_STATIC)
     {
-        strip.fill(effectColors[0]);
+        for(int i = 0; i < NUM_LEDS; i++) {
+            strip.setPixelColor(i, effectColors[0]);
+        }
         strip.show();
     }
     else if (currentEffect.effect == RGB_EFFECT_BREATHE)
@@ -207,13 +192,11 @@ static void applyCurrentEffect()
                 }
             }
 
-            // Use sine-based easing for more natural breathing (lookup table optimization)
-            uint8_t brightnessIndex = (uint8_t)(brightness * 255.0f);
-            float easedBrightness = sineEaseTable[brightnessIndex] / 255.0f;
+            // Use sine-based easing for more natural breathing
+            float easedBrightness = (sin(brightness * M_PI - M_PI / 2) + 1.0f) / 2.0f;
 
             // Apply gamma correction for perceptual brightness
-            uint8_t gammaIndex = (uint8_t)(easedBrightness * 255.0f);
-            float gammaCorrectedBrightness = brightnessGammaTable[gammaIndex] / 255.0f;
+            float gammaCorrectedBrightness = pow(easedBrightness, 2.2f);
 
             // Blend between current and next color based on transition progress
             uint32_t finalColor;
@@ -238,72 +221,55 @@ static void applyCurrentEffect()
             b = (uint8_t)(b * gammaCorrectedBrightness);
             finalColor = strip.Color(r, g, b);
 
-            strip.fill(finalColor);
+            for(int i = 0; i < NUM_LEDS; i++) {
+                strip.setPixelColor(i, finalColor);
+            }
             strip.show();
         }
     }
     else if (currentEffect.effect == RGB_EFFECT_RUNNER)
     {
-        static uint16_t phase = 0; // Use fixed point: 0-65535 represents 0.0-1.0
-        uint16_t speed = (uint16_t)((float)currentEffect.speed / 255.0f * 0.005f * 65536.0f); // Convert to fixed point increment
+        static float phase = 0.0f;
+        float speed = (float)currentEffect.speed / 255.0f * 0.005f; // Max speed = 0.005f
 
         for (int i = 0; i < NUM_LEDS; i++)
         {
-            // Calculate position using fixed point arithmetic (much faster than fmod)
-            uint16_t ledPos = (uint16_t)((uint32_t)i * 65536UL / NUM_LEDS);
-            uint16_t totalPos = (ledPos + phase) & 0xFFFF; // Wrap using bitwise AND instead of fmod
-
+            float position = fmod((float)i / NUM_LEDS + phase, 1.0f);
             if (i < 10) {
-                totalPos = 65535 - totalPos; // 1.0 - position in fixed point
+                position = 1.0f - position;
             }
+            int colorIndex1 = floor(position * (numColors - 1));
+            int colorIndex2 = ceil(position * (numColors - 1));
+            float ratio = (position * (numColors - 1)) - colorIndex1;
 
-            // Convert back to float for color calculation (only when needed)
-            float position = (float)totalPos / 65535.0f;
-
-            // Calculate color indices using integer math where possible
-            float scaledPos = position * (numColors - 1);
-            int colorIndex1 = (int)scaledPos;
-            float ratio = scaledPos - colorIndex1;
-            int colorIndex2 = (colorIndex1 + 1) % numColors;
-
-            uint32_t blended = blendColors(effectColors[colorIndex1], effectColors[colorIndex2], ratio);
+            uint32_t blended = blendColors(effectColors[colorIndex1 % numColors], effectColors[colorIndex2 % numColors], ratio);
             strip.setPixelColor(i, blended);
         }
 
-        // Update phase
-        phase = (phase + speed) & 0xFFFF; // Wrap using bitwise AND
+        phase += speed;
+        if (phase >= 1.0f)
+            phase -= 1.0f;
         strip.show();
     }
     else if (currentEffect.effect == RGB_EFFECT_SCROLL)
     {
-        static uint16_t phase = 0; // Use fixed point: 0-65535 represents 0.0-1.0
-        uint16_t speed = (uint16_t)((float)currentEffect.speed / 255.0f * 0.01f * 65536.0f); // Convert to fixed point increment
-
+        static float phase = 0.0f;
+        phase += (float)currentEffect.speed / 255.0f * 0.01f;
+        if (phase >= 1.0f)
+            phase -= 1.0f;
         for (int i = 0; i < NUM_LEDS; i++)
         {
-            // Calculate position using fixed point arithmetic
-            uint16_t ledPos = (uint16_t)((uint32_t)i * 65536UL / NUM_LEDS);
-            uint16_t totalPos = (ledPos + phase) & 0xFFFF; // Wrap using bitwise AND
-
+            float position = fmod((float)i / NUM_LEDS + phase, 1.0f);
             if (i < 10) {
-                totalPos = 65535 - totalPos; // 1.0 - position in fixed point
+                position = 1.0f - position;
             }
-
-            // Convert to float for color calculation
-            float position = (float)totalPos / 65535.0f;
             float scaledPosition = position * numColors;
-
-            // Calculate color indices
-            int colorIndex1 = (int)scaledPosition % numColors;
+            int colorIndex1 = static_cast<int>(floor(scaledPosition)) % numColors;
             int colorIndex2 = (colorIndex1 + 1) % numColors;
-            float ratio = scaledPosition - (int)scaledPosition;
-
+            float ratio = scaledPosition - floor(scaledPosition);
             uint32_t blended = blendColors(effectColors[colorIndex1], effectColors[colorIndex2], ratio);
             strip.setPixelColor(i, blended);
         }
-
-        // Update phase
-        phase = (phase + speed) & 0xFFFF; // Wrap using bitwise AND
         strip.show();
     }
     else if (currentEffect.effect == RGB_EFFECT_FLASH)
@@ -316,7 +282,7 @@ static void applyCurrentEffect()
             on = !on;
             lastFlash = now;
             uint32_t color = on ? effectColors[0] : effectColors[1];
-            strip.fill(color);
+            for(int i = 0; i < NUM_LEDS; i++) strip.setPixelColor(i, color);
             strip.show();
         }
     }
@@ -366,9 +332,6 @@ void rgbTask(void *parameters)
     digitalWrite(GPIO46, HIGH);
     strip.begin();
     strip.setBrightness(255); // Will be updated by updateBrightness
-
-    // Initialize gamma correction lookup table for faster processing
-    initGammaTable();
 
     // Create the response queue for getting values back from the RGB task
     rgbResponseQueue = xQueueCreate(1, sizeof(RGBResponse));

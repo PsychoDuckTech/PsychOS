@@ -5,8 +5,7 @@
 const auto keyMap = keyMapL0;
 const auto keyName = keyNameL0;
 
-constexpr bool BENCHMARK_ENABLED = false;  // Set to true to enable benchmarking
-constexpr bool DEBUG_KEY_EVENTS = false;  // Set to true to enable key event debugging on serial
+constexpr bool BENCHMARK_ENABLED = true;  // Set to false to disable benchmarking entirely
 constexpr unsigned long BENCHMARK_WINDOW_MS = 4500; // Benchmarking window in milliseconds
 constexpr unsigned long DEBOUNCE_DELAY_MS = 10;
 constexpr unsigned long ELECTRICAL_DELAY_US = 1;
@@ -74,14 +73,15 @@ void matrixScan(void *parameters)
                         switch (keyMap[row][col])
                         {
                         case 0:
-                            if (DEBUG_KEY_EVENTS)
-                                Serial.printf("Empty key event at row %d, col %d, reading: %d\n", row, col, reading);
+                            Serial.printf("Empty key %s\n", (reading ? "pressed" : "released"));
                             break;
                         default:
+                            if (BENCHMARK_ENABLED)
+                            {
+                                Serial.printf("Key %s %s\n", keyName[row][col], (reading ? "pressed" : "released"));
+                            }
                             if (reading)
                             {
-                                if (DEBUG_KEY_EVENTS)
-                                    Serial.printf("Key press: %s (row %d, col %d)\n", keyName[row][col], row, col);
                                 HostMessage msg;
                                 msg.type = KEY_PRESS;
                                 msg.data = keyMap[row][col];
@@ -89,8 +89,6 @@ void matrixScan(void *parameters)
                             }
                             else
                             {
-                                if (DEBUG_KEY_EVENTS)
-                                    Serial.printf("Key release: %s (row %d, col %d)\n", keyName[row][col], row, col);
                                 HostMessage msg;
                                 msg.type = KEY_RELEASE;
                                 msg.data = keyMap[row][col];

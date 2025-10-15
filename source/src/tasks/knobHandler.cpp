@@ -11,8 +11,6 @@
 
 extern void displayPixelFlushScreen();
 extern bool needsFullRedraw;
-extern bool capsLockStatus;
-extern bool updateMainScreen;
 
 constexpr unsigned long POLLING_RATE_MS = 20;
 // CORREÇÃO: Reduzido de 50ms para 5ms. 
@@ -33,37 +31,22 @@ EncoderHandler knob(KNOB_DT_PIN, KNOB_CLK_PIN, KNOB_SW_PIN);
 static volatile unsigned long pressStartTime = 0;
 static volatile bool buttonIsPressed = false;
 static volatile unsigned long lastButtonTime = 0;
-static volatile bool longPressDetected = false; // Flag to track if long press was detected for current press
 static TimerHandle_t longPressTimer = NULL;
-
-// Variáveis para Double Press
-static volatile unsigned long lastShortPressTime = 0;
-static volatile bool waitingForDoublePress = false;
-static TimerHandle_t doublePressTimer = NULL;
 
 // Enum para tipos de eventos de botão
 enum ButtonEventType {
     SHORT_PRESS,
     LONG_PRESS_DETECTED,
-    DOUBLE_PRESS
+    // DOUBLE_PRESS pode ser calculado no task handler
 };
 
 // Callback do temporizador para Long Press
 void longPressTimerCallback(TimerHandle_t xTimer) {
     if (buttonIsPressed) {
-        longPressDetected = true; // Mark that long press was detected
         ButtonEventType event = LONG_PRESS_DETECTED;
         // Enviar o evento do timer para a fila
         xQueueSendFromISR(knobButtonQueue, &event, NULL);
     }
-}
-
-// Callback do temporizador para Double Press
-void doublePressTimerCallback(TimerHandle_t xTimer) {
-    waitingForDoublePress = false;
-    // Send the pending SHORT_PRESS since double press window expired
-    ButtonEventType event = SHORT_PRESS;
-    xQueueSendFromISR(knobButtonQueue, &event, NULL);
 }
 
 // Funções de ISR para detetar pressionamentos
@@ -84,7 +67,6 @@ void IRAM_ATTR knobButtonISR() {
         // Pressionamento detectado (Início)
         pressStartTime = currentTime;
         buttonIsPressed = true;
-        longPressDetected = false; // Reset flag for new press
         // Iniciar o temporizador de Long Press (225ms definido no EncoderHandler.h)
         xTimerStartFromISR(longPressTimer, &xHigherPriorityTaskWoken);
     } else {
@@ -93,22 +75,10 @@ void IRAM_ATTR knobButtonISR() {
             unsigned long duration = currentTime - pressStartTime;
             xTimerStopFromISR(longPressTimer, &xHigherPriorityTaskWoken);
             
-            // Only send SHORT_PRESS if no long press was detected
-            if (!longPressDetected && duration < 225) {
-                unsigned long currentTime = millis();
-                
-                if (waitingForDoublePress && (currentTime - lastShortPressTime) <= 300) {
-                    // Double press detected
-                    xTimerStopFromISR(doublePressTimer, &xHigherPriorityTaskWoken);
-                    waitingForDoublePress = false;
-                    event = DOUBLE_PRESS;
-                    xQueueSendFromISR(knobButtonQueue, &event, &xHigherPriorityTaskWoken);
-                } else {
-                    // Start waiting for double press - timer will send SHORT_PRESS if no double press
-                    waitingForDoublePress = true;
-                    lastShortPressTime = currentTime;
-                    xTimerStartFromISR(doublePressTimer, &xHigherPriorityTaskWoken);
-                }
+            // Se o temporizador não detetou um Long Press (i.e., duração < 225ms)
+            if (duration < 350) {
+                event = SHORT_PRESS;
+                xQueueSendFromISR(knobButtonQueue, &event, &xHigherPriorityTaskWoken);
             }
             buttonIsPressed = false;
         }
@@ -125,19 +95,10 @@ static void setupKnobISR() {
     // Configurar o Timer para o Long Press
     longPressTimer = xTimerCreate(
         "LongPressTimer",
-        pdMS_TO_TICKS(225), // LONG_PRESS_TIME do EncoderHandler.h
+        pdMS_TO_TICKS(350), // LONG_PRESS_TIME do EncoderHandler.h
         pdFALSE,            // Não repetir
         (void *)0,
         longPressTimerCallback
-    );
-
-    // Configurar o Timer para o Double Press
-    doublePressTimer = xTimerCreate(
-        "DoublePressTimer",
-        pdMS_TO_TICKS(300), // 300ms window for double press
-        pdFALSE,            // Não repetir
-        (void *)0,
-        doublePressTimerCallback
     );
 
     // Anexar a ISR ao pino do botão
@@ -245,7 +206,7 @@ void knobHandler(void *parameters)
                             cmd.data.effect.config = {RGB_EFFECT_SCROLL,
                                                       static_cast<uint8_t>(map(rgbState.speed, 1, 20, 1, 255)), 255};
                             strncpy(cmd.data.effect.colors[0], "#1d1d1d", HEX_COLOR_LENGTH); // Dark Brown
-                            strncpy(cmd.data.effect.colors[1], "#936778", HEX_COLOR_LENGTH); // Light Brown
+                            strncpy(cmd.data.effect.colors[1], "#674de0", HEX_COLOR_LENGTH); // Light Brown
                             cmd.data.effect.num_colors = 2;
                             break;
 
@@ -372,17 +333,7 @@ void knobHandler(void *parameters)
                     handlePixelFlushKnobPress();
                     break;
                 }
-            }
-            else if (buttonEvent == DOUBLE_PRESS)
-            {
-                // Lógica de Double Press - only on Main Screen for caps lock toggle
-                if (currentScreen == MainScreen)
-                {
-                    capsLockStatus = !capsLockStatus;
-                    // Force top bar redraw to show caps lock change
-                    updateMainScreen = true;
-                }
-            }
+            } 
             else if (buttonEvent == LONG_PRESS_DETECTED)
             {
                 // Lógica de Long Press

@@ -15,7 +15,7 @@ extern bool moduleConnectionStatus;
 extern const char *connectedModuleName;
 
 // Function prototype for delay estimation
-float calculateDelayFromRSSI(int rssi);
+int calculateDelayFromRSSI(int rssi);
 
 void displayModulesSubmenu(void *parameters)
 {
@@ -26,6 +26,13 @@ void displayModulesSubmenu(void *parameters)
     static unsigned long lastTimeCheck = 0;
     static unsigned long previousSeconds = 0;
     static bool staticElementsDrawn = false;
+
+    // Declare textX once for the entire function
+    int textX;
+
+    // Declare text bounds variables once for the entire function
+    int16_t x1, y1;
+    uint16_t w, h;
 
     unsigned long currentMillis = millis();
     unsigned long currentSeconds = currentMillis / 1000;
@@ -126,8 +133,6 @@ void displayModulesSubmenu(void *parameters)
             tft.setTextSize(2);
             tft.setFont();
             tft.setTextColor(ERROR_COLOR);
-            int16_t x1, y1;
-            uint16_t w, h;
             tft.getTextBounds(ui_no_module, 0, 0, &x1, &y1, &w, &h);
             int nameX = 15 + (210 - w) / 2;
             tft.setCursor(nameX, 95);
@@ -136,7 +141,7 @@ void displayModulesSubmenu(void *parameters)
             // Center the status message
             tft.setTextSize(1);
             tft.getTextBounds(ui_no_module_desc, 0, 0, &x1, &y1, &w, &h);
-            int textX = 15 + (210 - w) / 2;
+            textX = 15 + (210 - w) / 2;
             tft.setCursor(textX, 125);
             tft.setTextColor(MUTED_COLOR);
             tft.print(ui_no_module_desc);
@@ -147,6 +152,7 @@ void displayModulesSubmenu(void *parameters)
             tft.setTextSize(1);
 
             // Center "Status" text
+            tft.setTextSize(1);
             tft.getTextBounds(ui_status, 0, 0, &x1, &y1, &w, &h);
             textX = 15 + (100 - w) / 2;
             tft.setCursor(textX, 175);
@@ -185,10 +191,8 @@ void displayModulesSubmenu(void *parameters)
 
             // Center status text
             tft.setTextSize(1);
-            int16_t x1, y1;
-            uint16_t w, h;
             tft.getTextBounds(ui_searching, 0, 0, &x1, &y1, &w, &h);
-            int textX = 15 + (100 - w) / 2;
+            textX = 15 + (100 - w) / 2;
             tft.setCursor(textX, 195);
             tft.setTextColor(ERROR_COLOR);
             tft.print(ui_searching);
@@ -248,10 +252,9 @@ void displayModulesSubmenu(void *parameters)
             tft.setTextSize(1);
 
             // Center "Key Presses" text
-            int16_t x1, y1;
-            uint16_t w, h;
+            tft.setTextSize(1);
             tft.getTextBounds(ui_key_presses, 0, 0, &x1, &y1, &w, &h);
-            int textX = 15 + (100 - w) / 2;
+            textX = 15 + (100 - w) / 2;
             tft.setCursor(textX, 175);
             tft.setTextColor(TEXT_COLOR);
             tft.print(ui_key_presses);
@@ -305,12 +308,12 @@ void displayModulesSubmenu(void *parameters)
             }
 
             // Center the connection time text (optimized without String concatenation)
-            int16_t x1, y1;
-            uint16_t w1, h1, w2, h2;
-            tft.getTextBounds(ui_connected, 0, 0, &x1, &y1, &w1, &h1);
-            tft.getTextBounds(timeStr, 0, 0, &x1, &y1, &w2, &h2);
+            tft.getTextBounds(ui_connected, 0, 0, &x1, &y1, &w, &h);
+            uint16_t w1 = w;
+            tft.getTextBounds(timeStr, 0, 0, &x1, &y1, &w, &h);
+            uint16_t w2 = w;
             int totalWidth = w1 + w2;
-            int textX = 15 + (210 - totalWidth) / 2;
+            textX = 15 + (210 - totalWidth) / 2;
 
             tft.setCursor(textX, 120);
             tft.setTextColor(TEXT_COLOR);
@@ -319,28 +322,28 @@ void displayModulesSubmenu(void *parameters)
             tft.print(timeStr);
 
             // Display estimated delay based on signal strength (optimized without String)
-            float estimatedDelay = calculateDelayFromRSSI(currentStats->rssi);
+            int estimatedDelay = calculateDelayFromRSSI(currentStats->rssi);
             char delayBuffer[32]; // Buffer for delay text
             uint16_t delayColor;
 
             if (estimatedDelay < 10)
             {
-                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_great);
+                sprintf(delayBuffer, "%s%d%s", ui_delay, estimatedDelay, ui_delay_great);
                 delayColor = HIGHLIGHT_COLOR;
             }
             else if (estimatedDelay < 20)
             {
-                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_good);
+                sprintf(delayBuffer, "%s%d%s", ui_delay, estimatedDelay, ui_delay_good);
                 delayColor = SUCCESS_COLOR;
             }
             else if (estimatedDelay < 50)
             {
-                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_ok);
+                sprintf(delayBuffer, "%s%d%s", ui_delay, estimatedDelay, ui_delay_ok);
                 delayColor = MUTED_COLOR;
             }
             else
             {
-                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_poor);
+                sprintf(delayBuffer, "%s%d%s", ui_delay, estimatedDelay, ui_delay_poor);
                 delayColor = ERROR_COLOR;
             }
 
@@ -382,11 +385,12 @@ void displayModulesSubmenu(void *parameters)
 
 /**
  * Calculates an estimated key click delay based on Bluetooth RSSI values
+ * Uses fixed-point arithmetic for better performance
  *
  * @param rssi Signal strength in dBm (typically between -100 and -30)
  * @return Estimated delay in milliseconds
  */
-float calculateDelayFromRSSI(int rssi)
+int calculateDelayFromRSSI(int rssi)
 {
     // RSSI ranges and their corresponding approximate delays
     // Excellent: -30 to -67 dBm: ~5-10ms
@@ -396,15 +400,18 @@ float calculateDelayFromRSSI(int rssi)
 
     // Normalize RSSI to a positive value between 0-70
     // where -30 dBm = 70 (best) and -100 dBm = 0 (worst)
-    float normalizedRSSI = constrain(rssi + 100, 0, 70);
+    int normalizedRSSI = constrain(rssi + 100, 0, 70);
 
-    // Map the normalized value to a delay estimate
+    // Map the normalized value to a delay estimate using fixed-point
     // 0 (worst) -> 100ms delay
     // 70 (best) -> 5ms delay
-    float delay = 100.0 - ((normalizedRSSI / 70.0) * 95.0);
+    // delay = 100 - ((normalizedRSSI * 95) / 70)
+    int delay = 100 - ((normalizedRSSI * 95) / 70);
 
-    // Add a slight random factor (+/- 10%) to make it feel more dynamic
-    delay *= (1.0 + ((random(21) - 10) / 100.0));
+    // Add a slight random factor (+/- 10%) using fixed-point
+    // random(21) gives 0-20, subtract 10 to get -10 to +10
+    int randomFactor = random(21) - 10;
+    delay = delay + (delay * randomFactor) / 100;
 
     return delay;
 }

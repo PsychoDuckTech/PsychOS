@@ -23,14 +23,11 @@ void displayClockSubmenu(void *parameters)
     if (needsFullRedraw)
     {
         tft.fillScreen(BG_COLOR);
-        // Draw title using same style as settings
-        drawScreenTitle(ui_clock);
-        // Draw footer
-        drawFooter();
-        // Draw help indicators
-        drawHelpIndicators(230, MUTED_COLOR);
         needsFullRedraw = false;
     }
+
+    // Draw title using same style as settings
+    drawScreenTitle(ui_clock);
 
     // Menu configuration similar to settings menu
     const int MENU_START_Y = 62;
@@ -73,6 +70,12 @@ void displayClockSubmenu(void *parameters)
     tft.setTextColor(0x0); // Black text for selected item
     tft.setCursor(180, baseY + 17);
     tft.print(valueStr);
+
+    // Draw footer
+    drawFooter();
+
+    // Draw help indicators
+    drawHelpIndicators(230, MUTED_COLOR);
 
     lastSelectedOption = settingsSelectedOption;
 }
