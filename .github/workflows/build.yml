@@ -11,13 +11,9 @@ on:
       - 'source/**'
       - 'platformio.ini'
 
-permissions:
-  contents: write
-
 jobs:
-  build-and-release:
+  build-and-upload:
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
     - name: Checkout Code
@@ -35,13 +31,6 @@ jobs:
         fi
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         echo "Extracted version: $VERSION"
-
-    - name: Validate Tag Availability
-      run: |
-        if git rev-parse "v${{ steps.extract_version.outputs.version }}" >/dev/null 2>&1; then
-          echo "::error::Tag v${{ steps.extract_version.outputs.version }} already exists!"
-          exit 1
-        fi
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v4
@@ -86,76 +75,8 @@ jobs:
         echo "firmware_name=$FIRMWARE_NAME" >> "$GITHUB_OUTPUT"
         echo "Found firmware: $FIRMWARE_NAME"
 
-    - name: Generate Release Notes
-      id: release_notes
-      run: |
-        PREV_TAG=$(git tag --sort=-version:refname | head -n 1 || echo "")
-        if [ -z "$PREV_TAG" ]; then
-          COMMITS=$(git log --oneline | sed 's/^/- /')
-        else
-          COMMITS=$(git log $PREV_TAG..HEAD --oneline | sed 's/^/- /')
-        fi
-        
-        cat << EOF > RELEASE.md
-        ## 🎉 PsychOS Alpha Release v${{ steps.extract_version.outputs.version }}
-        
-        ### ✨ Changes
-        $COMMITS
-        
-        ### 📥 Installation
-        
-        #### Prerequisites
-        
-        <details>
-        <summary>Install esptool on Windows</summary>
-        
-        1. Install Python from [python.org](https://www.python.org/downloads/).
-        2. Open Command Prompt and run:
-           \`\`\`bash
-           pip install esptool
-           \`\`\`
-        </details>
-        
-        <details>
-        <summary>Install esptool on Linux</summary>
-        
-        1. Open Terminal and run:
-           \`\`\`bash
-           sudo apt-get install python3-pip
-           pip3 install esptool
-           \`\`\`
-        </details>
-        
-        #### Flashing the Firmware
-        
-        Download \`${{ steps.find_firmware.outputs.firmware_name }}\` and flash using:
-        
-        ##### For Windows:
-        \`\`\`bash
-        python -m esptool --chip esp32s3 --port COM[X] write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
-        \`\`\`
-        
-        ##### For Linux/macOS:
-        \`\`\`bash
-        esptool.py --chip esp32s3 --port /dev/ttyUSB0 write_flash 0x0 ${{ steps.find_firmware.outputs.firmware_name }}
-        \`\`\`
-        
-        ### ⚠️ Known Issues
-        - Matrix scanning in development
-        - Configuration system pending
-        
-        ### 🛠️ Next Steps
-        - Complete matrix scanning implementation
-        - Add configuration interface
-        - Implement layer system
-        EOF
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
+    - name: Upload Firmware Artifact
+      uses: actions/upload-artifact@v4
       with:
-        tag_name: v${{ steps.extract_version.outputs.version }}
-        name: PsychOS v${{ steps.extract_version.outputs.version }}
-        body_path: RELEASE.md
-        prerelease: true
-        files: |
-          ${{ steps.find_firmware.outputs.firmware_path }}
+        name: firmware-${{ steps.extract_version.outputs.version }}
+        path: ${{ steps.find_firmware.outputs.firmware_path }}
