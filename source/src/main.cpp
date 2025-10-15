@@ -73,7 +73,7 @@ void setup()
     startRgbTask(0, 4096, 2);
     //startBuzzerTask(1, 2048, 1);
 
-    uRGB.setMaxBrightness(24); // 100% in the firmware is actually 65% of the maximum output by the LED driver
+    uRGB.setMaxBrightness(24); // 100% in the firmware is actually 24% of the maximum output by the LED driver
     RGBConfig config;
     config.effect = RGB_EFFECT_RUNNER;
     config.colors[0] = "#FFA500"; // Orange
