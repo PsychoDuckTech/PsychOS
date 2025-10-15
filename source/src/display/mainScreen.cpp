@@ -1,5 +1,6 @@
 #include <Adafruit_ILI9341.h>
 #include <Arduino.h>
+#include <cmath>
 #include "display/displayContent.h"
 #include "globals.h"
 #include "display/icons.h"
@@ -165,7 +166,14 @@ void displayWPM(void *parameters)
     static int previousDigits = -1;
     
     int currentWPM = WPMCounter::wpm;
-    int currentDigits = String(currentWPM).length();
+    
+    // Calculate digits without String allocation or expensive log10()
+    int absWPM = abs(currentWPM);
+    int currentDigits = 1; // At least 1 digit
+    if (absWPM >= 10) currentDigits = 2;
+    if (absWPM >= 100) currentDigits = 3;
+    if (absWPM >= 1000) currentDigits = 4; // Though unlikely for WPM
+    if (currentWPM < 0) currentDigits++; // Account for negative sign
     
     // Force redraw on full screen refresh
     bool forceRedraw = needsFullRedraw;
@@ -178,7 +186,11 @@ void displayWPM(void *parameters)
         tft.setTextSize(2);
         tft.setFont();
         tft.setCursor(11, 297);
-        tft.print(String(currentWPM));
+        
+        // Print WPM directly without String allocation
+        char wpmStr[8];
+        sprintf(wpmStr, "%d", currentWPM);
+        tft.print(wpmStr);
 
         // Adjust the position of "WPM" based on the number of digits in WPM
         int wpmOffset = 24 + (currentDigits - 1) * 12; // Adjust offset dynamically

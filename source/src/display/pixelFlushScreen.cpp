@@ -90,11 +90,14 @@ void displayProgress(unsigned long currentTime, unsigned long startTime)
 void runColorCycling(unsigned long &startTime)
 {
     // Phase 1: Rapid Color Cycling (30% of cycle)
-    for (int i = 0; i < NUM_COLOR_CYCLES && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; i++)
+    for (int i = 0; i < NUM_COLOR_CYCLES && !pixelFlushCancelled; i++)
     {
+        unsigned long currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
+        
         // Fill only the animation area, leaving progress bar intact
         tft.fillRect(0, ANIMATION_START_Y, SCREEN_WIDTH, ANIMATION_HEIGHT, HARSH_COLORS[i % NUM_COLORS]);
-        displayProgress(millis(), startTime);
+        displayProgress(currentTime, startTime);
         vTaskDelay(pdMS_TO_TICKS(COLOR_CYCLE_DELAY_MS));
     }
 }
@@ -102,15 +105,18 @@ void runColorCycling(unsigned long &startTime)
 void runVerticalStripes(unsigned long &startTime)
 {
     // Phase 2: Moving Vertical Stripes (30% of cycle)
-    for (int offset = 0; offset < SCREEN_WIDTH && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; offset += STRIPE_STEP)
+    for (int offset = 0; offset < SCREEN_WIDTH && !pixelFlushCancelled; offset += STRIPE_STEP)
     {
+        unsigned long currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
+        
         // Optimized: draw 2-pixel wide vertical bars instead of individual lines
         for (int x = 0; x < SCREEN_WIDTH; x += 2)
         {
             uint16_t color = ((x + offset) % 4 < 2) ? ILI9341_BLACK : ILI9341_WHITE;
             tft.fillRect(x, ANIMATION_START_Y, 2, ANIMATION_HEIGHT, color);
         }
-        displayProgress(millis(), startTime);
+        displayProgress(currentTime, startTime);
         vTaskDelay(pdMS_TO_TICKS(STRIPE_DELAY_MS));
     }
 }
@@ -118,8 +124,11 @@ void runVerticalStripes(unsigned long &startTime)
 void runCheckerboard(unsigned long &startTime)
 {
     // Phase 3: Moving Checkerboard (30% of cycle)
-    for (int offset = 0; offset < SCREEN_WIDTH && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; offset += STRIPE_STEP)
+    for (int offset = 0; offset < SCREEN_WIDTH && !pixelFlushCancelled; offset += STRIPE_STEP)
     {
+        unsigned long currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
+        
         for (int y = ANIMATION_START_Y; y < SCREEN_HEIGHT; y += CHECKERBOARD_SIZE)
         {
             for (int x = 0; x < SCREEN_WIDTH; x += CHECKERBOARD_SIZE)
@@ -128,30 +137,51 @@ void runCheckerboard(unsigned long &startTime)
                 tft.fillRect(x, y, CHECKERBOARD_SIZE, CHECKERBOARD_SIZE, color);
             }
         }
-        displayProgress(millis(), startTime);
+        displayProgress(currentTime, startTime);
         vTaskDelay(pdMS_TO_TICKS(CHECKER_DELAY_MS));
     }
 }
 
-void runRandomNoise(unsigned long &startTime)
+// Fast pseudo-random number generator for noise animation
+static uint32_t noiseSeed = 12345; // Initial seed
+
+// Fast LCG random number generator (much faster than Arduino random())
+static inline uint16_t fastRandom()
 {
-    // Phase 4: Random Noise (10% of cycle)
-    for (int i = 0; i < NUM_NOISE_FRAMES && (millis() - startTime < FLUSH_DURATION_MS) && !pixelFlushCancelled; i++)
-    {
-        // Fill only the animation area with random colors
-        for (int y = ANIMATION_START_Y; y < SCREEN_HEIGHT; y++)
-        {
-            for (int x = 0; x < SCREEN_WIDTH; x++)
-            {
-                tft.drawPixel(x, y, random(65536));
-            }
-        }
-        displayProgress(millis(), startTime);
-        vTaskDelay(pdMS_TO_TICKS(NOISE_DELAY_MS));
-    }
+    noiseSeed = (noiseSeed * 1103515245 + 12345) & 0x7FFFFFFF;
+    return (uint16_t)(noiseSeed >> 15); // Return 16-bit color value
 }
 
-// Function declarations
+void runRandomNoise(unsigned long &startTime)
+{
+    // Phase 4: Random Noise (10% of cycle) - Run for allocated time portion
+    constexpr int BLOCK_SIZE = 4; // Draw 4x4 pixel blocks instead of individual pixels
+    const int blocksX = SCREEN_WIDTH / BLOCK_SIZE;
+    const int blocksY = (SCREEN_HEIGHT - ANIMATION_START_Y) / BLOCK_SIZE;
+
+    while (!pixelFlushCancelled)
+    {
+        unsigned long currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
+
+        // Generate new random frame
+        for (int by = 0; by < blocksY; by++)
+        {
+            for (int bx = 0; bx < blocksX; bx++)
+            {
+                uint16_t color = fastRandom();
+                int x = bx * BLOCK_SIZE;
+                int y = ANIMATION_START_Y + by * BLOCK_SIZE;
+                tft.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE, color);
+            }
+        }
+
+        displayProgress(currentTime, startTime);
+
+        // Maintain frame rate (similar to original 20ms delay)
+        vTaskDelay(pdMS_TO_TICKS(NOISE_DELAY_MS));
+    }
+}// Function declarations
 void drawDurationSelector();
 void startFlushProcess();
 
@@ -283,27 +313,31 @@ void startPixelFlush(void *parameters)
     startFlushProcess();
     unsigned long startTime = millis();
 
-    while (millis() - startTime < FLUSH_DURATION_MS)
+    while (!pixelFlushCancelled)
     {
-        // Check for cancellation
-        if (pixelFlushCancelled)
-        {
-            break;
-        }
+        unsigned long currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
 
         runColorCycling(startTime);
-        if (millis() - startTime >= FLUSH_DURATION_MS || pixelFlushCancelled)
-            break;
+        if (pixelFlushCancelled) break;
 
+        currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
         runVerticalStripes(startTime);
-        if (millis() - startTime >= FLUSH_DURATION_MS || pixelFlushCancelled)
-            break;
+        if (pixelFlushCancelled) break;
 
+        currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
         runCheckerboard(startTime);
-        if (millis() - startTime >= FLUSH_DURATION_MS || pixelFlushCancelled)
-            break;
+        if (pixelFlushCancelled) break;
 
+        currentTime = millis();
+        if (currentTime - startTime >= FLUSH_DURATION_MS) break;
         runRandomNoise(startTime);
+        if (pixelFlushCancelled) break;
+
+        // All phases complete, break out of main loop
+        break;
     }
 
     // If cancelled, show cancellation message

@@ -304,12 +304,13 @@ void displayModulesSubmenu(void *parameters)
                 sprintf(timeStr, "%ldh %ldm", duration / 3600, (duration % 3600) / 60);
             }
 
-            // Center the connection time text
+            // Center the connection time text (optimized without String concatenation)
             int16_t x1, y1;
-            uint16_t w, h;
-            String connText = String(ui_connected) + String(timeStr);
-            tft.getTextBounds(connText.c_str(), 0, 0, &x1, &y1, &w, &h);
-            int textX = 15 + (210 - w) / 2;
+            uint16_t w1, h1, w2, h2;
+            tft.getTextBounds(ui_connected, 0, 0, &x1, &y1, &w1, &h1);
+            tft.getTextBounds(timeStr, 0, 0, &x1, &y1, &w2, &h2);
+            int totalWidth = w1 + w2;
+            int textX = 15 + (210 - totalWidth) / 2;
 
             tft.setCursor(textX, 120);
             tft.setTextColor(TEXT_COLOR);
@@ -317,54 +318,57 @@ void displayModulesSubmenu(void *parameters)
             tft.setTextColor(HIGHLIGHT_COLOR);
             tft.print(timeStr);
 
-            // Display estimated delay based on signal strength
+            // Display estimated delay based on signal strength (optimized without String)
             float estimatedDelay = calculateDelayFromRSSI(currentStats->rssi);
-            String delayText;
+            char delayBuffer[32]; // Buffer for delay text
             uint16_t delayColor;
 
             if (estimatedDelay < 10)
             {
-                delayText = String(ui_delay) + String(estimatedDelay, 1) + ui_delay_great;
+                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_great);
                 delayColor = HIGHLIGHT_COLOR;
             }
             else if (estimatedDelay < 20)
             {
-                delayText = String(ui_delay) + String(estimatedDelay, 1) + ui_delay_good;
+                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_good);
                 delayColor = SUCCESS_COLOR;
             }
             else if (estimatedDelay < 50)
             {
-                delayText = String(ui_delay) + String(estimatedDelay, 1) + ui_delay_ok;
+                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_ok);
                 delayColor = MUTED_COLOR;
             }
             else
             {
-                delayText = String(ui_delay) + String(estimatedDelay, 1) + ui_delay_poor;
+                sprintf(delayBuffer, "%s%.1f%s", ui_delay, estimatedDelay, ui_delay_poor);
                 delayColor = ERROR_COLOR;
             }
 
             // Draw the delay estimation text right below the connection time
-            tft.getTextBounds(delayText.c_str(), 0, 0, &x1, &y1, &w, &h);
+            uint16_t w, h;
+            tft.getTextBounds(delayBuffer, 0, 0, &x1, &y1, &w, &h);
             textX = 15 + (210 - w) / 2;
             tft.setCursor(textX, 130);
             tft.setTextColor(delayColor);
-            tft.print(delayText);
+            tft.print(delayBuffer);
 
-            // Center the key press number
-            String keypressStr = String(currentStats->keyPresses);
-            tft.getTextBounds(keypressStr.c_str(), 0, 0, &x1, &y1, &w, &h);
+            // Center the key press number (optimized without String)
+            char keypressBuffer[16];
+            sprintf(keypressBuffer, "%lu", currentStats->keyPresses);
+            tft.getTextBounds(keypressBuffer, 0, 0, &x1, &y1, &w, &h);
             textX = 15 + (100 - w) / 2;
             tft.setCursor(textX, 195);
             tft.setTextColor(HIGHLIGHT_COLOR);
-            tft.print(keypressStr);
+            tft.print(keypressBuffer);
 
-            // Center the RSSI value
-            String rssiStr = String(currentStats->rssi) + " dBm";
-            tft.getTextBounds(rssiStr.c_str(), 0, 0, &x1, &y1, &w, &h);
+            // Center the RSSI value (optimized without String)
+            char rssiBuffer[16];
+            sprintf(rssiBuffer, "%d dBm", currentStats->rssi);
+            tft.getTextBounds(rssiBuffer, 0, 0, &x1, &y1, &w, &h);
             textX = 125 + (100 - w) / 2;
             tft.setCursor(textX, 195);
             tft.setTextColor(HIGHLIGHT_COLOR);
-            tft.print(rssiStr);
+            tft.print(rssiBuffer);
 
             // Connection status
             tft.getTextBounds(ui_status_connected, 0, 0, &x1, &y1, &w, &h);
