@@ -29,7 +29,11 @@ const SettingsMenuItem settingsMenuItems[] = {
     {ui_modules, iconBleConnectedBig, 14, 22},
     {ui_underglow, iconLightBulb, 18, 23},
     {ui_clock, iconTranslation, 22, 22},
-    {ui_pixel_flush, nullptr, 0, 0}
+    {ui_pixel_flush, nullptr, 0, 0},
+    {ui_iot_link, nullptr, 0, 0},
+    // Test items to demonstrate scrolling (can be removed later)
+    {ui_build, nullptr, 0, 0},
+    {ui_brightness, nullptr, 0, 0}
 };
 
 const int settingsMenuItemCount = sizeof(settingsMenuItems) / sizeof(settingsMenuItems[0]);
