@@ -30,6 +30,7 @@ void displayDemo(void *parameters);
 // Settings screen functions
 void drawSettingsStatic(void *parameters);
 void displaySettingsScreen(void *parameters);
+int getSettingsMenuItemCount(); // Get the number of settings menu items
 
 // RGB submenu screen functions
 void displayRGBSubmenu(void *parameters);

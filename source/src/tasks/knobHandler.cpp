@@ -20,7 +20,7 @@ constexpr unsigned long BUTTON_DEBOUNCE_MS = 10; // Debounce for button press/re
 constexpr int NUM_RGB_EFFECTS = 5;
 constexpr int NUM_RGB_SELECTIONS = 3;
 constexpr int NUM_CLOCK_SELECTIONS = 3;
-constexpr int NUM_SETTINGS_OPTIONS = 4;
+// NUM_SETTINGS_OPTIONS removed - now using dynamic getSettingsMenuItemCount()
 
 // Definição da fila de botões (deve ser externa em knobHandler.h)
 QueueHandle_t knobButtonQueue = NULL; 

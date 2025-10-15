@@ -13,6 +13,7 @@ extern bool updatedMinutes;
 Adafruit_ILI9341 tft = Adafruit_ILI9341(LCD_CS, LCD_RS, LCD_RST);
 ScreenType currentScreen = MainScreen;
 int settingsSelectedOption = 0;
+int settingsScrollOffset = 0; // Tracks the top visible item in scrollable menus
 bool inSettingsSubmenu = false;
 bool updateMainScreen = true;
 bool requestMainScreenSwitch = false;
@@ -79,6 +80,7 @@ void switchScreen(ScreenType newScreen)
     if (newScreen == SettingsScreen)
     {
         settingsSelectedOption = 0;
+        settingsScrollOffset = 0;
         inSettingsSubmenu = false;
     }
     currentScreen = newScreen;
@@ -168,14 +170,33 @@ void displayHandler(void *parameters)
             {
                 if (currentScreen == SettingsScreen)
                 {
+                    // Get the actual number of menu items
+                    int maxOption = getSettingsMenuItemCount() - 1;
+                    
                     // Calculate new position considering total rotation
                     int newPosition = settingsSelectedOption - totalRotation;
-
-                    // Clamp the position between 0 and 3 without wrapping
+                    
+                    // Clamp the position between 0 and maxOption without wrapping
                     if (newPosition < 0)
                         newPosition = 0;
-                    if (newPosition > 3)
-                        newPosition = 3;
+                    if (newPosition > maxOption)
+                        newPosition = maxOption;
+                    
+                    // Update scroll offset to keep selected item visible
+                    // Maximum items visible on screen at once
+                    const int MAX_VISIBLE_ITEMS = 4;
+                    
+                    // Ensure the selected item is within the visible range
+                    if (newPosition < settingsScrollOffset)
+                    {
+                        // Scrolling up - selected item would be above visible area
+                        settingsScrollOffset = newPosition;
+                    }
+                    else if (newPosition >= settingsScrollOffset + MAX_VISIBLE_ITEMS)
+                    {
+                        // Scrolling down - selected item would be below visible area
+                        settingsScrollOffset = newPosition - MAX_VISIBLE_ITEMS + 1;
+                    }
 
                     if (settingsSelectedOption != newPosition)
                     {

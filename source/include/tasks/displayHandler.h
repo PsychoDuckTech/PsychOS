@@ -29,6 +29,7 @@ struct SettingsRotationEvent
 extern QueueHandle_t settingsRotationQueue;
 extern ScreenType currentScreen;
 extern int settingsSelectedOption;
+extern int settingsScrollOffset;
 extern bool inSettingsSubmenu;
 
 void switchScreen(ScreenType newScreen);
