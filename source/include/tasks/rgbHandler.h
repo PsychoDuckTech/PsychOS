@@ -4,7 +4,7 @@
 
 extern RGBState rgbState;
 
-#define NUM_LEDS 60        // Number of LEDs in the strip
+#define NUM_LEDS 61        // Number of LEDs in the strip
 #define MAX_COLORS 7       // Maximum number of colors supported
 #define HEX_COLOR_LENGTH 7 // Length of hex color string "#RRGGBB"
 

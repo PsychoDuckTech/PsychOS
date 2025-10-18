@@ -47,6 +47,12 @@ static uint32_t blendColors(uint32_t c1, uint32_t c2, float ratio) {
     return strip.Color(r, g, b);
 }
 
+// Helper function to map LED indices: first 10 unchanged, rest reversed
+static int mapLedIndex(int i) {
+    if (i < 10) return i;
+    return 71 - i;
+}
+
 // Helper function to convert hex string to uint32_t color
 static uint32_t hexToColor(const char *hex)
 {
@@ -124,7 +130,7 @@ static void applyCurrentEffect()
     if (currentEffect.effect == RGB_EFFECT_STATIC)
     {
         for(int i = 0; i < NUM_LEDS; i++) {
-            strip.setPixelColor(i, effectColors[0]);
+            strip.setPixelColor(mapLedIndex(i), effectColors[0]);
         }
         strip.show();
     }
@@ -222,7 +228,7 @@ static void applyCurrentEffect()
             finalColor = strip.Color(r, g, b);
 
             for(int i = 0; i < NUM_LEDS; i++) {
-                strip.setPixelColor(i, finalColor);
+                strip.setPixelColor(mapLedIndex(i), finalColor);
             }
             strip.show();
         }
@@ -243,7 +249,7 @@ static void applyCurrentEffect()
             float ratio = (position * (numColors - 1)) - colorIndex1;
 
             uint32_t blended = blendColors(effectColors[colorIndex1 % numColors], effectColors[colorIndex2 % numColors], ratio);
-            strip.setPixelColor(i, blended);
+            strip.setPixelColor(mapLedIndex(i), blended);
         }
 
         phase += speed;
@@ -268,7 +274,7 @@ static void applyCurrentEffect()
             int colorIndex2 = (colorIndex1 + 1) % numColors;
             float ratio = scaledPosition - floor(scaledPosition);
             uint32_t blended = blendColors(effectColors[colorIndex1], effectColors[colorIndex2], ratio);
-            strip.setPixelColor(i, blended);
+            strip.setPixelColor(mapLedIndex(i), blended);
         }
         strip.show();
     }
@@ -282,7 +288,7 @@ static void applyCurrentEffect()
             on = !on;
             lastFlash = now;
             uint32_t color = on ? effectColors[0] : effectColors[1];
-            for(int i = 0; i < NUM_LEDS; i++) strip.setPixelColor(i, color);
+            for(int i = 0; i < NUM_LEDS; i++) strip.setPixelColor(mapLedIndex(i), color);
             strip.show();
         }
     }

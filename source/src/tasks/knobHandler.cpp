@@ -206,8 +206,8 @@ void knobHandler(void *parameters)
                         case RGB_EFFECT_SCROLL:
                             cmd.data.effect.config = {RGB_EFFECT_SCROLL,
                                                       static_cast<uint8_t>(map(rgbState.speed, 1, 20, 1, 255)), 255};
-                            strncpy(cmd.data.effect.colors[0], "#1d1d1d", HEX_COLOR_LENGTH); // Dark Brown
-                            strncpy(cmd.data.effect.colors[1], "#674de0", HEX_COLOR_LENGTH); // Light Brown
+                            strncpy(cmd.data.effect.colors[0], "#1e130c", HEX_COLOR_LENGTH); // Dark Brown
+                            strncpy(cmd.data.effect.colors[1], "#9a8478", HEX_COLOR_LENGTH); // Light Brown
                             cmd.data.effect.num_colors = 2;
                             break;
 
