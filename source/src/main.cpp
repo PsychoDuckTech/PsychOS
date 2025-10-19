@@ -31,22 +31,22 @@ const int KNOB_SW_PIN = 0;
 const int BUZZER_PIN = 8;
 // ===== END PIN DEFINITIONS =====
 
-// Key Mapping (Layer 0)
+// Key Mapping (Layer 0) - Using ASCII for letters/numbers/space, HID for special keys/modifiers
 const uint8_t keyMapL0[totalRows][totalCols] = {
     {KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, HID_KEY_SYSREQ_ATTENTION, KEY_INSERT, KEY_DELETE},
-    {HID_KEY_BACKSLASH, HID_KEY_1, HID_KEY_2, HID_KEY_3, HID_KEY_4, HID_KEY_5, HID_KEY_6, HID_KEY_7, HID_KEY_8, HID_KEY_9, HID_KEY_0, HID_KEY_APOSTROPHE, 0, KEY_BACKSPACE, 0, KEY_HOME},
-    {KEY_TAB, HID_KEY_Q, HID_KEY_W, HID_KEY_E, HID_KEY_R, HID_KEY_T, HID_KEY_Y, HID_KEY_U, HID_KEY_I, HID_KEY_O, HID_KEY_P, 0, HID_KEY_GRAVE, 0, 0, KEY_END},
-    {KEY_CAPS_LOCK, HID_KEY_A, HID_KEY_S, HID_KEY_D, HID_KEY_F, HID_KEY_G, HID_KEY_H, HID_KEY_J, HID_KEY_K, HID_KEY_L, 0, 0, HID_KEY_GRAVE, 0, HID_KEY_ENTER, KEY_PAGE_UP},
-    {KEY_LEFT_SHIFT, 0, HID_KEY_Z, HID_KEY_X, HID_KEY_C, HID_KEY_V, HID_KEY_B, HID_KEY_N, HID_KEY_M, HID_KEY_COMMA, HID_KEY_PERIOD, HID_KEY_MINUS, KEY_RIGHT_SHIFT, 0, KEY_UP_ARROW, KEY_PAGE_DOWN},
-    {HID_KEY_CONTROL_LEFT, KEY_LEFT_GUI, 0, KEY_LEFT_ALT, 0, HID_KEY_SPACE, 0, 0, HID_KEY_SPACE, 0, HID_KEY_ALT_RIGHT, 0, HID_KEY_CONTROL_RIGHT, KEY_LEFT_ARROW, KEY_DOWN_ARROW, KEY_RIGHT_ARROW}};
+    {92, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48, 39, 0, 8, 0, 0x4A}, // \, 1-0, ', BACKSPACE, HOME (ASCII + HID)
+    {9, 113, 119, 101, 114, 116, 121, 117, 105, 111, 112, 0, 96, 0, 0, 0x4D}, // TAB, q-p, `, END (ASCII + HID)
+    {KEY_CAPS_LOCK, 97, 115, 100, 102, 103, 104, 106, 107, 108, 0, 0, 96, HID_KEY_ENTER, 0, 0x4B}, // CAPS, a-l, `, ENTER, PAGEUP (HID + ASCII)
+    {0xE1, 0, 122, 120, 99, 118, 98, 110, 109, 44, 46, 45, 0xE5, 0xD4, 0, 0x4E}, // LSHIFT, z-m, , . -, RSHIFT, UP, PAGEDOWN (HID + ASCII)
+    {KEY_LEFT_CTRL, KEY_LEFT_GUI, 0, 0xE2, 0, 32, 0, 0, 32, 0, 0xE6, 0, 0xE4, 0xD9, 0xD7, 0xD6}}; // LCTRL, LGUI, LALT, SPACE, RALT, RCTRL, LEFT, DOWN, RIGHT (HID + ASCII)
 
 const char *keyNameL0[totalRows][totalCols] = {
     {"ESC", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12", "SYSRQ", "INSERT", "DELETE"},
     {"BACKSLASH", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "APOSTROPHE", 0, "BACKSPACE", 0, "HOME"},
     {"TAB", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "EQUAL", "GRAVE", 0, 0, "END"},
-    {"CAPSLOCK", "A", "S", "D", "F", "G", "H", "J", "K", "L", "C_CEDILLA", "ORDINAL_MASCULINE", "CIRCUMFLEX_TILDE", "ENTER", 0, "PAGEUP"},
-    {"LEFTSHIFT", "LESS_GREATER", "Z", "X", "C", "V", "B", "N", "M", "COMMA", "DOT", "MINUS", "RIGHT_SHIFT", 0, "UP", "PAGEDOWN"},
-    {"LEFTCTRL", "LEFTMETA", 0, "LEFTALT", 0, 0, "SPACE", 0, 0, 0, "RIGHTALT", 0, "RIGHTCTRL", "LEFT", "DOWN", "RIGHT"}};
+    {"CAPSLOCK", "A", "S", "D", "F", "G", "H", "J", "K", "L", "C_CEDILLA", "ORDINAL_MASCULINE", "idk what dis is", "ENTER", 0, "PAGEUP"},
+    {"LEFTSHIFT", "LESS_GREATER", "Z", "X", "C", "V", "B", "N", "M", "COMMA", "DOT", "MINUS", "RIGHT_SHIFT", "UP", 0, "PAGEDOWN"},
+    {"LEFTCTRL", "LEFTMETA", "hid left gui", "LEFTALT", 0, "SPACE", "SPACE", 0, "SPACE", 0, "RIGHTALT", 0, "RIGHTCTRL", "LEFT", "DOWN", "RIGHT"}};
 
 // Global variable definitions
 bool pixelFlushComplete = false;

@@ -3,13 +3,13 @@
 #include "tasks/commandProcessor.h"
 #include <USBHIDKeyboard.h>
 #include "tasks/wpmCounter.h"
-#include "tusb.h"
 
-uint8_t keycode[6] = {0, 0, 0, 0, 0, 0}; // Initialize as empty
-
+// HID report state: handled by USBHIDKeyboard library
 USBHIDKeyboard Keyboard;
 QueueHandle_t hostMessageQueue;
 USBHIDConsumerControl Consumer;
+
+int numModifiersHeld = 0;
 
 constexpr size_t SERIAL_BUFFER_SIZE = 128;
 constexpr int HOST_MESSAGE_QUEUE_SIZE = 50;
@@ -68,6 +68,7 @@ void hostCommunicationBridge(void *parameters)
                 // Apply volume changes based on the magnitude of rotation
                 // This takes advantage of encoder acceleration
                 int steps = abs(receivedMessage.data);
+                steps = min(steps, 5); // Cap at 5 steps to prevent jumping to max/min
                 for (int i = 0; i < steps; i++)
                 {
                     if (receivedMessage.data > 0)
@@ -89,18 +90,41 @@ void hostCommunicationBridge(void *parameters)
                 Consumer.press(CONSUMER_CONTROL_MUTE);
                 Consumer.release();
                 break;
-            case KEY_PRESS:
-                WPMCounter::recordKeyPress();
-                // Use tud_hid_keyboard_report directly
-                memset(keycode, 0, sizeof(keycode));
-                keycode[0] = receivedMessage.data;
-                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
+            case KEY_PRESS: {
+                if (receivedMessage.data >= 0xE0 && receivedMessage.data <= 0xE7) {
+                    // Modifier keys - use HID press
+                    Keyboard.press(receivedMessage.data);
+                    numModifiersHeld++;
+                } else if (receivedMessage.data >= 32 && receivedMessage.data <= 126) {
+                    // Printable ASCII characters
+                    if (numModifiersHeld > 0) {
+                        Keyboard.write((char)receivedMessage.data);
+                    } else {
+                        Keyboard.press((char)receivedMessage.data);
+                    }
+                    WPMCounter::recordKeyPress();
+                } else {
+                    // Special keys (HID codes) - use press
+                    Keyboard.press(receivedMessage.data);
+                }
                 break;
-            case KEY_RELEASE:
-                // Send empty report to release all keys
-                memset(keycode, 0, sizeof(keycode));
-                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
+            }
+            case KEY_RELEASE: {
+                if (receivedMessage.data >= 0xE0 && receivedMessage.data <= 0xE7) {
+                    // Modifier keys - use release
+                    Keyboard.release(receivedMessage.data);
+                    numModifiersHeld--;
+                } else if (receivedMessage.data >= 32 && receivedMessage.data <= 126) {
+                    // Printable ASCII
+                    if (numModifiersHeld <= 0) {
+                        Keyboard.release((char)receivedMessage.data);
+                    }
+                } else {
+                    // Special keys - use release
+                    Keyboard.release(receivedMessage.data);
+                }
                 break;
+            }
             }
         }
 

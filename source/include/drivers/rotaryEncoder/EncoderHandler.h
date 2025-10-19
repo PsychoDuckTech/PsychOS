@@ -24,7 +24,7 @@ private:
     // Acceleration parameters
     static const unsigned long ACCEL_WINDOW_MS = 461; // Time window for acceleration (1 second)
     static const int ACCEL_THRESHOLD_STEPS = 3;       // Steps needed in window to trigger acceleration
-    static const int MAX_ACCEL_MULTIPLIER = 7;        // Maximum acceleration multiplier
+    static const int MAX_ACCEL_MULTIPLIER = 3;        // Maximum acceleration multiplier
 
     // Track button states between updates
     bool lastButtonState = HIGH;
