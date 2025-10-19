@@ -5,7 +5,6 @@
 #include "tasks/wpmCounter.h"
 #include "tusb.h"
 
-uint8_t keycode[6] = {0, 0, 0, 0, 0, 0}; // Initialize as empty
 uint8_t current_modifiers = 0; // Track currently pressed modifiers
 uint8_t current_keycodes[6] = {0, 0, 0, 0, 0, 0}; // Track currently pressed keys
 
