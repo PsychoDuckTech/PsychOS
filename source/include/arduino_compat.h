@@ -8,6 +8,7 @@
 #include "esp_system.h"
 #include "esp_timer.h"
 #include "driver/gpio.h"
+#include "driver/spi_master.h"
 #include "esp_rom_sys.h"
 #include <stdio.h>
 #include <string.h>
@@ -163,6 +164,55 @@ public:
 };
 
 extern SerialClass Serial;
+
+// SPI compatibility
+class SPIClass {
+private:
+    spi_device_handle_t _spi;
+    bool _initialized;
+    
+public:
+    SPIClass() : _spi(nullptr), _initialized(false) {}
+    
+    void begin(int8_t sck = -1, int8_t miso = -1, int8_t mosi = -1, int8_t ss = -1) {
+        if (_initialized) return;
+        
+        // Configure SPI bus
+        spi_bus_config_t buscfg = {};
+        buscfg.mosi_io_num = mosi;
+        buscfg.miso_io_num = miso;
+        buscfg.sclk_io_num = sck;
+        buscfg.quadwp_io_num = -1;
+        buscfg.quadhd_io_num = -1;
+        buscfg.max_transfer_sz = 4096;
+        
+        // Initialize the SPI bus
+        esp_err_t ret = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
+        if (ret != ESP_OK) {
+            printf("Failed to initialize SPI bus\n");
+            return;
+        }
+        
+        _initialized = true;
+    }
+    
+    void end() {
+        if (_initialized) {
+            spi_bus_free(SPI2_HOST);
+            _initialized = false;
+        }
+    }
+    
+    void beginTransaction(uint32_t freq = 1000000, uint8_t bitOrder = 0, uint8_t mode = 0) {
+        // Handled by device-specific configuration in Adafruit libraries
+    }
+    
+    void endTransaction() {
+        // Handled by device-specific configuration in Adafruit libraries
+    }
+};
+
+extern SPIClass SPI;
 
 // CPU frequency control
 static inline bool setCpuFrequencyMhz(uint32_t freq) {

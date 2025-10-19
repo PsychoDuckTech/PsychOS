@@ -11,7 +11,7 @@ bool connectionStatus = false;
 void updateHours(int value)
 {
     updateClock(value, -1, -1);
-    Serial.println("Hours updated to: " + String(hours));
+    Serial.printf("Hours updated to: %d\n", hours);
 }
 
 int getHours()
@@ -22,7 +22,7 @@ int getHours()
 void updateMinutes(int value)
 {
     updateClock(-1, value, -1);
-    Serial.println("Minutes updated to: " + String(minutes));
+    Serial.printf("Minutes updated to: %d\n", minutes);
 }
 
 int getMinutes()
@@ -33,7 +33,7 @@ int getMinutes()
 void updateSeconds(int value)
 {
     updateClock(-1, -1, value);
-    Serial.println("Seconds updated to: " + String(seconds));
+    Serial.printf("Seconds updated to: %d\n", seconds);
 }
 
 int getSeconds()
@@ -44,7 +44,7 @@ int getSeconds()
 void updateCaps(int value)
 {
     capsLockStatus = (value != 0); // Set capsLockStatus to true if value is non-zero
-    Serial.println("Caps lock status updated to: " + String(capsLockStatus));
+    Serial.printf("Caps lock status updated to: %d\n", capsLockStatus);
 }
 
 int getCaps()
@@ -55,7 +55,7 @@ int getCaps()
 void updateConnectionStatus(int value)
 {
     connectionStatus = (value != 0); // Set capsLockStatus to true if value is non-zero
-    Serial.println("Connection status updated to: " + String(connectionStatus));
+    Serial.printf("Connection status updated to: %d\n", connectionStatus);
 }
 
 int getConnectionStatus()
