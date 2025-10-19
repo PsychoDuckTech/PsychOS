@@ -8,11 +8,13 @@
 #include "esp_system.h"
 #include "esp_timer.h"
 #include "driver/gpio.h"
+#include "esp_rom_sys.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
+#include <stdarg.h>
 
 // Arduino compatibility layer for ESP-IDF
 
@@ -169,8 +171,9 @@ static inline bool setCpuFrequencyMhz(uint32_t freq) {
 }
 
 // GPIO register access compatibility
-#define GPIO REG_GPIO_BASE
-extern volatile uint32_t* REG_GPIO_BASE;
+// In ESP-IDF, GPIO register access is through the GPIO struct
+// This is already defined in soc/gpio_struct.h
+// No need to redefine it here
 
 // Legacy delay function
 static inline void ets_delay_us(uint32_t us) {

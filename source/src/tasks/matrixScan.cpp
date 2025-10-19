@@ -1,6 +1,7 @@
 #include "tasks/matrixScan.h"
 #include "tasks/BLEHandler.h"
 #include "utils/benchmark.h"
+#include "soc/gpio_struct.h"
 
 const auto keyMap = keyMapL0;
 const auto keyName = keyNameL0;

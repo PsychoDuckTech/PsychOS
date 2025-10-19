@@ -6,6 +6,7 @@ idf_component_register(
         "src/arduino_compat.cpp"
         "src/ble_compat.cpp"
         "src/encoder_compat.cpp"
+        "src/usb_hid_compat.cpp"
         "src/tasks/commandProcessor.cpp"
         "src/tasks/displayHandler.cpp"
         "src/tasks/matrixScan.cpp"
@@ -48,4 +49,7 @@ idf_component_register(
         nvs_flash 
         bt
         led_strip
+        esp_rom
+        soc
+        tinyusb
 )

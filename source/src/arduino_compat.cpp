@@ -4,5 +4,6 @@
 // Instantiate the Serial object
 SerialClass Serial;
 
-// GPIO register access
-volatile uint32_t* REG_GPIO_BASE = (volatile uint32_t*)&GPIO;
+// GPIO register access - point to the actual GPIO registers
+// For ESP32-S3, use gpio_dev_t structure
+#define GPIO_REG GPIO

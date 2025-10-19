@@ -130,7 +130,7 @@ public:
 private:
     void sendReport() {
         if (_initialized && tud_hid_ready()) {
-            tud_hid_keyboard_report(0, _keyReport[0], &_keyReport[2]);
+            tud_hid_report(1, _keyReport, sizeof(_keyReport));
         }
     }
 };

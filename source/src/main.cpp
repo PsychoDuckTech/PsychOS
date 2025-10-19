@@ -67,6 +67,16 @@ extern "C" void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
     
+    // Initialize TinyUSB
+    tinyusb_config_t tusb_cfg = {
+        .device_descriptor = NULL,
+        .string_descriptor = NULL,
+        .external_phy = false,
+        .configuration_descriptor = NULL,
+    };
+    ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
+    ESP_LOGI(TAG, "TinyUSB driver installed");
+    
     // Initialize serial communication
     Serial.begin(115200);
     ESP_LOGI(TAG, "%s, %s", OS_version, byCompany);
