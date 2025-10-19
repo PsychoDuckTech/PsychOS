@@ -6,6 +6,8 @@
 #include "tusb.h"
 
 uint8_t keycode[6] = {0, 0, 0, 0, 0, 0}; // Initialize as empty
+uint8_t current_modifiers = 0; // Track currently pressed modifiers
+uint8_t current_keycodes[6] = {0, 0, 0, 0, 0, 0}; // Track currently pressed keys
 
 USBHIDKeyboard Keyboard;
 QueueHandle_t hostMessageQueue;
@@ -91,15 +93,49 @@ void hostCommunicationBridge(void *parameters)
                 break;
             case KEY_PRESS:
                 WPMCounter::recordKeyPress();
-                // Use tud_hid_keyboard_report directly
-                memset(keycode, 0, sizeof(keycode));
-                keycode[0] = receivedMessage.data;
-                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
+                // Check if this is a modifier key (0xE0-0xE7)
+                if (receivedMessage.data >= 0xE0 && receivedMessage.data <= 0xE7)
+                {
+                    // Set the appropriate bit in the modifier byte
+                    current_modifiers |= (1 << (receivedMessage.data - 0xE0));
+                }
+                else
+                {
+                    // Regular key - add to keycode array
+                    // Find first empty slot
+                    for (int i = 0; i < 6; i++)
+                    {
+                        if (current_keycodes[i] == 0)
+                        {
+                            current_keycodes[i] = receivedMessage.data;
+                            break;
+                        }
+                    }
+                }
+                // Send updated HID report with current modifiers and keycodes
+                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, current_modifiers, current_keycodes);
                 break;
             case KEY_RELEASE:
-                // Send empty report to release all keys
-                memset(keycode, 0, sizeof(keycode));
-                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, 0, keycode);
+                // Check if this is a modifier key (0xE0-0xE7)
+                if (receivedMessage.data >= 0xE0 && receivedMessage.data <= 0xE7)
+                {
+                    // Clear the appropriate bit in the modifier byte
+                    current_modifiers &= ~(1 << (receivedMessage.data - 0xE0));
+                }
+                else
+                {
+                    // Regular key - remove from keycode array
+                    for (int i = 0; i < 6; i++)
+                    {
+                        if (current_keycodes[i] == receivedMessage.data)
+                        {
+                            current_keycodes[i] = 0;
+                            break;
+                        }
+                    }
+                }
+                // Send updated HID report with current modifiers and keycodes
+                tud_hid_keyboard_report(HID_ITF_PROTOCOL_KEYBOARD, current_modifiers, current_keycodes);
                 break;
             }
         }
