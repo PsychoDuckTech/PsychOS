@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "tasks/knobHandler.h"
 #include "drivers/rotaryEncoder/EncoderHandler.h"
 #include "tasks/hostCommunicationBridge.h"

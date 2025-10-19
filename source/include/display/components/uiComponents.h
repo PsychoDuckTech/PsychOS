@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "../../globals.h"
 
 // Menu item structure for scrollable menus

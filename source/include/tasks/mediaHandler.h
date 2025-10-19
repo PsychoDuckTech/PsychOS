@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Arduino.h>
+#include "arduino_compat.h"
 
 // Maximum length for media information strings
 #define MAX_MEDIA_TITLE_LENGTH 30

@@ -1,6 +1,6 @@
 #pragma once
-#include <Arduino.h>
-#include <ArduinoBLE.h>
+#include "arduino_compat.h"
+#include "ble_compat.h"
 #include "main.h"
 
 void initializeBLE();

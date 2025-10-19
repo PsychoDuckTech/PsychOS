@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "tasks/displayHandler.h"
 #include "display/screens.h"
 #include "globals.h"

@@ -1,7 +1,7 @@
 #include "tasks/serialHandler.h"
 #include "utils/benchmark.h"
 #include "tasks/commandProcessor.h"
-#include <USBHIDKeyboard.h>
+#include "usb_hid_compat.h"
 #include "tasks/wpmCounter.h"
 
 // HID report state: handled by USBHIDKeyboard library

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Arduino.h>
-#include <USBHIDKeyboard.h>
+#include "arduino_compat.h"
+#include "usb_hid_compat.h"
 
 #include "translations.h"
 

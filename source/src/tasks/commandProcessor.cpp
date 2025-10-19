@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "tasks/clock.h"
 #include "globals.h"
 #include "utils/benchmark.h"

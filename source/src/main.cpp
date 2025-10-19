@@ -4,6 +4,12 @@
 #include "main.h"
 #include "globals.h"
 
+// ESP-IDF specific includes
+#include "nvs_flash.h"
+#include "esp_log.h"
+
+static const char *TAG = "PsychOS";
+
 // Define the global constants
 const char *OS_version = "0.4.16b ";
 const char *byCompany = "by PsychoDuck Tech ";
@@ -51,15 +57,23 @@ const char *keyNameL0[totalRows][totalCols] = {
 // Global variable definitions
 bool pixelFlushComplete = false;
 
-void setup()
+extern "C" void app_main(void)
 {
+    // Initialize NVS (required for WiFi/BLE)
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+    
     // Initialize serial communication
-    const int serialBaudRate = 115200;
-    Serial.begin(serialBaudRate);
+    Serial.begin(115200);
+    ESP_LOGI(TAG, "%s, %s", OS_version, byCompany);
     Serial.printf("%s, %s\n", OS_version, byCompany);
 
-    // Reduce CPU frequency for power savings
-    setCpuFrequencyMhz(160);
+    // Reduce CPU frequency for power savings (handled by sdkconfig)
+    // setCpuFrequencyMhz(160); // Not needed in ESP-IDF - set via menuconfig
 
     initializeMatrix();
 
@@ -83,6 +97,8 @@ void setup()
     config.speed = 20;      // 1-20 scale
     config.brightness = 43; // 0-100 scale
     uRGB.configure(config);
+    
+    // In ESP-IDF, app_main returns and tasks continue running
+    // No loop() needed as FreeRTOS tasks handle everything
 }
 
-void loop() {}

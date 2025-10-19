@@ -1,5 +1,5 @@
-#include <Arduino.h>
-#include <ArduinoBLE.h>
+#include "arduino_compat.h"
+#include "ble_compat.h"
 #include "tasks/BLEHandler.h"
 #include "globals.h"
 #include "utils/initializeBLE.h"

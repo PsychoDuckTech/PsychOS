@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Adafruit_ILI9341.h>
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "../globals.h"
 
 // Function declarations for pixel flush screen
