@@ -18,10 +18,10 @@ The firmware has been completely rewritten to use ESP-IDF instead of the Arduino
 
 ### 2. Build System
 
-**CMakeLists.txt**
-- Created component-based build configuration
-- Listed all source files and include directories
-- Specified required ESP-IDF components
+**platformio.ini**
+- Updated framework to `espidf`
+- Configured build flags and include directories
+- Specified library dependencies
 
 **sdkconfig.defaults**
 - Configured TinyUSB for USB HID
