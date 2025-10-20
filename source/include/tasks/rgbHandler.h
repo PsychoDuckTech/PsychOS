@@ -1,5 +1,5 @@
 #pragma once
-#include <Adafruit_NeoPixel.h>
+#include "neopixel_compat.h"
 #include "globals.h" // Assumes this defines shared variables like currentBrightness
 
 extern RGBState rgbState;

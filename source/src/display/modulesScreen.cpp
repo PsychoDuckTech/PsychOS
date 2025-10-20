@@ -1,5 +1,5 @@
 #include <Adafruit_ILI9341.h>
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "display/displayContent.h"
 #include "globals.h"
 #include "display/icons.h"

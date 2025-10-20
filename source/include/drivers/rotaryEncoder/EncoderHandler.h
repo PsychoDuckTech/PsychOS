@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Arduino.h>
-#include <ESP32Encoder.h>
+#include "arduino_compat.h"
+#include "encoder_compat.h"
 
 class EncoderHandler
 {

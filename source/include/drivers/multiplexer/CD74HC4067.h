@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Arduino.h>
+#include "arduino_compat.h"
+#include "soc/gpio_struct.h"
 
 class Multiplexer
 {

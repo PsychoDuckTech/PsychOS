@@ -39,12 +39,16 @@ PsychOS is a custom keyboard firmware for the Kibodo One keyboard, built on ESP3
 | Buzzer | GPIO 8 |
 | NeoPixel | GPIO 3 (default) |
 
+## Framework
+
+**Note**: This firmware has been migrated from Arduino Framework to **ESP-IDF** for better performance and native ESP32-S3 support. See [ESP-IDF_MIGRATION.md](ESP-IDF_MIGRATION.md) for details.
+
 ## Installation
 
 ### Prerequisites
 
 1. Install PlatformIO Core or PlatformIO IDE
-2. Install required libraries (automatically handled by PlatformIO)
+2. ESP-IDF will be automatically installed by PlatformIO
 
 ### Building and Flashing
 

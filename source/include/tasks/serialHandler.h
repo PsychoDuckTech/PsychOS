@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "tasks/clock.h"
 
 void serialHandler(void *parameters);

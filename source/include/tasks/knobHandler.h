@@ -1,5 +1,5 @@
 #pragma once
-#include <Arduino.h>
+#include "arduino_compat.h"
 
 // Adicionar a declaração para a função ISR
 void IRAM_ATTR knobButtonISR();

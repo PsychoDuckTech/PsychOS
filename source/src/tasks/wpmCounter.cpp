@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "arduino_compat.h"
 
 namespace WPMCounter
 {

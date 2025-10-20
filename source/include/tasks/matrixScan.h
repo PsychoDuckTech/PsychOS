@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Arduino.h>
+#include "arduino_compat.h"
 #include "drivers/multiplexer/CD74HC4067.h"
 #include "utils/initializeMatrix.h"
 

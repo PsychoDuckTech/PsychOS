@@ -1,5 +1,5 @@
 #include "tasks/mediaHandler.h"
-#include <Arduino.h>
+#include "arduino_compat.h"
 
 // Initialize the global variables
 char currentSongTitle[MAX_MEDIA_TITLE_LENGTH] = "No media";

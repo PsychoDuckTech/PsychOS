@@ -28,6 +28,7 @@ extern const char *connectedModuleName;
 // Include Adafruit GFX first as it contains the GFXfont definition
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
+#include <Adafruit_SPITFT.h>
 
 extern Adafruit_ILI9341 tft;
 extern bool connectionStatus;
