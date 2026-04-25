@@ -26,6 +26,7 @@
 
 // BLEHandler
 #include "tasks/BLEHandler.h"
+#include "tasks/BluetoothSerialHandler.h"
 
 // serialHandler
 #include "tasks/serialHandler.h"

@@ -7,12 +7,26 @@
 #include "translations.h"
 #include "display/components/uiComponents.h"
 #include "tasks/displayHandler.h"
-#include "tasks/BLEHandler.h"
+// Removed BLEHandler.h include
 
 extern Adafruit_ILI9341 tft;
 extern bool needsFullRedraw;
 extern bool moduleConnectionStatus;
 extern const char *connectedModuleName;
+
+// Sample module stats structure to replace BLE dependency
+struct SampleModuleStat {
+    int keyPresses;
+    unsigned long connectTime;
+    int rssi;
+};
+
+// Sample stats for demonstration
+static SampleModuleStat sampleModule = {
+    .keyPresses = 42,
+    .connectTime = 0,  // Will be set when "connected"
+    .rssi = -75        // Typical RSSI value between -30 (excellent) and -100 (poor)
+};
 
 // Function prototype for delay estimation
 float calculateDelayFromRSSI(int rssi);
@@ -37,48 +51,48 @@ void displayModulesSubmenu(void *parameters)
         lastTimeCheck = currentMillis;
     }
 
-    // Check if module is actually connected by querying BLE status
-    bool actuallyConnected = BLE.connected();
-    if (moduleConnectionStatus != actuallyConnected)
-    {
-        moduleConnectionStatus = actuallyConnected; // Update the global state
-        needsFullRedraw = true;                     // Force full redraw when connection state changes
-        staticElementsDrawn = false;                // Force static elements to be redrawn
+    // For demonstration, toggle connection status every 10 seconds
+    static unsigned long lastToggleConnectionTime = 0;
+    
+    // Uncomment the following lines to enable automatic toggling for demonstration
+    // if (currentMillis - lastToggleConnectionTime > 10000) {
+    //     moduleConnectionStatus = !moduleConnectionStatus;
+    //     lastToggleConnectionTime = currentMillis;
+    //     needsFullRedraw = true;
+    //     staticElementsDrawn = false;
+    // }
+    
+    // If we just "connected", update the connect time
+    if (moduleConnectionStatus && sampleModule.connectTime == 0) {
+        sampleModule.connectTime = currentMillis;
+    } else if (!moduleConnectionStatus) {
+        sampleModule.connectTime = 0; // Reset when disconnected
+    }
+    
+    // Sample RSSI value with small fluctuation for realism
+    if (timeToUpdate && moduleConnectionStatus) {
+        // Add a little randomness to the RSSI to simulate signal fluctuation
+        sampleModule.rssi = -75 + random(-3, 4); // Fluctuate between -78 and -72
     }
 
-    // Find current stats to check for changes
-    ModuleStat *currentStats = nullptr;
-    String currentAddress = "";
+    // Check for changes in our sample stats
+    bool statsChanged = false;
     if (moduleConnectionStatus)
     {
-        currentAddress = BLE.central().address();
-        for (int i = 0; i < numModules; i++)
-        {
-            if (moduleStats[i].address == currentAddress)
-            {
-                currentStats = &moduleStats[i];
-                if (timeToUpdate)
-                {
-                    // Update RSSI once per second
-                    currentStats->rssi = BLE.central().rssi();
-                }
-                break;
-            }
-        }
-    }
-
-    bool statsChanged = false;
-    if (currentStats)
-    {
-        statsChanged = (currentStats->keyPresses != previousKeyPresses) ||
-                       (timeToUpdate && ((currentStats->rssi != previousRSSI) ||
+        statsChanged = (sampleModule.keyPresses != previousKeyPresses) ||
+                       (timeToUpdate && ((sampleModule.rssi != previousRSSI) ||
                                          (currentSeconds != previousSeconds))); // Only check RSSI and time changes during update interval
 
         if (statsChanged)
         {
-            previousKeyPresses = currentStats->keyPresses;
-            previousRSSI = currentStats->rssi;
+            previousKeyPresses = sampleModule.keyPresses;
+            previousRSSI = sampleModule.rssi;
             previousSeconds = currentSeconds;
+        }
+        
+        // Increment key presses randomly during updates for demo purposes
+        if (timeToUpdate && random(0, 10) < 3) { // 30% chance of key press per second
+            sampleModule.keyPresses++;
         }
     }
 
@@ -211,17 +225,8 @@ void displayModulesSubmenu(void *parameters)
     // CONNECTED STATE RENDERING
     else
     {
-        // Find the stats for the current module
-        ModuleStat *currentStats = nullptr;
-        String currentAddress = BLE.connected() ? BLE.central().address() : "";
-        for (int i = 0; i < numModules; i++)
-        {
-            if (moduleStats[i].address == currentAddress)
-            {
-                currentStats = &moduleStats[i];
-                break;
-            }
-        }
+        // Use our sample module stats directly
+        SampleModuleStat *currentStats = &sampleModule;
 
         // Only draw static elements when needed
         if (!staticElementsDrawn)
@@ -279,7 +284,7 @@ void displayModulesSubmenu(void *parameters)
         }
 
         // Dynamic content - update only when values change or time passes
-        if (shouldUpdateDynamicContent && currentStats)
+        if (shouldUpdateDynamicContent)
         {
             // Clear only the dynamic text areas (inset by 15% from each side)
             tft.fillRect(45, 120, 150, 25, BG_COLOR); // Connection time and delay text area
